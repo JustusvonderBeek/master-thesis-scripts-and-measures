@@ -85,13 +85,12 @@ class TwoConnections( Topo ):
         s4 = self.addSwitch("s4") # Right
         
         r1 = self.addHost("r1", ip="192.168.1.1/24")
-        r2 = self.addHost("r2", ip="172.16.1.1/24")
+        # Adding the NAT interface host
+        nat = self.addNode("nat", cls=NAT, subnet="172.16.1.1/24", inetIntf="nat-eth1", localIntf="nat-eth0")
+        # r2 = self.addHost("r2", ip="172.16.1.1/24")
 
         h1 = self.addHost("h1", ip="192.168.1.10/24", defaultRoute="via 192.168.1.1")
         h2 = self.addHost("h2", ip="10.0.1.10/24", defaultRoute="via 10.0.1.1")
-
-        # Adding the NAT interface host
-        nat = self.addNode("nat", cls=NAT, subnet="172.16.1.1/24", inetIntf="nat-eth0", localIntf="nat-eth1")
 
         # Connect the network with links
         # The number behind the parameter (intfName"X") means which of the two hosts/switches we are targeting with this parameter
@@ -102,12 +101,12 @@ class TwoConnections( Topo ):
 
         self.addLink(s1, r1, intfName2="r1-eth0", params2={"ip" : "192.168.1.1/24"})
         self.addLink(s3, r1, intfName2="r1-eth1", params2={"ip" : "10.0.1.1/24"})
-        self.addLink(s2, r2, intfName2="r2-eth0", params2={"ip" : "172.16.1.1/24"})
-        self.addLink(s4, r2, intfName2="r2-eth1", params2={"ip" : "172.16.2.1/24"})
+        self.addLink(s2, nat, intfName2="nat-eth0", params2={"ip" : "172.16.1.1/24"})
+        self.addLink(s4, nat, intfName2="nat-eth1", params2={"ip" : "172.16.1.2/24"})
 
         # TODO: Remove r2 and replace with nat
-        self.addLink(nat, s3, intfName2="h1-eth1")
-        self.addLink(nat, s4, intfName2="h2-eth1")
+        # self.addLink(nat, s3, intfName2="h1-eth1")
+        # self.addLink(nat, s4, intfName2="h2-eth1")
         
         # return net
 
@@ -117,13 +116,13 @@ def configure_routing(net):
     h1 = net.get("h1")
     h1.setIP("172.16.1.10/24", intf="h1-eth1")
     h2 = net.get("h2")
-    h2.setIP("172.16.2.20/24", intf="h2-eth1")
-    h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth1")
+    h2.setIP("172.16.1.20/24", intf="h2-eth1")
+    h2.cmd("ip route add 172.16.1.0/24 via 172.16.1.2 dev h2-eth1")
 
-    r2 = net.get("r2")
+    r2 = net.get("nat")
     # r2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1")
     net["r1"].cmd("ip route add 10.0.1.0/24 via 192.168.1.1")
-    net["r2"].cmd("ip route add 192.168.1.0/24 via 10.0.1.1")
+    # net["nat"].cmd("ip route add 172.16.1.0/24 via 10.0.1.1")
     
 
 def run_two_conn_topo():
