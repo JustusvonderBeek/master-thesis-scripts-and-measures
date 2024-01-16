@@ -94,10 +94,10 @@ class TwoConnections( Topo ):
 
         # Connect the network with links
         # The number behind the parameter (intfName"X") means which of the two hosts/switches we are targeting with this parameter
-        self.addLink(h1, s1, intfName1="h1-eth0", delay="10ms")
-        self.addLink(h1, s2, intfName1="h1-eth1")
-        self.addLink(h2, s3, intfName1="h2-eth0", delay="10ms")
-        self.addLink(h2, s4, intfName1="h2-eth1")
+        self.addLink(h1, s1, intfName1="h1-eth0", delay="15ms")
+        self.addLink(h1, s2, intfName1="h1-eth1", delay="5ms")
+        self.addLink(h2, s3, intfName1="h2-eth0", delay="15ms")
+        self.addLink(h2, s4, intfName1="h2-eth1", delay="5ms")
 
         self.addLink(s1, r1, intfName2="r1-eth0", params2={"ip" : "192.168.1.1/24"})
         self.addLink(s3, r1, intfName2="r1-eth1", params2={"ip" : "10.0.1.1/24"})
@@ -121,8 +121,31 @@ def configure_routing(net):
     h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth1")
 
     nat = net.get("nat")
-    nat.cmd("ip route add 172.16.1.0/24 via 172.16.1.1 dev nat-eth0")
-    nat.cmd("ip route add 172.16.2.0/24 via 172.16.2.1 dev nat-eth1")
+    # nat.cmd("ip route add 172.16.1.0/24 via 172.16.1.1 dev nat-eth0")
+    # nat.cmd("ip route add 172.16.2.0/24 via 172.16.2.1 dev nat-eth1")
+
+    # Setting the NAT rules for R2/NAT
+    # See details either 'man iptables' or https://gist.github.com/tomasinouk/eec152019311b09905cd
+    # -t table
+    # -A <chain> rule (append rule to chain: PREROUTING, before anything happens with the packet)
+    # -i <in-interface>
+    # -4 IPv4 / -6 IPv6
+    # -p the protocol (in our case QUIC ~= UDP)
+    # -s <src address> (can be a whole network)
+    # -d <dst address> (can be a whole network)
+    nat.cmd("iptables -F")
+    nat.cmd("iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    nat.cmd("iptables -A INPUT -p udp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+    nat.cmd("iptables -A INPUT -p icmp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+    nat.cmd("iptables -A INPUT -j DROP")
+    
+    nat.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    nat.cmd("iptables -A FORWARD -p udp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+    nat.cmd("iptables -A FORWARD -p icmp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+    nat.cmd("iptables -A FORWARD -j DROP")
+
+    nat.cmd("iptables -t nat -A PREROUTING -p udp -i nat-eth0 -d 172.16.2.0/24 -j SNAT --to 172.16.2.1")
+
     # r2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1")
     net["r1"].cmd("ip route add 10.0.1.0/24 via 192.168.1.1")
     # net["nat"].cmd("ip route add 172.16.1.0/24 via 10.0.1.1")
