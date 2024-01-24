@@ -30,7 +30,12 @@ from mininet.node import Node, Switch
 from mininet.nodelib import NAT
 from mininet.net import Mininet
 from mininet.cli import CLI
+from pathlib import Path
+from datetime import datetime
+
 import mininet.net as net
+import subprocess
+import os
 
 # This setup is inspired by the linuxrouter example: https://github.com/mininet/mininet/blob/master/examples/linuxrouter.py
 
@@ -160,6 +165,105 @@ def run_two_conn_topo():
     net.stop()
     exit(0)
 
+def run_quicheperf():
+    topo = TwoConnections()
+    net = Mininet(topo=topo)
+    net.start()
+    configure_routing(net)
+    capture_ssl(net, "h2")
+    procs = list()
+    procs.append(start_server(net))
+    # cap = capture_pcap(net, "h2")
+    client = start_client(net)
+    # procs.append(start_client(net))
+    CLI(net)
+    terminate(client)
+    for proc in procs:
+        terminate(proc, "h2/")
+    net.stop()
+    exit(0)
+
+def start_client(net):
+    """Starting the quicheperf client"""
+
+    h1 = net.get("h1")
+    # Path is .../Code/..supplementary-material
+    Path("h1").mkdir(parents=True, exist_ok=True)
+    os.environ["RUST_LOG"] = "debug"
+    client = h1.popen("../quicheperf/target/release/quicheperf client -c 10.0.1.10:443 -c 172.168.2.20:443 -l 192.168.1.10:0 -l 172.16.1.10:0 --mp true --scheduler round-robin", stdout=subprocess.PIPE)
+    
+    return client
+
+def start_server(net):
+    """Starting the quicheperf server"""
+
+    h2 = net.get("h2")
+    os.environ["RUST_LOG"] = "debug"
+    server = h2.popen("../quicheperf/target/release/quicheperf server -l 10.0.1.10:443 -l 172.16.2.20:443 --mp true --scheduler round-robin --cert ../quicheperf/src/cert.crt --key ../quicheperf/src/cert.key", stdout=subprocess.PIPE)
+
+    return server
+
+def capture_ssl(net, host, outpath=None, outfile=None):
+    """Exporting the session SSL keys"""
+
+    h = net.get(host)
+    if h is None:
+        return
+    if outpath is None:
+        outpath = f"{host}/"
+    Path(outpath).mkdir(parents=True, exist_ok=True)
+    file_name = datetime.today().strftime("%m_%d_%H_%M") + "_sslkeys.txt"
+    if outfile is None:
+        outfile = file_name
+    else:
+        outfile = outfile + "_" + file_name
+    outfile = Path(outpath).joinpath(outfile)
+    os.environ["SSLKEYLOGFILE"] = f"{outfile}"
+
+def capture_pcap(net, host, outpath=None, outfile=None):
+    """Capturing packets on the specified host"""
+
+    h = net.get(host)
+    if h is None:
+        return
+    if outpath is None:
+        outpath = f"{host}/"
+    Path(outpath).mkdir(parents=True, exist_ok=True)
+    file_name = datetime.today().strftime("%m_%d_%H_%M") + ".pcap"
+    if outfile is None:
+        outfile = file_name
+    else:
+        outfile = outfile + "_" + file_name
+    outfile = Path(outpath).joinpath(outfile)
+    # print(f"Outfile: {outfile}")
+    host_pcap = h.popen(f"tcpdump -i any -w {outfile}")
+
+    return host_pcap
+
+def terminate(process, outfile=None):
+    """Ending the running 'pcap capturing' process"""
+
+    process.terminate()
+
+    if outfile is not None:
+        text, err = process.communicate()
+        outfile = outfile + datetime.today().strftime("%m_%d_%H_%M") + ".log"
+        with open(outfile, "w") as proc_out:
+            proc_out.write(text.decode("utf-8"))
+            proc_out.write("\n---------------------\n")
+            proc_out.write(err.decode("utf-8"))
+    
+
+def stop_path(net, host, switch):
+    """Disabling the routing / traffic via the given path"""
+
+    net.cmd(f"link {host} {switch} down")
+
+def start_path(net, host, switch):
+    """Enabling the routing / traffic via the given path"""
+
+    net.cmd(f"link {host} {switch} up")
+
 # TODO: Create mobility with: https://github.com/mininet/mininet/blob/master/examples/mobility.py
 class HostMobility( Topo ):
     """Creating a host and a server that is mobile"""
@@ -171,7 +275,7 @@ class HostMobility( Topo ):
         # TODO:
 
 # TODO: Mobility not yet ready
-topos = { 'migration': ( lambda: TwoSubnets() ), 'two_conns' : (lambda: run_two_conn_topo()),  'mobility(todo)' : (lambda: HostMobility()) }
+topos = { 'migration': ( lambda: TwoSubnets() ), 'two_conns' : (lambda: run_quicheperf()),  'mobility(todo)' : (lambda: HostMobility()) }
 
 if __name__ == "__main__":
     run_two_conn_topo()
