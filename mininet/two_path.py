@@ -26,7 +26,7 @@ To clean everything up again after running experiments use: sudo mn -c
 """
 
 from mininet.topo import Topo
-from mininet.node import Node, Switch
+from mininet.node import Node, Switch, OVSController
 from mininet.nodelib import NAT
 from mininet.net import Mininet
 from mininet.cli import CLI
@@ -36,6 +36,7 @@ from datetime import datetime
 import mininet.net as net
 import subprocess
 import os
+import time
 
 # This setup is inspired by the linuxrouter example: https://github.com/mininet/mininet/blob/master/examples/linuxrouter.py
 
@@ -115,7 +116,7 @@ class TwoConnections( Topo ):
         
         # return net
 
-def configure_routing(net):
+def configure_routing(net, firewall=False):
     "Creating custom routing logic"
 
     h1 = net.get("h1")
@@ -126,8 +127,6 @@ def configure_routing(net):
     h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth1")
 
     nat = net.get("nat")
-    # nat.cmd("ip route add 172.16.1.0/24 via 172.16.1.1 dev nat-eth0")
-    # nat.cmd("ip route add 172.16.2.0/24 via 172.16.2.1 dev nat-eth1")
 
     # Setting the NAT rules for R2/NAT
     # See details either 'man iptables' or https://gist.github.com/tomasinouk/eec152019311b09905cd
@@ -139,17 +138,21 @@ def configure_routing(net):
     # -s <src address> (can be a whole network)
     # -d <dst address> (can be a whole network)
     nat.cmd("iptables -F")
-    nat.cmd("iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT")
-    nat.cmd("iptables -A INPUT -p udp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
-    nat.cmd("iptables -A INPUT -p icmp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
-    nat.cmd("iptables -A INPUT -j DROP")
-    
-    nat.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
-    nat.cmd("iptables -A FORWARD -p udp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
-    nat.cmd("iptables -A FORWARD -p icmp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
-    nat.cmd("iptables -A FORWARD -j DROP")
+    if firewall:
+        nat.cmd("iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat.cmd("iptables -A INPUT -p udp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+        nat.cmd("iptables -A INPUT -p icmp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+        nat.cmd("iptables -A INPUT -j DROP")
+        
+        nat.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat.cmd("iptables -A FORWARD -p udp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+        nat.cmd("iptables -A FORWARD -p icmp -i nat-eth0 -s 172.16.1.0/24 -d 172.16.2.0/24 -j ACCEPT")
+        nat.cmd("iptables -A FORWARD -j DROP")
 
-    nat.cmd("iptables -t nat -A PREROUTING -p udp -i nat-eth0 -d 172.16.2.0/24 -j SNAT --to 172.16.2.1")
+        nat.cmd("iptables -t nat -A PREROUTING -p udp -i nat-eth0 -d 172.16.2.0/24 -j SNAT --to 172.16.2.1")
+    else:
+        nat.cmd("ip route add 172.16.1.0/24 via 172.16.1.1 dev nat-eth0")
+        nat.cmd("ip route add 172.16.2.0/24 via 172.16.2.1 dev nat-eth1")
 
     # r2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1")
     net["r1"].cmd("ip route add 10.0.1.0/24 via 192.168.1.1")
@@ -165,23 +168,67 @@ def run_two_conn_topo():
     net.stop()
     exit(0)
 
-def run_quicheperf():
+def run_ice():
     topo = TwoConnections()
-    net = Mininet(topo=topo)
+    net = Mininet(topo=topo, controller=OVSController)
     net.start()
     configure_routing(net)
-    capture_ssl(net, "h2")
-    procs = list()
-    procs.append(start_server(net))
-    # cap = capture_pcap(net, "h2")
-    client = start_client(net)
-    # procs.append(start_client(net))
-    CLI(net)
-    terminate(client)
-    for proc in procs:
-        terminate(proc, "h2/")
+
+    # Starting the ice agents
+    tasks = list()
+    client, controller = start_ice_agents(net)
+    tasks.append({"proc":client, "name": "h1/ice_"})
+    tasks.append({"proc":controller, "name": "h2/ice_"})
+    time.sleep(0.5)
+    # Processes require the enter key to start
+    client.communicate(input=b"\n")
+    controller.communicate(input=b"\n")
+    time.sleep(5)
+    # CLI(net)
+    for task in tasks:
+        terminate(task["proc"], task["name"])
+
     net.stop()
     exit(0)
+
+def run_quicheperf():
+    topo = TwoConnections()
+    net = Mininet(topo=topo, controller = OVSController)
+    net.start()
+    configure_routing(net)
+
+    procs = list()
+    capture_ssl(net, "h2")
+    cap = capture_pcap(net, "h2")
+    cap1 = capture_pcap(net, "h1")
+    procs.append({"proc" : cap, "name" : None })
+    procs.append({"proc" : cap1, "name" : None })
+    # This is required to be able to capture the handshake and the initial packets of the connection
+    time.sleep(0.5)
+    server = start_server(net)
+    procs.append({"proc" : server, "name" : "h2"})
+    client = start_client(net)
+    procs.append({"proc" : client, "name" : "h1"})
+    CLI(net)
+    for proc in procs:
+        if proc["name"] is not None:
+            terminate(proc["proc"], proc["name"] + "/")
+        else:
+            terminate(proc["proc"])
+    
+    net.stop()
+    exit(0)
+
+def start_ice_agents(net):
+    """Starting the client & server on a specific host"""
+
+    h1 = net.get("h1")
+    h2 = net.get("h2")
+
+    client = h1.popen(f"../webrtc/target/debug/examples/ping_pong -s 192.168.1.10 --controlling", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    controller = h2.popen(f"../webrtc/target/debug/examples/ping_pong -s 10.0.1.10", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+
+    return client, controller
 
 def start_client(net):
     """Starting the quicheperf client"""
@@ -190,7 +237,11 @@ def start_client(net):
     # Path is .../Code/..supplementary-material
     Path("h1").mkdir(parents=True, exist_ok=True)
     os.environ["RUST_LOG"] = "debug"
-    client = h1.popen("../quicheperf/target/release/quicheperf client -c 10.0.1.10:443 -c 172.168.2.20:443 -l 192.168.1.10:0 -l 172.16.1.10:0 --mp true --scheduler round-robin", stdout=subprocess.PIPE)
+    duration = "10"
+    bitrate = "1MB"
+    scheduler = "round-robin"
+    print(f"Duration: {duration}s , Bitrate {bitrate}")
+    client = h1.popen(f"../quicheperf/target/release/quicheperf client -c 10.0.1.10:443 -c 172.168.2.20:443 -l 192.168.1.10:0 -l 172.16.1.10:0 --mp true --scheduler {scheduler} --duration {duration} --bitrate {bitrate}", stdout=subprocess.PIPE)
     
     return client
 
@@ -198,8 +249,10 @@ def start_server(net):
     """Starting the quicheperf server"""
 
     h2 = net.get("h2")
+    Path("h2").mkdir(parents=True, exist_ok=True)
     os.environ["RUST_LOG"] = "debug"
-    server = h2.popen("../quicheperf/target/release/quicheperf server -l 10.0.1.10:443 -l 172.16.2.20:443 --mp true --scheduler round-robin --cert ../quicheperf/src/cert.crt --key ../quicheperf/src/cert.key", stdout=subprocess.PIPE)
+    scheduler = "round-robin"
+    server = h2.popen(f"../quicheperf/target/release/quicheperf server -l 10.0.1.10:443 -l 172.16.2.20:443 --mp true --scheduler {scheduler} --cert ../quicheperf/src/cert.crt --key ../quicheperf/src/cert.key", stdout=subprocess.PIPE)
 
     return server
 
@@ -212,7 +265,7 @@ def capture_ssl(net, host, outpath=None, outfile=None):
     if outpath is None:
         outpath = f"{host}/"
     Path(outpath).mkdir(parents=True, exist_ok=True)
-    file_name = datetime.today().strftime("%m_%d_%H_%M") + "_sslkeys.txt"
+    file_name = datetime.today().strftime("%d_%m_%H_%M") + "_sslkeys.txt"
     if outfile is None:
         outfile = file_name
     else:
@@ -229,7 +282,7 @@ def capture_pcap(net, host, outpath=None, outfile=None):
     if outpath is None:
         outpath = f"{host}/"
     Path(outpath).mkdir(parents=True, exist_ok=True)
-    file_name = datetime.today().strftime("%m_%d_%H_%M") + ".pcap"
+    file_name = datetime.today().strftime("%d_%m_%H_%M") + ".pcap"
     if outfile is None:
         outfile = file_name
     else:
@@ -247,10 +300,10 @@ def terminate(process, outfile=None):
 
     if outfile is not None:
         text, err = process.communicate()
-        outfile = outfile + datetime.today().strftime("%m_%d_%H_%M") + ".log"
+        outfile = outfile + datetime.today().strftime("%d_%m_%H_%M") + ".log"
         with open(outfile, "w") as proc_out:
             proc_out.write(text.decode("utf-8"))
-            proc_out.write("\n---------------------\n")
+            proc_out.write("\n---------------------\n\n")
             proc_out.write(err.decode("utf-8"))
     
 
@@ -275,7 +328,7 @@ class HostMobility( Topo ):
         # TODO:
 
 # TODO: Mobility not yet ready
-topos = { 'migration': ( lambda: TwoSubnets() ), 'two_conns' : (lambda: run_quicheperf()),  'mobility(todo)' : (lambda: HostMobility()) }
+topos = { 'migration': ( lambda: TwoSubnets() ), 'two_conns' : (lambda: run_quicheperf()), 'ice' : (lambda: run_ice()),  'mobility(todo)' : (lambda: HostMobility()) }
 
 if __name__ == "__main__":
     run_two_conn_topo()
