@@ -1,0 +1,7 @@
+# Ignore the measurement files
+
+*.pcap
+*.pcapng
+
+# Ignore python compiler output
+*.pyc
