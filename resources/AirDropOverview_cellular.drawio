@@ -1,0 +1,301 @@
+<mxfile host="app.diagrams.net" modified="2023-12-12T16:38:01.328Z" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0" etag="DDNYNHCvwYqlVz_CTEnP" version="22.1.7" type="device">
+  <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
+    <mxGraphModel dx="552" dy="1744" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="aM9ryv3xv72pqoxQDRHE-1" value="&lt;div&gt;:Sender (iPad)&lt;/div&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=45;" parent="1" vertex="1">
+          <mxGeometry x="10" y="50" width="100" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="aM9ryv3xv72pqoxQDRHE-2" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="aM9ryv3xv72pqoxQDRHE-1" vertex="1">
+          <mxGeometry x="45" y="70" width="10" height="760" as="geometry" />
+        </mxCell>
+        <mxCell id="aM9ryv3xv72pqoxQDRHE-5" value="&lt;div&gt;:Receiver (iPhone)&lt;/div&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=50;" parent="1" vertex="1">
+          <mxGeometry x="360" y="50" width="100" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="aM9ryv3xv72pqoxQDRHE-6" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="aM9ryv3xv72pqoxQDRHE-5" vertex="1">
+          <mxGeometry x="45" y="80" width="10" height="750" as="geometry" />
+        </mxCell>
+        <mxCell id="aM9ryv3xv72pqoxQDRHE-7" value="&lt;div&gt;mDNS (PTR _airdrop._tcp.local)&lt;br&gt;&lt;/div&gt;&lt;div&gt;ff02::fb&lt;/div&gt;" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="aM9ryv3xv72pqoxQDRHE-6" edge="1">
+          <mxGeometry x="0.0294" y="-10" relative="1" as="geometry">
+            <mxPoint x="70" y="220" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="335" y="220" />
+              <mxPoint x="365" y="240" />
+              <mxPoint x="265" y="230" />
+              <mxPoint x="135" y="170" />
+            </Array>
+            <mxPoint x="410" y="220" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OVtjpk0A2-jqffXC2TWz-1" value="BLE Connection Setup" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="70" y="139.9957142857143" as="sourcePoint" />
+            <mxPoint x="405" y="139.9957142857143" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="120" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OVtjpk0A2-jqffXC2TWz-2" value="AWDL Synchronization" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="65" y="165" as="sourcePoint" />
+            <mxPoint x="405" y="165" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OVtjpk0A2-jqffXC2TWz-4" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;rotation=-180;" parent="1" vertex="1">
+          <mxGeometry x="439.18000000000006" y="140" width="40" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OVtjpk0A2-jqffXC2TWz-5" value="&lt;div&gt;Not observered;&amp;nbsp;&lt;/div&gt;&lt;div&gt;taken from Stute Paper&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="497.53" y="150" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="OVtjpk0A2-jqffXC2TWz-9" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" parent="1" target="aM9ryv3xv72pqoxQDRHE-6" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="65" y="190" as="sourcePoint" />
+            <mxPoint x="410" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OVtjpk0A2-jqffXC2TWz-10" value="Querying happens both in AWDL and WiFi Network; happens periodically (~30-60s) even without AirDrop actively selected but receive must be on" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="450" y="210" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-2" value="&lt;div&gt;mDNS (SRV cache flush rnd.local AAAA &amp;amp; A)&lt;/div&gt;&lt;div&gt;rnd.local is at fe80::&amp;lt;receiver&amp;gt;&lt;/div&gt;&lt;div&gt;rnd.local is at 2001:4ca0::&amp;lt;receiver&amp;gt;&lt;/div&gt;&lt;div&gt;rnd.local is at 10.151.&amp;lt;receiver&amp;gt;&lt;br&gt;&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=horizontal;curved=0;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="405" y="269.4271428571429" as="sourcePoint" />
+            <mxPoint x="65" y="269.4271428571429" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-3" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="65" y="310" as="sourcePoint" />
+            <mxPoint x="405" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-4" value="&lt;div&gt;1. TCP/TLS connection&lt;/div&gt;&lt;div&gt;Authentication&lt;br&gt;AWDL0 Interface&lt;/div&gt;&lt;div&gt;fe80::&amp;lt;sender&amp;gt; to fe80::&amp;lt;receiver&amp;gt;&lt;br&gt;&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="aM9ryv3xv72pqoxQDRHE-6" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="70" y="359.9971428571429" as="sourcePoint" />
+            <mxPoint x="410" y="359.9971428571429" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="390" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-11" value="&lt;div&gt;QUIC Connection 1 : AWDL, IPv6 (rev)&lt;br&gt;&lt;/div&gt;&lt;div&gt;Data transfer&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="aM9ryv3xv72pqoxQDRHE-6" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="570" />
+            </Array>
+            <mxPoint x="80" y="580" as="sourcePoint" />
+            <mxPoint x="405" y="720" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-12" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="65" y="410" as="sourcePoint" />
+            <mxPoint x="404.9999999999998" y="410" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="250" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-13" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;rotation=-180;" parent="1" vertex="1">
+          <mxGeometry x="430" y="330" width="40" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-14" value="&lt;div&gt;Authentication &amp;amp; contact info&lt;/div&gt;&lt;div&gt;exchange;&lt;/div&gt;&lt;div&gt;taken from Stute paper&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="478" y="330" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-18" value="&lt;div&gt;AWDL connection becomes unstable&lt;/div&gt;&lt;div&gt;Open Cellular Interface&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="440.85" y="600" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-17" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.flash;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="230" y="595" width="20" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="yCxDXh_MjUkCu9cZjC5a-23" value="&lt;div&gt;QUIC Connection 2 : Cellular&lt;br&gt;&lt;/div&gt;&lt;div&gt;Data Transfer&lt;/div&gt;&lt;div&gt;Options: &lt;br&gt;&lt;/div&gt;&lt;div&gt;Long Header, h3, only tls1.3, cid_limit=64&lt;/div&gt;&lt;div&gt;idle_to=5min, init_data=2MiB&lt;/div&gt;&lt;div&gt;NO 0xFF080808 parameter&lt;br&gt;&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="6zYMTvwBG4bXgMevJ-_D-11" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="65" y="830" as="sourcePoint" />
+            <mxPoint x="405" y="830" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="280" y="690" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-3" value="AP1" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/wireless/Access_Point_Indoor.svg;" parent="1" vertex="1">
+          <mxGeometry x="259.17999999999995" y="-257.7" width="43.3" height="64.6" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-4" value="Actions performed" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=17;" parent="1" vertex="1">
+          <mxGeometry x="280" y="-440" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-7" value="" style="html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;shadow=0;dashed=0;strokeWidth=1;shape=mxgraph.ios7.misc.iphone;strokeColor=#c0c0c0;" parent="1" vertex="1">
+          <mxGeometry x="50" y="-100" width="30" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-8" value="" style="html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;shadow=0;dashed=0;strokeWidth=1;shape=mxgraph.ios7.misc.ipad7inch;strokeColor=#c0c0c0;" parent="1" vertex="1">
+          <mxGeometry x="250" y="-119.75" width="61.65" height="89.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-13" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="70" y="-110" as="sourcePoint" />
+            <mxPoint x="70" y="-160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-14" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="280" y="-130" as="sourcePoint" />
+            <mxPoint x="280" y="-160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-15" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="90" y="-70" as="sourcePoint" />
+            <mxPoint x="240" y="-70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-16" value="State 1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="136.7" y="-30" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-17" value="AP1" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/wireless/Access_Point_Indoor.svg;" parent="1" vertex="1">
+          <mxGeometry x="607.53" y="-270" width="43.3" height="64.6" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-18" value="" style="html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;shadow=0;dashed=0;strokeWidth=1;shape=mxgraph.ios7.misc.iphone;strokeColor=#c0c0c0;" parent="1" vertex="1">
+          <mxGeometry x="398.35" y="-99.75" width="30" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-19" value="" style="html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;shadow=0;dashed=0;strokeWidth=1;shape=mxgraph.ios7.misc.ipad7inch;strokeColor=#c0c0c0;" parent="1" vertex="1">
+          <mxGeometry x="598.35" y="-119.5" width="61.65" height="89.5" as="geometry" />
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-20" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="420" y="-110" as="sourcePoint" />
+            <mxPoint x="420" y="-170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-21" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="630" y="-130" as="sourcePoint" />
+            <mxPoint x="630" y="-170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7W10EVZrkEFWbG0_Qhk3-23" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="320" y="-130" as="sourcePoint" />
+            <mxPoint x="380" y="-130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--1" value="State 2" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="470" y="-32" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--3" value="" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="478" y="-380" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--4" value="" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.radio_tower;" parent="1" vertex="1">
+          <mxGeometry x="385.85" y="-275.4" width="55" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--5" value="" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.radio_tower;" parent="1" vertex="1">
+          <mxGeometry x="37.5" y="-275.4" width="55" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--6" value="" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="110" y="-390" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--7" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" target="o-EeihVTMgN8iyO2JNl--6" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="70" y="-290" as="sourcePoint" />
+            <mxPoint x="250" y="-60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--8" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" target="o-EeihVTMgN8iyO2JNl--6" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="280" y="-280" as="sourcePoint" />
+            <mxPoint x="135" y="-313" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--9" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="637" y="-268" as="sourcePoint" />
+            <mxPoint x="570" y="-310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--10" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="425" y="-287" as="sourcePoint" />
+            <mxPoint x="480" y="-320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--11" value="&lt;div&gt;Starting data transfer&lt;/div&gt;&lt;div&gt;on AWDL interface&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="439.17999999999995" y="550" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="o-EeihVTMgN8iyO2JNl--12" value="&lt;div&gt;AWDL Interface&lt;br&gt;&lt;/div&gt;&lt;div&gt;3x ICMP Port Unreachable for&lt;br&gt;&lt;/div&gt;&lt;div&gt;&amp;lt;apple_ip&amp;gt;&lt;br&gt;&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;endArrow=none;endFill=0;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="6zYMTvwBG4bXgMevJ-_D-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="850" />
+            </Array>
+            <mxPoint x="65" y="880" as="sourcePoint" />
+            <mxPoint x="405" y="880" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-1" value="&lt;div&gt;mDNS Query (_asquic._udp.local)&lt;/div&gt;&lt;div&gt;Where is rnd.local with quic&lt;br&gt;&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="aM9ryv3xv72pqoxQDRHE-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-2" value="&lt;div&gt;mDNS Response (rnd.local is associated with _asquic._udp.local)&lt;/div&gt;&lt;div&gt;rnd.local is at fe80::&amp;lt;receiver&amp;gt;&lt;br&gt;&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-6" target="aM9ryv3xv72pqoxQDRHE-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="235" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-3" value="" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;pointerEvents=1;rotation=-180;" vertex="1" parent="1">
+          <mxGeometry x="430" y="440" width="40" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-4" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="66" y="530" as="sourcePoint" />
+            <mxPoint x="405.9999999999998" y="530" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="251" y="530" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-5" value="&lt;div&gt;Asking for QUIC address&lt;/div&gt;&lt;div&gt;of the service&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="487.53" y="450" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-6" value="&lt;div&gt;No ICMP is sent&lt;/div&gt;&lt;div&gt;WiFi Interface is unconnected&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="92.5" y="647" width="180" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-7" value="&lt;div&gt;After 2 seconds Connection 1 is killed&lt;/div&gt;&lt;div&gt;The old connection co-exists for ~2s with new one&lt;br&gt;&lt;/div&gt;&lt;div&gt;If data is really transferred is unclear&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="69.99999999999994" y="730" width="290" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-8" value="QUIC Connection 1 : killed" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;fillColor=#d5e8d4;strokeColor=#82b366;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="aM9ryv3xv72pqoxQDRHE-6">
+          <mxGeometry x="0.0017" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="800" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-9" value="&lt;div&gt;In the connection to Apple&amp;nbsp;&lt;/div&gt;&lt;div&gt;no 0xFF080808 parameter is set&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="520.0000000000001" y="671" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-10" value="&lt;div&gt;Missing data is transferred via Cellular&lt;/div&gt;&lt;div&gt;No migration back to AWDL&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="453" y="790" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-11" value="&lt;div&gt;:Relay (Apple)&lt;/div&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=50;" vertex="1" parent="1">
+          <mxGeometry x="690" y="50" width="100" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-12" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="6zYMTvwBG4bXgMevJ-_D-11">
+          <mxGeometry x="45" y="610" width="10" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-14" value="&amp;nbsp;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="475" y="640" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6zYMTvwBG4bXgMevJ-_D-15" value="&lt;div&gt;QUIC Connection 3 : WiFi&lt;/div&gt;&lt;div&gt;Data Transfer&lt;/div&gt;&lt;div&gt;NOT OBSERVED (assuming)&lt;br&gt;&lt;/div&gt;" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;fillColor=#ffe6cc;strokeColor=#d79b00;startArrow=block;startFill=1;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-6" target="6zYMTvwBG4bXgMevJ-_D-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="760" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

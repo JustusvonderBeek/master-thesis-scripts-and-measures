@@ -1,0 +1,90 @@
+<mxfile host="app.diagrams.net" modified="2023-11-10T18:10:10.184Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0" etag="rTi2bvz1RbyT4e-TUVB1" version="22.1.0" type="device">
+  <diagram name="Seite-1" id="lHFLpBd9UyqcRVCADFqV">
+    <mxGraphModel dx="1690" dy="899" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="zP9aunXPU2G3LAliVeyA-4" value="&lt;div&gt;Internet: QUIC&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="zP9aunXPU2G3LAliVeyA-1" target="zP9aunXPU2G3LAliVeyA-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="zP9aunXPU2G3LAliVeyA-1" target="zP9aunXPU2G3LAliVeyA-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="130" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-12" value="&lt;div&gt;QUIC carrying address information&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zP9aunXPU2G3LAliVeyA-10">
+          <mxGeometry x="0.2083" y="1" relative="1" as="geometry">
+            <mxPoint x="18" y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="zP9aunXPU2G3LAliVeyA-1" target="zP9aunXPU2G3LAliVeyA-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="160" y="220" />
+              <mxPoint x="414" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-14" value="&lt;div&gt;Performing Address Discovery using QUIC,&lt;/div&gt;&lt;div&gt;not implemented?&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zP9aunXPU2G3LAliVeyA-13">
+          <mxGeometry x="0.2285" y="-1" relative="1" as="geometry">
+            <mxPoint x="-25" y="19" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-1" value="Endpoint" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-6" value="&lt;div&gt;Internet: QUIC&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="zP9aunXPU2G3LAliVeyA-3" target="zP9aunXPU2G3LAliVeyA-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-3" value="&lt;div&gt;STUN / TURN Server&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="353.5" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="zP9aunXPU2G3LAliVeyA-5" target="zP9aunXPU2G3LAliVeyA-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-20" value="QUIC carrying address information" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zP9aunXPU2G3LAliVeyA-18">
+          <mxGeometry x="0.1435" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-5" value="Endpoint" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="630" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="zP9aunXPU2G3LAliVeyA-9" target="zP9aunXPU2G3LAliVeyA-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-15" value="&lt;div&gt;QUIC carrying address information&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zP9aunXPU2G3LAliVeyA-11">
+          <mxGeometry x="-0.234" relative="1" as="geometry">
+            <mxPoint x="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="zP9aunXPU2G3LAliVeyA-9" target="zP9aunXPU2G3LAliVeyA-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-21" value="Hey, I can reach you?" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="zP9aunXPU2G3LAliVeyA-19">
+          <mxGeometry x="0.1762" relative="1" as="geometry">
+            <mxPoint x="88" y="10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-9" value="&lt;div&gt;Path Probing&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="374" y="300" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-16" value="All operations can be performed by both sides, but for simplicity are only displayed originating from the left." style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="30" width="270" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-17" value="Receiving information: can I respond?" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="730" y="210" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="zP9aunXPU2G3LAliVeyA-22" value="&lt;div&gt;Path Migration / Validation is done by QUIC itself...&lt;/div&gt;&lt;div&gt;Only need to trigger / check &amp;amp; verify this&lt;br&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="90" y="410" width="180" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
