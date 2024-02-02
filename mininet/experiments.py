@@ -105,6 +105,7 @@ def p2p_webrtc():
     Includes breaking the connection and letting WebRTC figure out the reconnect
     """
 
+    test_duration=10
     topo = TwoConnectionWithInternet()
     net = Mininet(topo=topo, controller = OVSController)
     # Include internet connection
@@ -126,7 +127,8 @@ def p2p_webrtc():
     client = start_webrtc_client(net)
     procs.append({"proc":client, "name": "h1"})
 
-    time.sleep(10)
+    print(f"Testing for {test_duration}s ...")
+    time.sleep(test_duration)
     # stop_path("h1", "s1")
     # time.sleep(5)
     # start_path("h1", "s1")
@@ -140,6 +142,8 @@ def p2p_webrtc():
     net.stop()
     # We don't want to start the CLI again
     exit(0)
+
+# TODO: Repeat the experiment with our own implementation
 
 topologies = { 'quicheperf': (lambda: quicheperf()), "p2p": (lambda: p2p_webrtc()) }
 
