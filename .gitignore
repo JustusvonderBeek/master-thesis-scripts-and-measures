@@ -5,3 +5,7 @@
 
 # Ignore python compiler output
 *.pyc
+
+# Ignore testing code
+r2m2p2/
+r2m2p2_go/
