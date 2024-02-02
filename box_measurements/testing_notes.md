@@ -1,0 +1,158 @@
+# Information regarding the test
+This file contains a mapping of file name to test
+
+## File Transfer Information
+
+| File | Size | Format |
+| --- | --- | --- |
+| Mitschrift | ~75mb | pdf |
+| Android: 250 | ~250mb | pdf |
+| Android: gba | ~33mb | gba |
+
+## Testing output file info
+
+| File | Test | Direction |
+| --- | --- | --- |
+| gerät_18_01_10_57 | Verbindungsabbruch | IPhone > IPad |
+| gerät_18_01_11_07 | Verbindungsabbruch | IPhone > IPad |
+| gerät_18_01_11_12 | Kein Verbindungsabbruch | IPhone > IPad |
+| gerät_18_01_11_14 | Verbindungsabbruch nach ~2s | IPhone > IPad |
+| gerät_18_01_11_17 | Verbindungsabbruch nach ~2s, Fehler und manueller abbruch nach 6+ Minuten | IPhone > IPad |
+| gerät_18_01_11_28 | Verbindungsabbruch nach ~2s, Fehler und manueller Abbruch | IPhone > IPad |
+| gerät_18_01_11_35 | Verbindungsabbruch nach ~2s | IPhone > IPad |
+| gerät_18_01_11_38 | Verbindungsabbruch nach ~2s | IPhone > IPad |
+| gerät_18_01_11_40 | Verbindungsabbruch nach ~2s | IPhone > IPad |
+| gerät_18_01_11_44 | Verbindungsabbruch nach ~3s | IPhone > IPad |
+| gerät_18_01_11_46 | Verbindungsabbruch nach ~3s | IPhone > IPad |
+| gerät_18_01_11_48 | Verbindungsabbruch nach ~3s | IPhone > IPad |
+| gerät_18_01_11_52 | Verbindungsabbruch nach ~3s | IPhone > IPad |
+| gerät_18_01_11_54 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s | IPhone > IPad |
+| gerät_18_01_11_57 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s | IPhone > IPad |
+| gerät_18_01_12_00 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s | IPhone > IPad |
+| gerät_18_01_12_02 | Verbindungsabbruch nach ~3s, Tür offen nach ~30s (weil davor kein traffic) | IPhone > IPad |
+| gerät_18_01_12_12 | Normal, Kein Internet | IPhone > IPad |
+| gerät_18_01_12_13 | Normal, Kein Internet | IPhone > IPad |
+| Pause | --- | --- |
+| gerät_18_01_13_26 | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_28 | Verbindungsabbruch nach ~3s (davor einmal declined), Fehler beim 2. mal (iPhone kann keine Verbindung zu Apple aufbauen) | IPad > IPhone |
+| gerät_18_01_13_35 | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_39 | Verbindungsabbruch nach ~3s, Türe auf nach 30s | IPad > IPhone |
+| gerät_18_01_13_43 | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_47 | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_48 | Verbindungsabbruch nach ~4s, Türe auf nach ~10s | IPad > IPhone |
+| gerät_18_01_13_50 | Verbindungsabbruch nach ~4s, Türe auf nach ~12s | IPad > IPhone |
+| gerät_18_01_13_53| Verbindungsabbruch nach ~4s, Türe auf nach ~12s, keine Pakete zwischendrin | IPad > IPhone |
+| gerät_18_01_13_55 | Verbindungsabbruch nach ~4s, Türe auf nach ~30s | IPad > IPhone |
+| --- | --- | --- |
+| Setup geändert | NearbyShare | --- |
+| location_18_01_14_29 | Normaler Transfer, 250mb | Out > Box |
+| location_18_01_14_35 | Normaler Transfer, 33mb | Out > Box |
+| location_18_01_15_02 | Beide WLAN, Verbindungsabbruch nach ~5s, Abbruch, 33mb | Box > Out |
+| location_18_01_15_04 | Beide WLAN, Verbindungsabbruch noch vor dem eigentlichen Transfer, Abbruch, 33mb | Box > Out |
+| location_18_01_15_06 | Beide WLAN, Verbindungsabbruch nach ~10s, Abbruch, 33mb | Box > Out |
+| --- | --- | --- |
+| Nochmal iOS | IPad im Bayern WLAN | iPhone > iPad |
+| gerät_18_01_15_16 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN) | iPhone > iPad |
+| gerät_18_01_15_25 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. | iPad > iPhone |
+| gerät_18_01_15_28 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. | iPad > iPhone |
+
+## AirDrop Verhalten
+Die folgende Tabelle fasst die wichtigsten Verhaltensmuster von AirDrop zusammen.
+
+| Verhalten | Test | Bemerkungen | Problem |
+| --- | --- | --- | --- |
+| Verwendet QUIC | Senden direkt an die andere ID | --- | --- |
+| Verwendet TCP | Senden an ein anderes Gerät, nicht die Apple ID | Kann auch passieren wenn beide Geräte nicht im selben WiFi sind (warum?) | Sobald TCP verwendet wird bricht der Transfer bei Verbindungsproblemen ab |
+| Sucht Verbindungspartner mit MDNS | Auf Teilen per AirDrop klicken | Gilt sowohl per AWDL als auch WiFi (funktioniert nur wenn im selben Netzwerk) | Limitiert auf lokale Netzwerke |
+| Verwendet IPv6 | Unabhängig vom Test, es sei denn IPv6 funktioniert im Netzwerk nicht (Annahme) | --- | --- |
+| Migriert von AWDL auf WiFi | Beide Geräte sind im selben WiFi Netzwerk. Funktioniert ohne neuen Handshake, echte Migration. | --- | --- |
+| Migriert **nicht** von AWDL auf WiFi in anderem Netzwerk | Beide Geräte in unterschiedlichen Netzwerken. Nimmt Hilfe von Apple Relay/Tunnel, 17.188... zur Hand, Sender baut Verbindung mit neuem Handshake auf. Wahrscheinlich sowas wie Out-Of-Band Information. | Transfer/Informationsquelle hat im Test nie funktioniert | Obwohl beide Geräte sich mit dem Relay verbinden scheint kein Transfer Zustande zu kommen. Außerdem senden die Geräte in diesem Test teilweise TCP |
+| Migriert von AWDL auf Cellular | Kein WiFi wurde verwendet (deaktiviert). Neuer Handshake, keine echte Migration. | Zeigt in UI an dass mobile Daten verwendet werden | Migriert nicht mehr zurück. Verbraucht Datenvolumen obwohl das nicht notwendig ist |
+| Migriert nicht mehr zurück | Nach Migration wird nicht mehr zurück gewechselt, auch wenn wieder Kontakt besteht | Betrifft AWDL -> WiFi & AWDL -> Cellular. Beides migriert nicht zurück. Austausch über AWDL per TCP kann beobachtet werden, aber kein Datentransfer. | Dadurch dass die Migration nur in eine Richtung funktioniert ist der Transfer langsamer als nötig |
+| *Pause zwischen Migration* | Abhängig von Zustand/Scheduler: Wenn schon Daten übertragen wurden dann wahrscheinlicher, dass kleine Pause entsteht. Bei "neuer" Verbindung direkter Wechsel. | Teilweise auch Probleme in der Addressauflösung beobachtet. Dann wird ein "courier" Service verwendet. Nicht immer erfolgreich | Pause dadurch, dass kein Multi-Path verwendet wird. In Real-Time Scenarios ist die Pause nicht akzeptierbar |
+| Verbindungsabbruch + Fehler | Immer dann wenn TCP verwendet wird und die Verbindung unterbrochen wird | Grund für die Verwendung unklar | TCP migriert nicht und kein Versuch die Verbindung erneut aufzubauen |
+
+## NearbyShare Verhalten
+Die folgende Tabelle beinhaltet alle Beobachtungen über NearbyShare die wir bisher haben.
+
+| Verhalten | Test | Bemerkungen |
+| --- | --- | --- |
+| Verwendet TCP | Normaler Transfer | Das sendende Gerät stellt ein lokales WiFi-Netzwerk. Der Empfänger verbindet sich und empfängt Daten per TCP |
+| Transfer dauert lange | Normaler Transfer zwischen zwei Handys. Beide sind im WiFi | Die Handys unterstützen keine zwei Verbindungen auf dem selben WiFi Interface. Daher wird wahrscheinlich Bluetooth oder noch langsamere Verbindung gewählt |
+| Transfer zwischen mehreren Geräten gleichzeitig möglich | In der Auswahl auf alle verfügbaren Geräte klicken | Verwendet auch TCP. Overlay Struktur wahrscheinlich in Software |
+| Verbindung bricht ab + Fehlermeldung | Keine Migration, auch nicht manuell. Sobald die Verbindung abbricht, wird kein Transfer mehr abgeschlossen | Nach einem Timeout erscheint immer ein Fehler. Auch nicht manuell über TCP und/oder Google Relay |
+
+## Google Meet Verhalten
+
+| Pakete | Endpunkt | Bemerkungen |
+| --- | --- | --- |
+| UDP | meet.google.com | Audio und Video Pakete kommen direkt von Google Server |
+| STUN | 142.250.82.208 (angeblich in Japan) | Sehr wahrscheinlich von ICE. Und damit von WebRTC |
+| TCP | Wieder direkt zu Google Servern / Addressen | Austausch von Nachrichten? |
+| QUIC | Ebenfalls nur via Google | Austausch von Audio? |
+| RTCP | ... | ... |
+
+## Apple FaiceTime Verhalten
+Beide Geräte waren im selben WiFi Hotspot. Das iPad hat einen Anruf an das iPhone gestartet. Offiziell verwendet FaceTime eigentlich auch WebRTC, denn die rechtlichen Informationen auf der Website beinhalten diese Informationen: https://www.apple.com/de/legal/privacy/data/de/face-time/
+
+| Dateiname | Test | Richtung |
+| --- | --- | --- |
+| facetime_23_01_10_26 | FaceTime Anruf 1:1, Beide im selben WiFi | iPad -> iPhone |
+| facetime_23_01_10_28 | FaceTime Anruf 1:1, Beide im selben WiFi | iPhone -> iPad |
+| facetime_23_01_10_31 | FaceTime Anruf 1:1, iPad wechselt WiFi. Erst lokal auf dem Laptop, dann im selben Wohnheimsnetz | iPhone -> iPad |
+
+
+Die Erkenntnisse aus den Tests
+
+| Verhalten | Protokoll | Endpunkt | Bemerkung |
+| --- | --- | --- | --- |
+| Verbindungsaufbau (ausgehend) | TCP | (Apple) 17.138.211.254 = query.ess-apple.com.akadns.net | Vermutlich werden Daten wie Name,Bild und Anrufinfos ausgetauscht |
+| Informationsverbindung | QUIC | (Apple) 17.242.208.196 (beide Clients zur selben Adresse) | Wahrscheinlich Transportverbindung für Daten von FaceTime. Wieder direkt von bzw. zu Apple |
+| Datenverbindung | RTP via UDP | 10.151.13.199 (iPad) <-> 10.151.12.233 (iPhone) | DIREKTE Datenverbindung nachdem STUN erfolgreich war. Kein Server bzw. Apple involviert |
+| Abbruch der Verbindung | --- | --- | Wechsel von Laptop in Wohnheimnetz |
+| Anrufer/Empfänger versucht sich zu mit selber Adresse zu verbinden | ICMP | Dest. unreachable | Verbindung über alte Bindings schläft fehl |
+| Versucht alte Bindings wieder herzustellen | STUN | 10.151.12.233 | Schlägt fehl |
+| Gerät ohne Abbruch verbindet sich zu Apple | TLS | 17.57.146.174 | Wahrscheinlich Wiederaufnahme der Verbindung |
+| Verbindung an Apple | QUIC | lokal <-> (Apple) 17.252.29.4 | Transportverbindung. Beide stellen Verbindung an den selben Server her. Initial Handshakes |
+
+
+## WhatsApp Verhalten
+Die Tests auf die Dateinamen gemapped.
+
+| Filename | Test | Richtung |
+| --- | --- | --- |
+| 22_01_13_55 | Anruf per Whatsapp. Im WiFi | Extern -> Mich |
+| 22_01_13_56 | Anruf per Whatsapp. Im WiFi | Ich -> Extern |
+| 22_01_13_55 | Anruf per Whatsapp. Im Mobilfunk | Ich -> Extern |
+| 22_01_14_17 | Anruf per Whatsapp. Im Mobilfunk | Ich -> Extern |
+
+Das Verhalten in den Tests:
+
+| Verhalten | Protokoll | Endpunkt | Bemerkung |
+| --- | --- | --- | --- |
+| Verbindungsaufbau | TCP | 157.240.0.61 = whatsapp-chatd-edge... = Facebook Relay | Wahrscheinlich kurzer Verbindungsaufbau um Anruferinfos auszutauschen |
+| Direkter Verbindungsaufbau | STUN über IPv4 | 157.240.0.62 = edgeray-shv... | NAT Traversal? |
+| Direkter Verbindungsaufbau | STUN über IPv6 | 2a03... = edgeray6-shv... | NAT Traversal? |
+| Initiale Verbindung? | UDP über Edgeray | .62 = edgeray | Session Initiation? |
+| Binding in lokalem Subnetz | STUN | MWN | Migration auf lokales Netzwerk? |
+| Datenaustausch | RTP via UDP | 10.151.13.144 <-> 10.183.33.228 | Datenaustausch im LRZ Netzwerk |
+| Datenaustausch im Mobilfunk | RTP via UDP | IPv6 (LRZ) <-> IPv6 (Telefonica) | Datenaustausch läuft ebenfalls P2P direkt von Gerät zu Gerät. Kein Whatsapp Server ist dazwischen |
+
+
+## Todos:
+- IPhone extern per Cellular (evtl)
+- NearbyShare 2 Interfaces
+- AirDrop in unterschiedlichen Netzwerken mit mehr als 3s
+- Untersuchen warum dort TCP verwendet wird
+- FaceTime genauer anschauen. 
+    - Setup mit Box: anruf, abbruch, migration?
+    - IPad WiFi wechseln, was passiert?
+
+
+## Some testing notes, Mapping ID to device
+
+- Pixel 0095 (adb: 801KPGS1389743) is for outside the box
+- Pixel 0093 (adb: 801KPRW1393526) is for inside the box
+
+- iPhone (00008020-001E50A62684002E) is inside the box because of space reasons
+- iPad (00008027-000E11421187002E) is outside the box
