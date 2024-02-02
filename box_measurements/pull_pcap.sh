@@ -13,7 +13,7 @@ pcapFolder="/sdcard/Download/"
 device=$1
 filename=$2
 if [[ $# -le 3 ]]; then
-    outputPath="nearbySharePcap/"
+    outputPath="../nearbySharePcap/"
 else
     outputPath=$3
 fi

@@ -17,7 +17,7 @@ iPhone="00008020-001E50A62684002E"
 iPad="00008027-000E11421187002E"
 
 if [[ $# -lt 2 ]]; then
-    localPcapFilePath="airdropPcap/"
+    localPcapFilePath="../airdropPcap/"
 else
     localPcapFilePath="$2"
 fi

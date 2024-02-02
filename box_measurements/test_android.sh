@@ -37,7 +37,7 @@ outsideBoxHumanRead="out_pxl"
 pcapFilePath="/sdcard/Download/"
 
 if [[ $# -lt 2 ]]; then
-    localPcapFilePath="nearbySharePcap/"
+    localPcapFilePath="../nearbySharePcap/"
 else
     localPcapFilePath="$2"
 fi

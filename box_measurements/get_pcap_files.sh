@@ -1,6 +1,6 @@
 #!/bin/bash
 
-output_dir="$HOME/Documents/Code/Masterarbeit/nearbySharePcap"
+output_dir="$HOME/Documents/Code/master-thesis-working-dir/nearbySharePcap"
 pcap_path="/storage/self/primary/Download/PCAPdroid/"
 
 # Using the adb service to get captured pcap files from the device
