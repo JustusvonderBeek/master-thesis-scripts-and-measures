@@ -66,9 +66,13 @@ def terminate(process, outfile=None):
 def stop_path(net, host, switch):
     """Disabling the routing / traffic via the given path"""
 
-    net.cmd(f"link {host} {switch} down")
+    print(f"Stopping path from {host}<->{switch}")
+    net.configLinkStatus(host, switch, 'down')
+    # net.cmd(f"link {host} {switch} down")
 
 def start_path(net, host, switch):
     """Enabling the routing / traffic via the given path"""
 
-    net.cmd(f"link {host} {switch} up")
+    print(f"Starting path from {host}<->{switch}")
+    net.configLinkStatus(host, switch, 'up')
+    # net.cmd(f"link {host} {switch} up")
