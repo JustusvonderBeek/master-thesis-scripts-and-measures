@@ -178,30 +178,30 @@ class TwoConnectionWithInternet(Topo):
         s5 = self.addSwitch("s5") # Right
         s6 = self.addSwitch("s6") # Right
 
-        routerWithoutNat = self.addHost("noNAT", ip="192.168.1.1/24")
+        routerWithoutNat = self.addHost("noNAT", ip="192.168.100.1/24")
 
         # Adding the NAT interface host
-        routerWithNAT = self.addNode("withNAT", ip="172.16.1.1/24", cls=NAT, subnet="172.16.1.0/24", localIntf="withNAT-eth0", inetIntf="withNAT-eth1")
+        routerWithNAT = self.addNode("withNAT", ip="172.16.100.1/24", cls=NAT, subnet="172.16.100.0/24", localIntf="withNAT-eth0", inetIntf="withNAT-eth1")
         # inetNATh1 = self.addNode("inetNATh1", ip="10.0.100.1", cls=NAT, subnet="10.0.100.1/24", localIntf="inetNATh1-eth0", inetIntf="inetNATh1-eth1")
         # inetNATh2 = self.addHost("inetNATh2", ip="10.0.101.1", cls=NAT, subnet="10.0.101.1/24", localIntf="inetNATh2-eth0", inetIntf="inetNATh2-eth1")
 
         # Adding our two hosts
-        h1 = self.addHost("h1", ip="192.168.1.10/24")
-        h2 = self.addHost("h2", ip="10.0.1.10/24")
+        h1 = self.addHost("h1", ip="192.168.100.10/24")
+        h2 = self.addHost("h2", ip="100.0.200.20/24")
 
         # Connect the network with links
         # The number behind the parameter (intfName"X") means which of the two hosts/switches we are targeting with this parameter
         self.addLink(h1, s1, intfName1="h1-eth0", delay="15ms")
         self.addLink(h1, s2, intfName1="h1-eth1", delay="5ms")
-        self.addLink(h1, s3, intfName1="h1-eth2")
+        self.addLink(h1, s3, intfName1="h1-eth2", delay="5ms")
         self.addLink(h2, s4, intfName1="h2-eth0", delay="15ms")
         self.addLink(h2, s5, intfName1="h2-eth1", delay="5ms")
-        self.addLink(h2, s6, intfName1="h2-eth2")
+        self.addLink(h2, s6, intfName1="h2-eth2", delay="5ms")
 
-        self.addLink(s1, routerWithoutNat, intfName2="noNAT-eth0", params2={"ip" : "192.168.1.1/24"})
-        self.addLink(s4, routerWithoutNat, intfName2="noNAT-eth1", params2={"ip" : "10.0.1.1/24"})
-        self.addLink(s2, routerWithNAT, intfName2="withNAT-eth0", params2={"ip" : "172.16.1.1/24"})
-        self.addLink(s5, routerWithNAT, intfName2="withNAT-eth1", params2={"ip" : "172.16.2.1/24"})
+        self.addLink(s1, routerWithoutNat, intfName2="noNAT-eth0", params2={"ip" : "192.168.100.1/24"})
+        self.addLink(s4, routerWithoutNat, intfName2="noNAT-eth1", params2={"ip" : "100.0.200.1/24"})
+        self.addLink(s2, routerWithNAT, intfName2="withNAT-eth0", params2={"ip" : "172.16.100.1/24"})
+        self.addLink(s5, routerWithNAT, intfName2="withNAT-eth1", params2={"ip" : "200.0.100.1/24"})
         # self.addLink(s3, inetNATh1, intfName2="inetNATh1-eth0", params2={"ip" : "10.0.100.1/24"})
         # self.addLink(s6, inetNATh2, intfName2="inetNATh2-eth0", params2={"ip" : "10.0.101.1/24"})
 
@@ -210,30 +210,57 @@ class TwoConnectionWithInternet(Topo):
         
         # Enable sending data via the first and second interface
         h1 = net.get("h1")
-        h1.setIP("10.0.100.100/24", intf="h1-eth2")
-        h1.setIP("172.16.1.10/24", intf="h1-eth1")
-        h1.cmd("ip route add 10.0.1.0/24 via 192.168.1.1 dev h1-eth0")
-        h1.cmd("ip route add 172.16.2.0/24 via 172.16.1.1 dev h1-eth1")
+        h1.setIP("1.20.30.10/28", intf="h1-eth2")
+        h1.setIP("172.16.100.10/24", intf="h1-eth1")
+        h1.cmd("ip route add 100.0.200.0/24 via 192.168.100.1 dev h1-eth0")
+        h1.cmd("ip route add 200.0.100.0/24 via 172.16.100.1 dev h1-eth1")
         
         h2 = net.get("h2")
-        h2.setIP("10.0.101.100/24", intf="h2-eth2")
-        h2.setIP("172.16.2.20/24", intf="h2-eth1")
-        h2.cmd("ip route add 192.168.1.0/24 via 10.0.1.1 dev h2-eth0")
-        h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth1")
+        h2.setIP("2.40.60.20/27", intf="h2-eth2")
+        h2.setIP("200.0.100.20/24", intf="h2-eth1")
+        # h2.cmd("ip route add 192.168.100.0/24 via 100.0.200.1 dev h2-eth0")
+        # h2.cmd("ip route add 172.16.100.0/24 via 200.0.100.1 dev h2-eth1")
 
         # Allow easy forwarding on the router without NAT
         routerWithoutNat = net.get("noNAT")
-        routerWithoutNat.cmd("ip route add 10.0.1.0/24 via 192.168.1.1")
+        routerWithoutNat.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("noNAT-eth1"))
+        # The "no" NAT rule to establish a connection
+        routerWithoutNat.cmd("iptables -t nat -A PREROUTING -d 100.0.200.1 -p tcp -j DNAT --to-destination 192.168.100.10")
+        routerWithoutNat.cmd('sysctl net.ipv4.ip_forward=1')
 
-        # Configure the routing etc.
+        routerWithNat = net.get("withNAT")
+        routerWithNat.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("withNAT-eth1"))
+        routerWithNat.cmd("sysctl net.ipv4.ip_forward=1")
+
+    def configure_firewall(net):
+        """Configuration of the firewall on the NAT host"""
+
+        routerWithNAT = net.get("withNAT")
+
+        routerWithNAT.cmd("iptables -F")
+        routerWithNAT.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        # routerWithNAT.cmd("iptables -A FORWARD -i noNAT-eth1 -p tcp -j ACCEPT")
+        # routerWithNAT.cmd("iptables -A FORWARD -i noNAT-eth1 -p udp -j ACCEPT")
+        routerWithNAT.cmd("iptables -A FORWARD -j DROP")
+        
+        routerWithNAT.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("withNAT-eth1"))
+
+    def add_internet(net):
+        """Configure internet access for the clients"""
+        
+        h1 = net.get("h1")
+        h2 = net.get("h2")
+
+        # Configure the NAT and Internet access
         # Found this script online: https://gist.github.com/lantz/5640610
-        inetNATh1 = net.addNAT(name="inetNATh1", ip="10.0.100.1/24", inetIntf="wlp2s0", localIntf="inetNATh1-eth0")
-        net.addLink("s3", inetNATh1, params2={"ip" : "10.0.100.1/24"})
+        inetNATh1 = net.addNAT(name="inetNATh1", ip="1.20.30.1/28", inetIntf="wlp2s0", localIntf="inetNATh1-eth0")
+        net.addLink("s3", inetNATh1, params2={"ip" : "1.20.30.1/28"})
 
-        inetNATh2 = net.addNAT(name="inetNATh2", ip="10.0.101.1/24", inetIntf="wlp2s0", localIntf="inetNATh2-eth0")
-        net.addLink("s6", inetNATh2, params2={"ip" : "10.0.101.1/24"})
-        h1.cmd("ip route add default via 10.0.100.1 dev h1-eth2")
-        h2.cmd("ip route add default via 10.0.101.1 dev h2-eth2")
+        inetNATh2 = net.addNAT(name="inetNATh2", ip="2.40.60.1/27", inetIntf="wlp2s0", localIntf="inetNATh2-eth0")
+        net.addLink("s6", inetNATh2, params2={"ip" : "2.40.60.1/27"})
+        net.addLink(inetNATh1, inetNATh2, intfName="inetNATh1-eth2", intfName2="inetNATh2-eth2", params1={"ip":"1.20.50.10/24"}, params2={"ip":"1.20.50.20/24"})
+        h1.cmd("ip route add default via 1.20.30.1 dev h1-eth2")
+        h2.cmd("ip route add default via 2.40.60.1 dev h2-eth2")
 
         inat1 = net.get("inetNATh1")
         inat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
@@ -242,6 +269,11 @@ class TwoConnectionWithInternet(Topo):
         inat2 = net.get("inetNATh2")
         inat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
         inat2.cmd('sysctl net.ipv4.ip_forward=1')
+
+        inat1.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
+        inat1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev inetNATh1-eth2")
+        inat2.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
+        inat1.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev inetNATh2-eth2")
 
 class InternetTopo(Topo):
     "Single switch connected to n hosts."
