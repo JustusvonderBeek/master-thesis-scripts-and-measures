@@ -9,7 +9,7 @@
 
 
 from mininet.node import Node, Switch, OVSController
-from topologies import TwoConnections, TwoConnectionWithInternet, InternetTopo
+from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo
 from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path
 from mininet.net import Mininet
 from mininet.cli import CLI
@@ -86,7 +86,7 @@ def start_webrtc_server(net):
     Path("h2").mkdir(parents=True, exist_ok=True)
     os.environ["RUST_LOG"] = "debug"
     # server = h2.popen(f"../webrtc/target/debug/examples/answer --offer-address 1.20.30.10:50000", stdout=subprocess.PIPE)
-    server = h2.popen(f"../webrtc/target/debug/examples/answer --offer-address 100.0.200.1:50000", stdout=subprocess.PIPE)
+    server = h2.popen(f"../webrtc/target/debug/examples/answer --offer-address 192.168.1.2:50000", stdout=subprocess.PIPE)
     return server
 
 def start_webrtc_client(net):
@@ -98,7 +98,7 @@ def start_webrtc_client(net):
     Path("h1").mkdir(parents=True, exist_ok=True)
     os.environ["RUST_LOG"] = "debug"
     # client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 2.40.60.20:60000", stdout=subprocess.PIPE)
-    client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 100.0.200.20:60000", stdout=subprocess.PIPE)
+    client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 192.168.1.3:60000", stdout=subprocess.PIPE)
     return client
 
 def p2p_webrtc():
@@ -108,12 +108,14 @@ def p2p_webrtc():
     """
 
     test_duration=10
-    topo = TwoConnectionWithInternet()
+    # topo = TwoConnectionWithInternet()
+    topo = DirectAndInternet()
     net = Mininet(topo=topo, controller = OVSController)
     # Include internet connection
-    TwoConnectionWithInternet.configure_routing(net)
-    TwoConnectionWithInternet.add_internet(net)
-    TwoConnectionWithInternet.configure_firewall(net)
+    DirectAndInternet.add_internet(net)
+    # TwoConnectionWithInternet.configure_routing(net)
+    # TwoConnectionWithInternet.add_internet(net)
+    # TwoConnectionWithInternet.configure_firewall(net)
     net.start()
 
     procs = list()
@@ -133,9 +135,12 @@ def p2p_webrtc():
 
     print(f"Testing for {test_duration}s ...")
     time.sleep(test_duration)
-    stop_path(net, "h1", "s1")
+    stop_path(net, "h1", "h2")
+    print("Waiting 10s...")
     time.sleep(10)
-    start_path(net, "h1", "s1")
+    start_path(net, "h1", "h2")
+    print("Waiting 10s...")
+    time.sleep(10)
 
     CLI(net) # When the user kills the CLI, we stop recording
     for proc in procs:

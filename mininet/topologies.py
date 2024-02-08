@@ -273,7 +273,66 @@ class TwoConnectionWithInternet(Topo):
         inat1.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
         inat1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev inetNATh1-eth2")
         inat2.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
-        inat1.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev inetNATh2-eth2")
+        inat2.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev inetNATh2-eth2")
+
+class DirectAndInternet(Topo):
+    """A topology where two hosts are directly connected 
+    emulating a wireless network and have access to the internet via
+    a second interface (cellular).
+
+    h1 ------ Internet ------- h2
+     |----- Local Network -----|
+
+    """
+    def build(self):
+        """Creating the class topology"""
+
+        s1 = self.addSwitch("s1") # Internet H1
+        s2 = self.addSwitch("s2") # Internet H2
+
+        # Adding our two hosts
+        h1 = self.addHost("h1", ip="192.168.1.2/24")
+        h2 = self.addHost("h2", ip="192.168.1.3/24")
+
+        # Adding the link between the hosts
+        self.addLink(h1, h2, intfName1="h1-wifi", intfName2="h2-wifi", delay="10ms")
+        # Adding the link into the internet
+        self.addLink(h1, s1, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"},  delay="20ms")
+        self.addLink(h2, s2, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="20ms")
+
+    def add_internet(net):
+        """
+        Adding the blue part in the schematic. Connecting both devices to the internet
+        and to each other.
+        """
+
+        # Adding the internet links
+        inetNATh1 = net.addNAT(name="natH1", ip="1.20.30.1/28", inetIntf="wlp2s0", localIntf="natH1-eth0")
+        net.addLink("s1", inetNATh1, params2={"ip" : "1.20.30.1/28"})
+
+        inetNATh2 = net.addNAT(name="natH2", ip="2.40.60.1/28", inetIntf="wlp2s0", localIntf="natH2-eth0")
+        net.addLink("s2", inetNATh2, params2={"ip" : "2.40.60.1/28"})
+        # Connect the "internet"
+        net.addLink(inetNATh1, inetNATh2, intfName="natH1-eth2", intfName2="natH2-eth2", params1={"ip":"1.20.50.10/24"}, params2={"ip":"1.20.50.20/24"}, delay="30ms")
+
+        h1 = net.get("h1")
+        h2 = net.get("h2")
+        h1.cmd("ip route add default via 1.20.30.1 dev h1-cellular")
+        h2.cmd("ip route add default via 2.40.60.1 dev h2-cellular")
+
+        nath1 = net.get("natH1")
+        nath1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
+        nath1.cmd('sysctl net.ipv4.ip_forward=1')
+
+        nath2 = net.get("natH2")
+        nath2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
+        nath2.cmd('sysctl net.ipv4.ip_forward=1')
+
+        nath1.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
+        nath1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev natH1-eth2")
+        nath2.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
+        nath2.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev natH2-eth2")
+
 
 class InternetTopo(Topo):
     "Single switch connected to n hosts."
