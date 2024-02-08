@@ -306,3 +306,12 @@ Testsetup: Was wollen wir mit dem WebRTC Setup erreichen?
 
 Todo:
 - Datei unter webrtc > util > vnet > nat anschauen. Dort drin sind viele Dinge enthalten, die wir so in unsere Idee wahrscheinlich mit übernehmen können. Wie genau die Einzelteile funktionieren gilt es noch herauszufinden
+
+## 30.01.2024
+Ideen bezüglich NAT und NAT Traversal nach den [Artikeln von Firefox CTO](https://educatedguesswork.org/posts/nat-part-2/)
+- Verschiedene Arten von NATs rausschreiben und die Arten von NATs analysieren
+    - Welche NATs gibt es (noch), was ist zum Beispiel in Deutschland aktuell vorhanden
+- Reihenfolge der NAT traversal Mechanismen rausschreiben, bzw. was braucht es alles um ein NAT zu übergehen
+    - Abhängig von der Art des NATs
+    - 
+- Carrier-Grade-NATs (CGN) multiplexen unterschiedliche IP-Addressen (eigentlich nur IPv4) auf eine einzige IPv4 Addresse für den Transport über das Internet. 
