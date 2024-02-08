@@ -1,0 +1,31 @@
+[package]
+name = "r2m2p2"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name="server"
+path="src/server.rs"
+
+[[bin]]
+name="client"
+path="src/client.rs"
+
+[dependencies]
+quiche = "0.18.0"
+log = { version = "0.4", features = ["std"] }
+ring = "0.16"
+mio = { version = "0.8", features = ["net", "os-poll"] }
+url = "1"
+tokio = { version = "1.32.0", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+webrtc = { version = "0.9.0"}
+webrtc-ice = { version = "0.10.0"}
+anyhow = "1"
+hyper = { version = "0.14.27", features = ["full"] }
+lazy_static = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+octets = { version = "0.3.0"}
