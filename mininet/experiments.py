@@ -152,10 +152,41 @@ def p2p_webrtc():
     # We don't want to start the CLI again
     exit(0)
 
+def ice_ping_pong():
+    test_duration=10
+    topo = DirectAndInternet()
+    net = Mininet(topo=topo, controller = OVSController)
+    DirectAndInternet.add_internet(net)
+    net.start()
+
+    h1_pcap = capture_pcap(net, "h1")
+    h2_pcap = capture_pcap(net, "h2")
+
+    h1 = net.get("h1")
+    h2 = net.get("h2")
+    server = h2.popen(f"../webrtc/target/debug/examples/ping_pong", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    client = h1.popen(f"../webrtc/target/debug/examples/ping_pong --controlling -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    # Processes require the enter key to start
+    client.communicate(input=b"\n")
+    server.communicate(input=b"\n")
+
+    print("Waiting 10s...")
+    time.sleep(10)
+
+    terminate(h1_pcap)
+    terminate(h2_pcap)
+    terminate(server, "h2/")
+    terminate(client, "h1/")
+
+    CLI(net)
+    net.stop()
+    exit(0)
+
 # TODO: Repeat the experiment with our own implementation
 
-topologies = { 'quicheperf': (lambda: quicheperf()), "p2p": (lambda: p2p_webrtc()) }
+topologies = { 'quicheperf': (lambda: quicheperf()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: ice_ping_pong()) }
 
 if __name__ == "__main__":
     # quicheperf()
-    p2p_webrtc()
+    # p2p_webrtc()
+    ice_ping_pong()
