@@ -32,22 +32,30 @@ extern crate lazy_static;
 
 use std::f32::consts::E;
 use std::net;
-
+use std::sync::Arc;
 use std::collections::HashMap;
 
-use ice::new_ice_agent;
+use anyhow::{Error, Result};
+use mio::net::UdpSocket;
+use quiche::Config;
+use webrtc_ice::state::ConnectionState;
+use webrtc_ice::candidate::Candidate;
+use webrtc_ice::network_type::NetworkType;
+use webrtc_ice::udp_network::{self, UDPNetwork};
+use webrtc_ice::udp_mux::{UDPMuxParams, UDPMuxDefault};
+use webrtc_ice::agent::{self, agent_config::AgentConfig, Agent};
+
+use hyper::service::{make_service_fn, service_fn};
+use hyper::{Body, Client, Method, Request, Response, Server, StatusCode};
+
 use ring::rand::*;
-use webrtc::api::APIBuilder;
-use webrtc::peer_connection::configuration::RTCConfiguration;
-use webrtc::peer_connection::RTCPeerConnection;
-use webrtc::stun::agent;
 
 use crate::multiplexer::is_packet_quic;
 
 mod ice;
 mod multiplexer;
 
-use ice::handle_ice;
+// use ice::handle_ice;
 
 const MAX_DATAGRAM_SIZE: usize = 1350;
 
@@ -65,34 +73,7 @@ struct Client {
 
 type ClientMap = HashMap<quiche::ConnectionId<'static>, Client>;
 
-fn main() {
-    let mut buf = [0; 65535];
-    let mut out = [0; MAX_DATAGRAM_SIZE];
-
-    let mut args = std::env::args();
-
-    let cmd = &args.next().unwrap();
-
-    if args.len() != 0 {
-        println!("Usage: {cmd}");
-        println!("\nSee tools/apps/ for more complete implementations.");
-        return;
-    }
-
-    // Setup the event loop.
-    let mut poll = mio::Poll::new().unwrap();
-    let mut events = mio::Events::with_capacity(1024);
-
-    // Create the UDP listening socket, and register it with the event loop.
-    let mut socket =
-        mio::net::UdpSocket::bind("127.0.0.1:4433".parse().unwrap()).unwrap();
-    poll.registry()
-        .register(&mut socket, mio::Token(0), mio::Interest::READABLE)
-        .unwrap();
-
-    // Create the configuration for the QUIC connections.
-    let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
-
+fn configure_quic(config: &mut Config) {
     config
         .load_cert_chain_from_pem_file("examples/cert.crt")
         .unwrap();
@@ -121,25 +102,195 @@ fn main() {
     config.set_initial_max_streams_uni(100);
     config.set_disable_active_migration(true);
     config.enable_early_data();
+}
+
+async fn start_ice_agent(udp_socket: &UdpSocket) -> Result<()> {
+    // Setup the QUIC & ICE parts
+    // FIXME: Fix the trait not implemented
+    
+    // Multiplex the connection onto an existing udp connection
+    let udp_mux = UDPMuxDefault::new(UDPMuxParams::new(udp_socket));
+    let udp_network = UDPNetwork::Muxed(udp_mux);
+
+    let ice_agent = Arc::new(
+        Agent::new(AgentConfig {
+            network_types: vec![NetworkType::Udp4],
+            udp_network,
+            ..Default::default()
+        })
+        .await?,
+    );
+
+    let remote_ip = "127.0.0.1";
+    let remote_http_port = 9000;
+
+    // TODO: Setup handling of stuff
+    let client = Arc::new(hyper::Client::new());
+    ice_agent.on_candidate(Box::new(
+        move |c: Option<Arc<dyn Candidate + Send + Sync>>| {
+            let internal_client = Arc::clone(&client);
+            Box::pin(async move {
+                if let Some(c) = c {
+                    println!("posting remoteCandidate with {}", c.marshal());
+
+                    let req = match Request::builder()
+                        .method(Method::POST)
+                        .uri(format!(
+                            "http://{remote_ip}:{remote_http_port}/remoteCandidate"
+                        )).body(Body::from(c.marshal()))
+                    {
+                        Ok(req) => req,
+                        Err(err) => {
+                            println!("{err}");
+                            return;
+                        }
+                    };
+                    let resp = match internal_client.request(req).await {
+                        Ok(resp) => resp,
+                        Err(err) => {
+                            println!("{err}");
+                            return;
+                        }
+                    };
+                    println!("Response from remoteCandidate: {}", resp.status());
+                }
+            })
+    },));
+
+    ice_agent.on_connection_state_change(Box::new(move |c: ConnectionState| {
+        println!("ICE Connection State has changed: {c}");
+        if c == ConnectionState::Failed {
+            // let _ = ice_done_tx.try_send(());
+            println!("Should try to send here");
+        }
+        Box::pin(async move {})
+    }));
+
+    let (local_ufrag, local_pwd) = ice_agent.get_local_user_credentials().await;
+    println!("posting remoteAuth with {local_ufrag}:{local_pwd}");
+    
+    let req = match Request::builder()
+            .method(Method::POST)
+            .uri(format!("http://{remote_ip}:{remote_http_port}/remoteAuth"))
+            .body(Body::from(format!("{local_ufrag}:{local_pwd}")))
+        {
+            Ok(req) => req,
+            Err(err) => return Err(Error::new(err)),
+        };
+        let resp = match client.request(req).await {
+            Ok(resp) => resp,
+            Err(err) => return Err(Error::new(err)),
+        };
+        println!("Response from remoteAuth: {}", resp.status());
+
+    // Start the process
+    ice_agent.gather_candidates()?;
+
+    Ok(())
+}
+
+
+// HTTP Listener to get ICE Credentials/Candidate from remote Peer
+// async fn remote_handler(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+    //println!("received {:?}", req);
+    // match (req.method(), req.uri().path()) {
+    //     (&Method::POST, "/remoteAuth") => {
+    //         let full_body =
+    //             match std::str::from_utf8(&hyper::body::to_bytes(req.into_body()).await?) {
+    //                 Ok(s) => s.to_owned(),
+    //                 Err(err) => panic!("{}", err),
+    //             };
+    //         let tx = REMOTE_AUTH_CHANNEL.0.lock().await;
+    //         //println!("body: {:?}", full_body);
+    //         let _ = tx.send(full_body).await;
+
+    //         let mut response = Response::new(Body::empty());
+    //         *response.status_mut() = StatusCode::OK;
+    //         Ok(response)
+    //     }
+
+    //     (&Method::POST, "/remoteCandidate") => {
+    //         let full_body =
+    //             match std::str::from_utf8(&hyper::body::to_bytes(req.into_body()).await?) {
+    //                 Ok(s) => s.to_owned(),
+    //                 Err(err) => panic!("{}", err),
+    //             };
+    //         let tx = REMOTE_CAND_CHANNEL.0.lock().await;
+    //         //println!("body: {:?}", full_body);
+    //         let _ = tx.send(full_body).await;
+
+    //         let mut response = Response::new(Body::empty());
+    //         *response.status_mut() = StatusCode::OK;
+    //         Ok(response)
+    //     }
+
+    //     // Return the 404 Not Found for other routes.
+    //     _ => {
+    //         let mut not_found = Response::default();
+    //         *not_found.status_mut() = StatusCode::NOT_FOUND;
+    //         Ok(not_found)
+    //     }
+    // }
+// }
+
+fn start_sdp_server(addr: String, port: String) {
+    println!("Listening on http://{addr}:{port}");
+    // FIXME: Fix the handling of values and other stuff
+    // tokio::spawn(async move {
+    //     let addr = (addr, port).into();
+    //     let service = make_service_fn(|_| async { 
+    //         Ok::<_, hyper::Error>(service_fn(remote_handler)) 
+    //     });
+    //     let server = Server::bind(&addr).serve(service);
+    //     tokio::select! {
+    //         _ = done_http_server.changed() => {
+    //             println!("receive cancel http server!");
+    //         }
+    //         result = server => {
+    //             // Run this server for... forever!
+    //             if let Err(e) = result {
+    //                 eprintln!("server error: {e}");
+    //             }
+    //             println!("exit http server!");
+    //         }
+    //     };
+    // });
+}
+
+fn main() {
+    let mut buf = [0; 65535];
+    let mut out = [0; MAX_DATAGRAM_SIZE];
+
+    let mut args = std::env::args();
+
+    let cmd = &args.next().unwrap();
+
+    if args.len() != 0 {
+        println!("Usage: {cmd}");
+        println!("\nSee tools/apps/ for more complete implementations.");
+        return;
+    }
+
+    // Setup the event loop.
+    let mut poll = mio::Poll::new().unwrap();
+    let mut events = mio::Events::with_capacity(1024);
+
+    // Create the UDP listening socket, and register it with the event loop.
+    // TODO: Add argument to specify where to bind the socket to
+    let mut socket =
+        mio::net::UdpSocket::bind("127.0.0.1:4433".parse().unwrap()).unwrap();
+    poll.registry()
+        .register(&mut socket, mio::Token(0), mio::Interest::READABLE)
+        .unwrap();
+
+    // Create the configuration for the QUIC connections.
+    let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
+    configure_quic(&mut config);
 
     let rng = SystemRandom::new();
-    let conn_id_seed =
-        ring::hmac::Key::generate(ring::hmac::HMAC_SHA256, &rng).unwrap();
+    let conn_id_seed = ring::hmac::Key::generate(ring::hmac::HMAC_SHA256, &rng).unwrap();
 
     let mut clients = ClientMap::new();
-
-    // TODO: Setup and prepare ICE agent
-
-    // tokio::spawn(async move {
-    //     let agent = match new_ice_agent().await {
-    //         Ok(a) => a,
-    //         Err(e) => panic!("Failed to create ICE agent: {}", e),
-    //     };
-    //     agent.gather_candidates().unwrap();
-
-    // });
-    
-
     let local_addr = socket.local_addr().unwrap();
 
     loop {
@@ -185,7 +336,7 @@ fn main() {
 
             if !is_packet_quic(&mut octets::Octets::with_slice(pkt_buf)) {
                 info!("Handling ICE packet");
-                handle_ice(&mut octets::Octets::with_slice(pkt_buf)).await;
+                // handle_ice(&mut octets::Octets::with_slice(pkt_buf)).await;
 
                 break 'read;
             }
