@@ -30,31 +30,32 @@ extern crate log;
 #[macro_use]
 extern crate lazy_static;
 
-use std::f32::consts::E;
-use std::net::{self, Ipv4Addr, SocketAddrV4};
+use std::borrow::Borrow;
+use net2::unix::UnixUdpBuilderExt;
+use net2::UdpBuilder;
+use std::net::{self, SocketAddr, SocketAddrV4};
 use std::sync::Arc;
 use std::collections::HashMap;
+use std::io;
+use std::time::Duration;
+use rand::{thread_rng, Rng};
+use async_trait::async_trait;
 
-use anyhow::{Error, Result};
+use anyhow::{Result};
 use quiche::Config;
-use tokio::net::unix::SocketAddr;
 use tokio::net::UdpSocket;
-use webrtc::api::interceptor_registry::register_default_interceptors;
-use webrtc::api::media_engine::MediaEngine;
-use webrtc::api::APIBuilder;
-use webrtc::ice_transport::ice_server::RTCIceServer;
-use webrtc::interceptor::registry::Registry;
-use webrtc::peer_connection::configuration::RTCConfiguration;
-use webrtc::peer_connection::RTCPeerConnection;
+use tokio::sync::{mpsc, Mutex};
 use webrtc_ice::state::ConnectionState;
 use webrtc_ice::candidate::Candidate;
 use webrtc_ice::network_type::NetworkType;
 use webrtc_ice::udp_network::{self, UDPNetwork};
 use webrtc_ice::udp_mux::{UDPMuxParams, UDPMuxDefault};
 use webrtc_ice::agent::{self, agent_config::AgentConfig, Agent};
+use webrtc_ice::candidate::candidate_base::unmarshal_candidate;
+use webrtc::util::Conn;
 
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use hyper::{Body, Method, Request, Client, Response, Server, StatusCode};
 
 use ring::rand::*;
 
@@ -63,7 +64,8 @@ use crate::multiplexer::is_packet_quic;
 mod ice;
 mod multiplexer;
 
-// use ice::handle_ice;
+// Parsing the command line
+use clap::{App, Arg};
 
 const MAX_DATAGRAM_SIZE: usize = 1350;
 
@@ -73,13 +75,53 @@ struct PartialResponse {
     written: usize,
 }
 
-struct Client {
-    conn: quiche::Connection,
-
-    partial_responses: HashMap<u64, PartialResponse>,
+#[derive(Clone)]
+pub struct ArcConnStruct {
+    socket: Arc<UdpSocket>,
 }
 
-type ClientMap = HashMap<quiche::ConnectionId<'static>, Client>;
+#[async_trait]
+impl Conn for ArcConnStruct {
+    async fn connect(&self, addr: SocketAddr) -> webrtc::util::Result<()> {
+        // Delegate the method call to the wrapped socket
+        self.socket.connect(addr).await.map_err(|err| err.into())
+    }
+
+    async fn recv(&self, buf: &mut [u8]) -> webrtc::util::Result<usize> {
+        // Delegate the method call to the wrapped socket
+        self.socket.recv(buf).await.map_err(|err| err.into())
+    }
+
+    async fn recv_from(&self, buf: &mut [u8]) -> webrtc::util::Result<(usize, SocketAddr)> {
+        // Delegate the method call to the wrapped socket
+        self.socket.recv_from(buf).await.map_err(|err| err.into())
+    }
+
+    async fn send(&self, buf: &[u8]) -> webrtc::util::Result<usize> {
+        // Delegate the method call to the wrapped socket
+        self.socket.send(buf).await.map_err(|err| err.into())
+    }
+
+    async fn send_to(&self, buf: &[u8], target: SocketAddr) -> webrtc::util::Result<usize> {
+        // Delegate the method call to the wrapped socket
+        self.socket.send_to(buf, target).await.map_err(|err| err.into())
+    }
+
+    fn local_addr(&self) -> webrtc::util::Result<SocketAddr> {
+        // Delegate the method call to the wrapped socket
+        self.socket.local_addr().map_err(|err| err.into())
+    }
+
+    fn remote_addr(&self) -> Option<SocketAddr> {
+        // Delegate the method call to the wrapped socket
+        self.socket.remote_addr()
+    }
+
+    async fn close(&self) -> webrtc::util::Result<()> {
+        // Delegate the method call to the wrapped socket
+        self.socket.close().await
+    }
+}
 
 fn configure_quic(config: &mut Config) {
     config
@@ -112,33 +154,185 @@ fn configure_quic(config: &mut Config) {
     config.enable_early_data();
 }
 
+type SenderType = Arc<Mutex<mpsc::Sender<String>>>;
+type ReceiverType = Arc<Mutex<mpsc::Receiver<String>>>;
 
-async fn start_ice_agent(udp_socket: tokio::net::UdpSocket) -> Result<()> {
-    // Setup the QUIC & ICE parts
-    // FIXME: Fix the trait not implemented
-    
-    // Multiplex the connection onto an existing udp connection
-    let udp_mux = UDPMuxDefault::new(UDPMuxParams::new(udp_socket));
+
+lazy_static! {
+    // ErrUnknownType indicates an error with Unknown info.
+    static ref REMOTE_AUTH_CHANNEL: (SenderType, ReceiverType ) = {
+        let (tx, rx) = mpsc::channel::<String>(3);
+        (Arc::new(Mutex::new(tx)), Arc::new(Mutex::new(rx)))
+    };
+
+    static ref REMOTE_CAND_CHANNEL: (SenderType, ReceiverType) = {
+        let (tx, rx) = mpsc::channel::<String>(10);
+        (Arc::new(Mutex::new(tx)), Arc::new(Mutex::new(rx)))
+    };
+}
+
+// HTTP Listener to get ICE Credentials/Candidate from remote Peer
+async fn remote_handler(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+    //println!("received {:?}", req);
+    match (req.method(), req.uri().path()) {
+        (&Method::POST, "/remoteAuth") => {
+            let full_body =
+                match std::str::from_utf8(&hyper::body::to_bytes(req.into_body()).await?) {
+                    Ok(s) => s.to_owned(),
+                    Err(err) => panic!("{}", err),
+                };
+            let tx = REMOTE_AUTH_CHANNEL.0.lock().await;
+            //println!("body: {:?}", full_body);
+            let _ = tx.send(full_body).await;
+
+            let mut response = Response::new(Body::empty());
+            *response.status_mut() = StatusCode::OK;
+            Ok(response)
+        }
+
+        (&Method::POST, "/remoteCandidate") => {
+            let full_body =
+                match std::str::from_utf8(&hyper::body::to_bytes(req.into_body()).await?) {
+                    Ok(s) => s.to_owned(),
+                    Err(err) => panic!("{}", err),
+                };
+            let tx = REMOTE_CAND_CHANNEL.0.lock().await;
+            //println!("body: {:?}", full_body);
+            let _ = tx.send(full_body).await;
+
+            let mut response = Response::new(Body::empty());
+            *response.status_mut() = StatusCode::OK;
+            Ok(response)
+        }
+
+        // Return the 404 Not Found for other routes.
+        _ => {
+            let mut not_found = Response::default();
+            *not_found.status_mut() = StatusCode::NOT_FOUND;
+            Ok(not_found)
+        }
+    }
+}
+
+#[tokio::main]
+async fn main() {
+
+    // Parsing the command line
+    let app = App::new("ICE & QUIC Multiplex")
+        .version("0.1")
+        .about("An example implementation to multiplex ICE and QUIC on a single socket in rust")
+        .arg(
+            Arg::with_name("remote")
+                .takes_value(true)
+                .long("remote")
+                .short('r')
+                .help("Remote endpoint ip to send the ICE candidates to")
+        )
+        .arg(
+            Arg::with_name("controlling")
+                .takes_value(false)
+                .long("controlling")
+                .short('c')
+                .help("If the program is controlled or controlling")
+        )
+        ;
+
+    // Extracting the given arguments
+    let matches = app.clone().get_matches();
+
+    let mut buf = [0; 65535];
+    let mut out = [0; MAX_DATAGRAM_SIZE];
+
+    let mut args = std::env::args();
+
+    // Create the UDP listening socket, and register it with the event loop.
+    // FIXME: Add argument to specify where to bind the socket to
+    // let socket =
+        // tokio::net::UdpSocket::bind(SocketAddrV4::new(Ipv4Addr::new(0,0,0,0), 4433)).await.unwrap();
+
+    let remote_endpoint = Arc::new(matches.value_of("remote").expect("Remote endpoint not given but required!"));
+    let is_controlling = matches.is_present("controlling");
+    let (local_http_port, remote_http_port) = if is_controlling {
+        (9000, 9001)
+    } else {
+        (9001, 9000)
+    };
+    let port = if is_controlling { 4000 } else { 4001 };
+    // Let the computer decide which socket and IP to use
+    let udp_socket = UdpSocket::bind(("192.168.2.10", port)).await.unwrap();
+    let udp_socket_a = Arc::new(udp_socket);
+    let socket_struct = ArcConnStruct {
+        socket: udp_socket_a,
+    };
+
+    let udp_mux = UDPMuxDefault::new(UDPMuxParams::new(socket_struct));
     let udp_network = UDPNetwork::Muxed(udp_mux);
 
-    let ice_agent = Arc::new(
-        Agent::new(AgentConfig {
-            network_types: vec![NetworkType::Udp4],
-            udp_network,
-            ..Default::default()
-        })
-        .await?,
-    );
+    // Manually handling the ice agent
+    let ice_agent = Arc::new(Agent::new(AgentConfig {
+        network_types: vec![NetworkType::Udp4],
+        udp_network,
+        ..Default::default()
+    }).await.unwrap());
 
-    let remote_ip = "127.0.0.1";
-    let remote_http_port = 9000;
+    // Create the configuration for the QUIC connections.
+    let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
+    configure_quic(&mut config);
 
-    // TODO: Setup handling of stuff
-    let client = Arc::new(hyper::Client::new());
+    // QUIC stuff
+    let rng = SystemRandom::new();
+    let conn_id_seed = ring::hmac::Key::generate(ring::hmac::HMAC_SHA256, &rng).unwrap();
+
+    // let mut clients = ClientMap::new();
+    // let local_addr = udp_socket.local_addr().unwrap();
+
+    // ------------------------------------
+    // Configure the out-of-band signalling of ice
+    // ------------------------------------
+
+    // Step 1: Start a local http server that can receive ice candidates out-of-band
+    // FIXME: This should later probably be replaced with a TURN server in case we cannot create a direct connection
+    println!("Listening on http://localhost:{local_http_port}");
+    // let mut done_http_server = done_rx.clone();
+    tokio::spawn(async move {
+        let addr = ([0, 0, 0, 0], local_http_port).into();
+        let service = make_service_fn(|_| async { Ok::<_, hyper::Error>(service_fn(remote_handler)) });
+        let server = Server::bind(&addr).serve(service);
+        tokio::select! {
+            // _ = done_http_server.changed() => {
+            //     println!("receive cancel http server!");
+            // }
+            result = server => {
+                // Run this server for... forever!
+                if let Err(e) = result {
+                    eprintln!("server error: {e}");
+                }
+                println!("exit http server!");
+            }
+        };
+    });
+
+    if is_controlling {
+        println!("Local Agent is controlling");
+    } else {
+        println!("Local Agent is controlled");
+    };
+    println!("Press 'Enter' when both processes have started");
+    let mut input = String::new();
+    let _ = io::stdin().read_line(&mut input).unwrap();
+
+    // Step 2: For each candidate our ice agent finds, send out-of-band to the other end
+    let client = Arc::new(Client::new());
+
+    // When we have gathered a new ICE Candidate send it to the remote peer
+    // IMPORTANT: This connection is the out of band, it is NOT the multiplexed connection
+    let remote_endpoint2 = remote_endpoint.to_string(); // Copy the string to fix the ownership issues
+    let remote_endpoint4 = Arc::clone(&remote_endpoint);
     let client2 = Arc::clone(&client);
     ice_agent.on_candidate(Box::new(
         move |c: Option<Arc<dyn Candidate + Send + Sync>>| {
-            let internal_client = Arc::clone(&client2);
+            let client3 = Arc::clone(&client2);
+            let remote_endpoint3 = remote_endpoint2.clone();
             Box::pin(async move {
                 if let Some(c) = c {
                     println!("posting remoteCandidate with {}", c.marshal());
@@ -146,8 +340,9 @@ async fn start_ice_agent(udp_socket: tokio::net::UdpSocket) -> Result<()> {
                     let req = match Request::builder()
                         .method(Method::POST)
                         .uri(format!(
-                            "http://{remote_ip}:{remote_http_port}/remoteCandidate"
-                        )).body(Body::from(c.marshal()))
+                            "http://{remote_endpoint3}:{remote_http_port}/remoteCandidate"
+                        ))
+                        .body(Body::from(c.marshal()))
                     {
                         Ok(req) => req,
                         Err(err) => {
@@ -155,7 +350,7 @@ async fn start_ice_agent(udp_socket: tokio::net::UdpSocket) -> Result<()> {
                             return;
                         }
                     };
-                    let resp = match internal_client.request(req).await {
+                    let resp = match client3.request(req).await {
                         Ok(resp) => resp,
                         Err(err) => {
                             println!("{err}");
@@ -165,449 +360,408 @@ async fn start_ice_agent(udp_socket: tokio::net::UdpSocket) -> Result<()> {
                     println!("Response from remoteCandidate: {}", resp.status());
                 }
             })
-    },));
+        },
+    ));
 
     ice_agent.on_connection_state_change(Box::new(move |c: ConnectionState| {
         println!("ICE Connection State has changed: {c}");
         if c == ConnectionState::Failed {
             // let _ = ice_done_tx.try_send(());
-            println!("Should try to send here");
+            println!("Connection state failed. You can end the program...");
         }
         Box::pin(async move {})
     }));
 
+    // Get the local auth details and send to remote peer
     let (local_ufrag, local_pwd) = ice_agent.get_local_user_credentials().await;
     println!("posting remoteAuth with {local_ufrag}:{local_pwd}");
-    
     let req = match Request::builder()
-            .method(Method::POST)
-            .uri(format!("http://{remote_ip}:{remote_http_port}/remoteAuth"))
-            .body(Body::from(format!("{local_ufrag}:{local_pwd}")))
-        {
-            Ok(req) => req,
-            Err(err) => return Err(Error::new(err)),
-        };
-        let resp = match client.request(req).await {
-            Ok(resp) => resp,
-            Err(err) => return Err(Error::new(err)),
-        };
-        println!("Response from remoteAuth: {}", resp.status());
-
-
-        
-    // Start the gathering process
-    ice_agent.gather_candidates()?;
-
-    Ok(())
-}
-
-
-// HTTP Listener to get ICE Credentials/Candidate from remote Peer
-// async fn remote_handler(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
-    //println!("received {:?}", req);
-    // match (req.method(), req.uri().path()) {
-    //     (&Method::POST, "/remoteAuth") => {
-    //         let full_body =
-    //             match std::str::from_utf8(&hyper::body::to_bytes(req.into_body()).await?) {
-    //                 Ok(s) => s.to_owned(),
-    //                 Err(err) => panic!("{}", err),
-    //             };
-    //         let tx = REMOTE_AUTH_CHANNEL.0.lock().await;
-    //         //println!("body: {:?}", full_body);
-    //         let _ = tx.send(full_body).await;
-
-    //         let mut response = Response::new(Body::empty());
-    //         *response.status_mut() = StatusCode::OK;
-    //         Ok(response)
-    //     }
-
-    //     (&Method::POST, "/remoteCandidate") => {
-    //         let full_body =
-    //             match std::str::from_utf8(&hyper::body::to_bytes(req.into_body()).await?) {
-    //                 Ok(s) => s.to_owned(),
-    //                 Err(err) => panic!("{}", err),
-    //             };
-    //         let tx = REMOTE_CAND_CHANNEL.0.lock().await;
-    //         //println!("body: {:?}", full_body);
-    //         let _ = tx.send(full_body).await;
-
-    //         let mut response = Response::new(Body::empty());
-    //         *response.status_mut() = StatusCode::OK;
-    //         Ok(response)
-    //     }
-
-    //     // Return the 404 Not Found for other routes.
-    //     _ => {
-    //         let mut not_found = Response::default();
-    //         *not_found.status_mut() = StatusCode::NOT_FOUND;
-    //         Ok(not_found)
-    //     }
-    // }
-// }
-
-fn start_sdp_server(addr: String, port: String) {
-    println!("Listening on http://{addr}:{port}");
-    // FIXME: Fix the handling of values and other stuff
-    // tokio::spawn(async move {
-    //     let addr = (addr, port).into();
-    //     let service = make_service_fn(|_| async { 
-    //         Ok::<_, hyper::Error>(service_fn(remote_handler)) 
-    //     });
-    //     let server = Server::bind(&addr).serve(service);
-    //     tokio::select! {
-    //         _ = done_http_server.changed() => {
-    //             println!("receive cancel http server!");
-    //         }
-    //         result = server => {
-    //             // Run this server for... forever!
-    //             if let Err(e) = result {
-    //                 eprintln!("server error: {e}");
-    //             }
-    //             println!("exit http server!");
-    //         }
-    //     };
-    // });
-}
-
-#[tokio::main]
-async fn main() {
-    let mut buf = [0; 65535];
-    let mut out = [0; MAX_DATAGRAM_SIZE];
-
-    let mut args = std::env::args();
-
-    let cmd = &args.next().unwrap();
-
-    if args.len() != 0 {
-        println!("Usage: {cmd}");
-        println!("\nSee tools/apps/ for more complete implementations.");
-        return;
-    }
-    // Create the UDP listening socket, and register it with the event loop.
-    // TODO: Add argument to specify where to bind the socket to
-    let mut socket =
-        tokio::net::UdpSocket::bind(SocketAddrV4::new(Ipv4Addr::new(127,0,0,1), 4433)).await.unwrap();
-
-    // Create the configuration for the QUIC connections.
-    let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
-    configure_quic(&mut config);
-
-    let expected_server_str = "stun:stun.l.google.com:19302";
-    let peer_config = RTCConfiguration {
-        ice_servers: vec![RTCIceServer {
-            urls: vec![expected_server_str.to_owned()],
-            ..Default::default()
-        }],
-        ..Default::default()
+        .method(Method::POST)
+        .uri(format!("http://{remote_endpoint4}:{remote_http_port}/remoteAuth"))
+        .body(Body::from(format!("{local_ufrag}:{local_pwd}")))
+    {
+        Ok(req) => req,
+        Err(err) => return error!("Failed to create request"),
     };
+    let resp = match client.request(req).await {
+        Ok(resp) => resp,
+        Err(err) => return error!("Failed to perform request"),
+    };
+    println!("Response from remoteAuth: {}", resp.status());
+
+    let (remote_ufrag, remote_pwd) = {
+        let mut rx = REMOTE_AUTH_CHANNEL.1.lock().await;
+        if let Some(s) = rx.recv().await {
+            println!("received: {s}");
+            let fields: Vec<String> = s.split(':').map(|s| s.to_string()).collect();
+            (fields[0].clone(), fields[1].clone())
+        } else {
+            panic!("rx.recv() empty");
+        }
+    };
+    println!("remote_ufrag: {remote_ufrag}, remote_pwd: {remote_pwd}");
+
+    let ice_agent2 = Arc::clone(&ice_agent);
+    // let mut done_cand = done_rx.clone();
+    tokio::spawn(async move {
+        let mut rx = REMOTE_CAND_CHANNEL.1.lock().await;
+        loop {
+            tokio::select! {
+                    // _ = done_cand.changed() => {
+                    // println!("receive cancel remote cand!");
+                    // break;
+                // }
+                result = rx.recv() => {
+                    if let Some(s) = result {
+                        if let Ok(c) = unmarshal_candidate(&s) {
+                            println!("add_remote_candidate: {c}");
+                            let c: Arc<dyn Candidate + Send + Sync> = Arc::new(c);
+                            let _ = ice_agent2.add_remote_candidate(&c);
+                        }else{
+                            println!("unmarshal_candidate error!");
+                            break;
+                        }
+                    }else{
+                        println!("REMOTE_CAND_CHANNEL done!");
+                        break;
+                    }
+                }
+            };
+        }
+    });
+
+    ice_agent.gather_candidates().unwrap();
+    println!("Connecting...");
     
-    // Create a MediaEngine object to configure the supported codec
-    let mut m = MediaEngine::default();
-    m.register_default_codecs().unwrap();
+    let (_cancel_tx, cancel_rx) = mpsc::channel(1);
+    let conn: Arc<dyn Conn + Send + Sync> = if is_controlling {
+        ice_agent.dial(cancel_rx, remote_ufrag, remote_pwd).await.unwrap()
+    } else {
+        ice_agent
+            .accept(cancel_rx, remote_ufrag, remote_pwd)
+            .await.unwrap()
+    };
 
-    let mut registry = Registry::new();
+    // Send messages in a loop to the remote peer
+    let conn_tx = Arc::clone(&conn);
+    // let mut done_send = done_rx.clone();
+    tokio::spawn(async move {
+        const RANDOM_STRING: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        loop {
+            tokio::time::sleep(Duration::from_secs(3)).await;
 
-    // Use the default set of Interceptors
-    registry = register_default_interceptors(registry, &mut m).unwrap();
+            let val: String = (0..15)
+                .map(|_| {
+                    let idx = thread_rng().gen_range(0..RANDOM_STRING.len());
+                    RANDOM_STRING[idx] as char
+                })
+                .collect();
 
-    // Create the API object with the MediaEngine
-    let api = APIBuilder::new()
-        .with_media_engine(m)
-        .with_interceptor_registry(registry)
-        .build();
+            tokio::select! {
+                //  _ = done_send.changed() => {
+                //     println!("receive cancel ice send!");
+                //     break;
+                // }
+                result = conn_tx.send(val.as_bytes()) => {
+                    if let Err(err) = result {
+                        eprintln!("conn_tx send error: {err}");
+                        break;
+                    }else{
+                        println!("Sent: '{val}'");
+                    }
+                }
+            };
+        }
+    });
 
-    // Create a new RTCPeerConnection
-    let peer_connection = Arc::new(api.new_peer_connection(peer_config).await.unwrap());
+    // ------------------------------------
+    // at this point ice is sending happily data from the server to the client.
+    // Now: Starting the quiche loop and using the ice data to build a connection
+    // on top of the existing udp_socket
+    // ------------------------------------
 
-    // QUIC stuff
-    let rng = SystemRandom::new();
-    let conn_id_seed = ring::hmac::Key::generate(ring::hmac::HMAC_SHA256, &rng).unwrap();
+    // loop {
+    //     // Find the shorter timeout from all the active connections.
+    //     //
+    //     // TODO: use event loop that properly supports timers
+    //     // let timeout = clients.values().filter_map(|c| c.conn.timeout()).min();
 
-    let mut clients = ClientMap::new();
-    let local_addr = socket.local_addr().unwrap();
+    //     // poll.poll(&mut events, timeout).unwrap();
 
-    loop {
-        // Find the shorter timeout from all the active connections.
-        //
-        // TODO: use event loop that properly supports timers
-        // let timeout = clients.values().filter_map(|c| c.conn.timeout()).min();
-
-        // poll.poll(&mut events, timeout).unwrap();
-
-        // TODO: Multiplex the peer connection and quic on one socket
-        // TODO: Handling of the external signalling of data via http in ice
+    //     // TODO: Multiplex the peer connection and quic on one socket
+    //     // TODO: Handling of the external signalling of data via http in ice
         
 
-        // Read incoming UDP packets from the socket and feed them to quiche,
-        // until there are no more packets to read.
-        'read: loop {
-            // If the event loop reported no events, it means that the timeout
-            // has expired, so handle it without attempting to read packets. We
-            // will then proceed with the send loop.
-            // if events.is_empty() {
-            //     debug!("timed out");
+    //     // Read incoming UDP packets from the socket and feed them to quiche,
+    //     // until there are no more packets to read.
+    //     'read: loop {
+    //         // If the event loop reported no events, it means that the timeout
+    //         // has expired, so handle it without attempting to read packets. We
+    //         // will then proceed with the send loop.
+    //         // if events.is_empty() {
+    //         //     debug!("timed out");
 
-            //     clients.values_mut().for_each(|c| c.conn.on_timeout());
+    //         //     clients.values_mut().for_each(|c| c.conn.on_timeout());
 
-            //     break 'read;
-            // }
+    //         //     break 'read;
+    //         // }
 
-            let (len, from) = match socket.recv_from(&mut buf).await {
-                Ok(v) => v,
+    //         let (len, from) = match socket.recv_from(&mut buf).await {
+    //             Ok(v) => v,
 
-                Err(e) => {
-                    // There are no more UDP packets to read, so end the read
-                    // loop.
-                    if e.kind() == std::io::ErrorKind::WouldBlock {
-                        debug!("recv() would block");
-                        break 'read;
-                    }
+    //             Err(e) => {
+    //                 // There are no more UDP packets to read, so end the read
+    //                 // loop.
+    //                 if e.kind() == std::io::ErrorKind::WouldBlock {
+    //                     debug!("recv() would block");
+    //                     break 'read;
+    //                 }
 
-                    panic!("recv() failed: {:?}", e);
-                },
-            };
+    //                 panic!("recv() failed: {:?}", e);
+    //             },
+    //         };
 
-            debug!("got {} bytes", len);
+    //         debug!("got {} bytes", len);
 
-            let pkt_buf = &mut buf[..len];
+    //         let pkt_buf = &mut buf[..len];
 
-            if !is_packet_quic(&mut octets::Octets::with_slice(pkt_buf)) {
-                info!("Handling ICE packet");
-                // handle_ice(&mut octets::Octets::with_slice(pkt_buf)).await;
+    //         if !is_packet_quic(&mut octets::Octets::with_slice(pkt_buf)) {
+    //             info!("Handling ICE packet");
+    //             // handle_ice(&mut octets::Octets::with_slice(pkt_buf)).await;
 
-                break 'read;
-            }
+    //             break 'read;
+    //         }
 
-            // Parse the QUIC packet's header.
-            let hdr = match quiche::Header::from_slice(
-                pkt_buf,
-                quiche::MAX_CONN_ID_LEN,
-            ) {
-                Ok(v) => v,
+    //         // Parse the QUIC packet's header.
+    //         let hdr = match quiche::Header::from_slice(
+    //             pkt_buf,
+    //             quiche::MAX_CONN_ID_LEN,
+    //         ) {
+    //             Ok(v) => v,
 
-                Err(e) => {
-                    error!("Parsing packet header failed: {:?}", e);
-                    continue 'read;
-                },
-            };
+    //             Err(e) => {
+    //                 error!("Parsing packet header failed: {:?}", e);
+    //                 continue 'read;
+    //             },
+    //         };
 
-            trace!("got packet {:?}", hdr);
+    //         trace!("got packet {:?}", hdr);
 
-            let conn_id = ring::hmac::sign(&conn_id_seed, &hdr.dcid);
-            let conn_id = &conn_id.as_ref()[..quiche::MAX_CONN_ID_LEN];
-            let conn_id = conn_id.to_vec().into();
+    //         let conn_id = ring::hmac::sign(&conn_id_seed, &hdr.dcid);
+    //         let conn_id = &conn_id.as_ref()[..quiche::MAX_CONN_ID_LEN];
+    //         let conn_id = conn_id.to_vec().into();
 
-            // Lookup a connection based on the packet's connection ID. If there
-            // is no connection matching, create a new one.
-            let client = if !clients.contains_key(&hdr.dcid) &&
-                !clients.contains_key(&conn_id)
-            {
-                if hdr.ty != quiche::Type::Initial {
-                    error!("Packet is not Initial");
-                    continue 'read;
-                }
+    //         // Lookup a connection based on the packet's connection ID. If there
+    //         // is no connection matching, create a new one.
+    //         let client = if !clients.contains_key(&hdr.dcid) &&
+    //             !clients.contains_key(&conn_id)
+    //         {
+    //             if hdr.ty != quiche::Type::Initial {
+    //                 error!("Packet is not Initial");
+    //                 continue 'read;
+    //             }
 
-                if !quiche::version_is_supported(hdr.version) {
-                    warn!("Doing version negotiation");
+    //             if !quiche::version_is_supported(hdr.version) {
+    //                 warn!("Doing version negotiation");
 
-                    let len =
-                        quiche::negotiate_version(&hdr.scid, &hdr.dcid, &mut out)
-                            .unwrap();
+    //                 let len =
+    //                     quiche::negotiate_version(&hdr.scid, &hdr.dcid, &mut out)
+    //                         .unwrap();
 
-                    let out = &out[..len];
+    //                 let out = &out[..len];
 
-                    if let Err(e) = socket.send_to(out, from).await {
-                        if e.kind() == std::io::ErrorKind::WouldBlock {
-                            debug!("send() would block");
-                            break;
-                        }
+    //                 if let Err(e) = socket.send_to(out, from).await {
+    //                     if e.kind() == std::io::ErrorKind::WouldBlock {
+    //                         debug!("send() would block");
+    //                         break;
+    //                     }
 
-                        panic!("send() failed: {:?}", e);
-                    }
-                    continue 'read;
-                }
+    //                     panic!("send() failed: {:?}", e);
+    //                 }
+    //                 continue 'read;
+    //             }
 
-                let mut scid = [0; quiche::MAX_CONN_ID_LEN];
-                scid.copy_from_slice(&conn_id);
+    //             let mut scid = [0; quiche::MAX_CONN_ID_LEN];
+    //             scid.copy_from_slice(&conn_id);
 
-                let scid = quiche::ConnectionId::from_ref(&scid);
+    //             let scid = quiche::ConnectionId::from_ref(&scid);
 
-                // Token is always present in Initial packets.
-                let token = hdr.token.as_ref().unwrap();
+    //             // Token is always present in Initial packets.
+    //             let token = hdr.token.as_ref().unwrap();
 
-                // Do stateless retry if the client didn't send a token.
-                if token.is_empty() {
-                    warn!("Doing stateless retry");
+    //             // Do stateless retry if the client didn't send a token.
+    //             if token.is_empty() {
+    //                 warn!("Doing stateless retry");
 
-                    let new_token = mint_token(&hdr, &from);
+    //                 let new_token = mint_token(&hdr, &from);
 
-                    let len = quiche::retry(
-                        &hdr.scid,
-                        &hdr.dcid,
-                        &scid,
-                        &new_token,
-                        hdr.version,
-                        &mut out,
-                    )
-                    .unwrap();
+    //                 let len = quiche::retry(
+    //                     &hdr.scid,
+    //                     &hdr.dcid,
+    //                     &scid,
+    //                     &new_token,
+    //                     hdr.version,
+    //                     &mut out,
+    //                 )
+    //                 .unwrap();
 
-                    let out = &out[..len];
+    //                 let out = &out[..len];
 
-                    if let Err(e) = socket.send_to(out, from).await {
-                        if e.kind() == std::io::ErrorKind::WouldBlock {
-                            debug!("send() would block");
-                            break;
-                        }
+    //                 if let Err(e) = socket.send_to(out, from).await {
+    //                     if e.kind() == std::io::ErrorKind::WouldBlock {
+    //                         debug!("send() would block");
+    //                         break;
+    //                     }
 
-                        panic!("send() failed: {:?}", e);
-                    }
-                    continue 'read;
-                }
+    //                     panic!("send() failed: {:?}", e);
+    //                 }
+    //                 continue 'read;
+    //             }
 
-                let odcid = validate_token(&from, token);
+    //             let odcid = validate_token(&from, token);
 
-                // The token was not valid, meaning the retry failed, so
-                // drop the packet.
-                if odcid.is_none() {
-                    error!("Invalid address validation token");
-                    continue 'read;
-                }
+    //             // The token was not valid, meaning the retry failed, so
+    //             // drop the packet.
+    //             if odcid.is_none() {
+    //                 error!("Invalid address validation token");
+    //                 continue 'read;
+    //             }
 
-                if scid.len() != hdr.dcid.len() {
-                    error!("Invalid destination connection ID");
-                    continue 'read;
-                }
+    //             if scid.len() != hdr.dcid.len() {
+    //                 error!("Invalid destination connection ID");
+    //                 continue 'read;
+    //             }
 
-                // Reuse the source connection ID we sent in the Retry packet,
-                // instead of changing it again.
-                let scid = hdr.dcid.clone();
+    //             // Reuse the source connection ID we sent in the Retry packet,
+    //             // instead of changing it again.
+    //             let scid = hdr.dcid.clone();
 
-                debug!("New connection: dcid={:?} scid={:?}", hdr.dcid, scid);
+    //             debug!("New connection: dcid={:?} scid={:?}", hdr.dcid, scid);
 
-                let conn = quiche::accept(
-                    &scid,
-                    odcid.as_ref(),
-                    local_addr,
-                    from,
-                    &mut config,
-                )
-                .unwrap();
+    //             let conn = quiche::accept(
+    //                 &scid,
+    //                 odcid.as_ref(),
+    //                 local_addr,
+    //                 from,
+    //                 &mut config,
+    //             )
+    //             .unwrap();
 
-                let client = Client {
-                    conn,
-                    partial_responses: HashMap::new(),
-                };
+    //             let client = Client {
+    //                 conn,
+    //                 partial_responses: HashMap::new(),
+    //             };
 
-                clients.insert(scid.clone(), client);
+    //             clients.insert(scid.clone(), client);
 
-                clients.get_mut(&scid).unwrap()
-            } else {
-                match clients.get_mut(&hdr.dcid) {
-                    Some(v) => v,
+    //             clients.get_mut(&scid).unwrap()
+    //         } else {
+    //             match clients.get_mut(&hdr.dcid) {
+    //                 Some(v) => v,
 
-                    None => clients.get_mut(&conn_id).unwrap(),
-                }
-            };
+    //                 None => clients.get_mut(&conn_id).unwrap(),
+    //             }
+    //         };
 
-            let recv_info = quiche::RecvInfo {
-                to: socket.local_addr().unwrap(),
-                from,
-            };
+    //         let recv_info = quiche::RecvInfo {
+    //             to: socket.local_addr().unwrap(),
+    //             from,
+    //         };
 
-            // Process potentially coalesced packets.
-            let read = match client.conn.recv(pkt_buf, recv_info) {
-                Ok(v) => v,
+    //         // Process potentially coalesced packets.
+    //         let read = match client.conn.recv(pkt_buf, recv_info) {
+    //             Ok(v) => v,
 
-                Err(e) => {
-                    error!("{} recv failed: {:?}", client.conn.trace_id(), e);
-                    continue 'read;
-                },
-            };
+    //             Err(e) => {
+    //                 error!("{} recv failed: {:?}", client.conn.trace_id(), e);
+    //                 continue 'read;
+    //             },
+    //         };
 
-            debug!("{} processed {} bytes", client.conn.trace_id(), read);
+    //         debug!("{} processed {} bytes", client.conn.trace_id(), read);
 
-            if client.conn.is_in_early_data() || client.conn.is_established() {
-                // Handle writable streams.
-                for stream_id in client.conn.writable() {
-                    handle_writable(client, stream_id);
-                }
+    //         if client.conn.is_in_early_data() || client.conn.is_established() {
+    //             // Handle writable streams.
+    //             for stream_id in client.conn.writable() {
+    //                 handle_writable(client, stream_id);
+    //             }
 
-                // Process all readable streams.
-                for s in client.conn.readable() {
-                    while let Ok((read, fin)) =
-                        client.conn.stream_recv(s, &mut buf)
-                    {
-                        debug!(
-                            "{} received {} bytes",
-                            client.conn.trace_id(),
-                            read
-                        );
+    //             // Process all readable streams.
+    //             for s in client.conn.readable() {
+    //                 while let Ok((read, fin)) =
+    //                     client.conn.stream_recv(s, &mut buf)
+    //                 {
+    //                     debug!(
+    //                         "{} received {} bytes",
+    //                         client.conn.trace_id(),
+    //                         read
+    //                     );
 
-                        let stream_buf = &buf[..read];
+    //                     let stream_buf = &buf[..read];
 
-                        debug!(
-                            "{} stream {} has {} bytes (fin? {})",
-                            client.conn.trace_id(),
-                            s,
-                            stream_buf.len(),
-                            fin
-                        );
+    //                     debug!(
+    //                         "{} stream {} has {} bytes (fin? {})",
+    //                         client.conn.trace_id(),
+    //                         s,
+    //                         stream_buf.len(),
+    //                         fin
+    //                     );
 
-                        handle_stream(client, s, stream_buf, "examples/root");
-                    }
-                }
-            }
-        }
+    //                     handle_stream(client, s, stream_buf, "examples/root");
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        // Generate outgoing QUIC packets for all active connections and send
-        // them on the UDP socket, until quiche reports that there are no more
-        // packets to be sent.
-        for client in clients.values_mut() {
-            loop {
-                let (write, send_info) = match client.conn.send(&mut out) {
-                    Ok(v) => v,
+    //     // Generate outgoing QUIC packets for all active connections and send
+    //     // them on the UDP socket, until quiche reports that there are no more
+    //     // packets to be sent.
+    //     for client in clients.values_mut() {
+    //         loop {
+    //             let (write, send_info) = match client.conn.send(&mut out) {
+    //                 Ok(v) => v,
 
-                    Err(quiche::Error::Done) => {
-                        debug!("{} done writing", client.conn.trace_id());
-                        break;
-                    },
+    //                 Err(quiche::Error::Done) => {
+    //                     debug!("{} done writing", client.conn.trace_id());
+    //                     break;
+    //                 },
 
-                    Err(e) => {
-                        error!("{} send failed: {:?}", client.conn.trace_id(), e);
+    //                 Err(e) => {
+    //                     error!("{} send failed: {:?}", client.conn.trace_id(), e);
 
-                        client.conn.close(false, 0x1, b"fail").ok();
-                        break;
-                    },
-                };
+    //                     client.conn.close(false, 0x1, b"fail").ok();
+    //                     break;
+    //                 },
+    //             };
 
-                if let Err(e) = socket.send_to(&out[..write], send_info.to).await {
-                    if e.kind() == std::io::ErrorKind::WouldBlock {
-                        debug!("send() would block");
-                        break;
-                    }
+    //             if let Err(e) = socket.send_to(&out[..write], send_info.to).await {
+    //                 if e.kind() == std::io::ErrorKind::WouldBlock {
+    //                     debug!("send() would block");
+    //                     break;
+    //                 }
 
-                    panic!("send() failed: {:?}", e);
-                }
+    //                 panic!("send() failed: {:?}", e);
+    //             }
 
-                debug!("{} written {} bytes", client.conn.trace_id(), write);
-            }
-        }
+    //             debug!("{} written {} bytes", client.conn.trace_id(), write);
+    //         }
+    //     }
 
-        // Garbage collect closed connections.
-        clients.retain(|_, ref mut c| {
-            debug!("Collecting garbage");
+    //     // Garbage collect closed connections.
+    //     clients.retain(|_, ref mut c| {
+    //         debug!("Collecting garbage");
 
-            if c.conn.is_closed() {
-                info!(
-                    "{} connection collected {:?}",
-                    c.conn.trace_id(),
-                    c.conn.stats()
-                );
-            }
+    //         if c.conn.is_closed() {
+    //             info!(
+    //                 "{} connection collected {:?}",
+    //                 c.conn.trace_id(),
+    //                 c.conn.stats()
+    //             );
+    //         }
 
-            !c.conn.is_closed()
-        });
-    }
+    //         !c.conn.is_closed()
+    //     });
+    // }
 }
 
 /// Generate a stateless retry token.
@@ -666,87 +820,87 @@ fn validate_token<'a>(
     Some(quiche::ConnectionId::from_ref(&token[addr.len()..]))
 }
 
-/// Handles incoming HTTP/0.9 requests.
-fn handle_stream(client: &mut Client, stream_id: u64, buf: &[u8], root: &str) {
-    let conn = &mut client.conn;
+// /// Handles incoming HTTP/0.9 requests.
+// fn handle_stream(client: &mut Client, stream_id: u64, buf: &[u8], root: &str) {
+//     let conn = &mut client.conn;
 
-    if buf.len() > 4 && &buf[..4] == b"GET " {
-        let uri = &buf[4..buf.len()];
-        let uri = String::from_utf8(uri.to_vec()).unwrap();
-        let uri = String::from(uri.lines().next().unwrap());
-        let uri = std::path::Path::new(&uri);
-        let mut path = std::path::PathBuf::from(root);
+//     if buf.len() > 4 && &buf[..4] == b"GET " {
+//         let uri = &buf[4..buf.len()];
+//         let uri = String::from_utf8(uri.to_vec()).unwrap();
+//         let uri = String::from(uri.lines().next().unwrap());
+//         let uri = std::path::Path::new(&uri);
+//         let mut path = std::path::PathBuf::from(root);
 
-        for c in uri.components() {
-            if let std::path::Component::Normal(v) = c {
-                path.push(v)
-            }
-        }
+//         for c in uri.components() {
+//             if let std::path::Component::Normal(v) = c {
+//                 path.push(v)
+//             }
+//         }
 
-        info!(
-            "{} got GET request for {:?} on stream {}",
-            conn.trace_id(),
-            path,
-            stream_id
-        );
+//         info!(
+//             "{} got GET request for {:?} on stream {}",
+//             conn.trace_id(),
+//             path,
+//             stream_id
+//         );
 
-        let body = std::fs::read(path.as_path())
-            .unwrap_or_else(|_| b"Not Found!\r\n".to_vec());
+//         let body = std::fs::read(path.as_path())
+//             .unwrap_or_else(|_| b"Not Found!\r\n".to_vec());
 
-        info!(
-            "{} sending response of size {} on stream {}",
-            conn.trace_id(),
-            body.len(),
-            stream_id
-        );
+//         info!(
+//             "{} sending response of size {} on stream {}",
+//             conn.trace_id(),
+//             body.len(),
+//             stream_id
+//         );
 
-        let written = match conn.stream_send(stream_id, &body, true) {
-            Ok(v) => v,
+//         let written = match conn.stream_send(stream_id, &body, true) {
+//             Ok(v) => v,
 
-            Err(quiche::Error::Done) => 0,
+//             Err(quiche::Error::Done) => 0,
 
-            Err(e) => {
-                error!("{} stream send failed {:?}", conn.trace_id(), e);
-                return;
-            },
-        };
+//             Err(e) => {
+//                 error!("{} stream send failed {:?}", conn.trace_id(), e);
+//                 return;
+//             },
+//         };
 
-        if written < body.len() {
-            let response = PartialResponse { body, written };
-            client.partial_responses.insert(stream_id, response);
-        }
-    }
-}
+//         if written < body.len() {
+//             let response = PartialResponse { body, written };
+//             client.partial_responses.insert(stream_id, response);
+//         }
+//     }
+// }
 
-/// Handles newly writable streams.
-fn handle_writable(client: &mut Client, stream_id: u64) {
-    let conn = &mut client.conn;
+// /// Handles newly writable streams.
+// fn handle_writable(client: &mut Client, stream_id: u64) {
+//     let conn = &mut client.conn;
 
-    debug!("{} stream {} is writable", conn.trace_id(), stream_id);
+//     debug!("{} stream {} is writable", conn.trace_id(), stream_id);
 
-    if !client.partial_responses.contains_key(&stream_id) {
-        return;
-    }
+//     if !client.partial_responses.contains_key(&stream_id) {
+//         return;
+//     }
 
-    let resp = client.partial_responses.get_mut(&stream_id).unwrap();
-    let body = &resp.body[resp.written..];
+//     let resp = client.partial_responses.get_mut(&stream_id).unwrap();
+//     let body = &resp.body[resp.written..];
 
-    let written = match conn.stream_send(stream_id, body, true) {
-        Ok(v) => v,
+//     let written = match conn.stream_send(stream_id, body, true) {
+//         Ok(v) => v,
 
-        Err(quiche::Error::Done) => 0,
+//         Err(quiche::Error::Done) => 0,
 
-        Err(e) => {
-            client.partial_responses.remove(&stream_id);
+//         Err(e) => {
+//             client.partial_responses.remove(&stream_id);
 
-            error!("{} stream send failed {:?}", conn.trace_id(), e);
-            return;
-        },
-    };
+//             error!("{} stream send failed {:?}", conn.trace_id(), e);
+//             return;
+//         },
+//     };
 
-    resp.written += written;
+//     resp.written += written;
 
-    if resp.written == resp.body.len() {
-        client.partial_responses.remove(&stream_id);
-    }
-}
+//     if resp.written == resp.body.len() {
+//         client.partial_responses.remove(&stream_id);
+//     }
+// }
