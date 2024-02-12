@@ -31,13 +31,21 @@ extern crate log;
 extern crate lazy_static;
 
 use std::f32::consts::E;
-use std::net;
+use std::net::{self, Ipv4Addr, SocketAddrV4};
 use std::sync::Arc;
 use std::collections::HashMap;
 
 use anyhow::{Error, Result};
-use mio::net::UdpSocket;
 use quiche::Config;
+use tokio::net::unix::SocketAddr;
+use tokio::net::UdpSocket;
+use webrtc::api::interceptor_registry::register_default_interceptors;
+use webrtc::api::media_engine::MediaEngine;
+use webrtc::api::APIBuilder;
+use webrtc::ice_transport::ice_server::RTCIceServer;
+use webrtc::interceptor::registry::Registry;
+use webrtc::peer_connection::configuration::RTCConfiguration;
+use webrtc::peer_connection::RTCPeerConnection;
 use webrtc_ice::state::ConnectionState;
 use webrtc_ice::candidate::Candidate;
 use webrtc_ice::network_type::NetworkType;
@@ -46,7 +54,7 @@ use webrtc_ice::udp_mux::{UDPMuxParams, UDPMuxDefault};
 use webrtc_ice::agent::{self, agent_config::AgentConfig, Agent};
 
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Client, Method, Request, Response, Server, StatusCode};
+use hyper::{Body, Method, Request, Response, Server, StatusCode};
 
 use ring::rand::*;
 
@@ -75,10 +83,10 @@ type ClientMap = HashMap<quiche::ConnectionId<'static>, Client>;
 
 fn configure_quic(config: &mut Config) {
     config
-        .load_cert_chain_from_pem_file("examples/cert.crt")
+        .load_cert_chain_from_pem_file("resources/cert.crt")
         .unwrap();
     config
-        .load_priv_key_from_pem_file("examples/cert.key")
+        .load_priv_key_from_pem_file("resources/cert.key")
         .unwrap();
 
     config
@@ -104,7 +112,8 @@ fn configure_quic(config: &mut Config) {
     config.enable_early_data();
 }
 
-async fn start_ice_agent(udp_socket: &UdpSocket) -> Result<()> {
+
+async fn start_ice_agent(udp_socket: tokio::net::UdpSocket) -> Result<()> {
     // Setup the QUIC & ICE parts
     // FIXME: Fix the trait not implemented
     
@@ -126,9 +135,10 @@ async fn start_ice_agent(udp_socket: &UdpSocket) -> Result<()> {
 
     // TODO: Setup handling of stuff
     let client = Arc::new(hyper::Client::new());
+    let client2 = Arc::clone(&client);
     ice_agent.on_candidate(Box::new(
         move |c: Option<Arc<dyn Candidate + Send + Sync>>| {
-            let internal_client = Arc::clone(&client);
+            let internal_client = Arc::clone(&client2);
             Box::pin(async move {
                 if let Some(c) = c {
                     println!("posting remoteCandidate with {}", c.marshal());
@@ -183,7 +193,9 @@ async fn start_ice_agent(udp_socket: &UdpSocket) -> Result<()> {
         };
         println!("Response from remoteAuth: {}", resp.status());
 
-    // Start the process
+
+        
+    // Start the gathering process
     ice_agent.gather_candidates()?;
 
     Ok(())
@@ -257,7 +269,8 @@ fn start_sdp_server(addr: String, port: String) {
     // });
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let mut buf = [0; 65535];
     let mut out = [0; MAX_DATAGRAM_SIZE];
 
@@ -270,23 +283,43 @@ fn main() {
         println!("\nSee tools/apps/ for more complete implementations.");
         return;
     }
-
-    // Setup the event loop.
-    let mut poll = mio::Poll::new().unwrap();
-    let mut events = mio::Events::with_capacity(1024);
-
     // Create the UDP listening socket, and register it with the event loop.
     // TODO: Add argument to specify where to bind the socket to
     let mut socket =
-        mio::net::UdpSocket::bind("127.0.0.1:4433".parse().unwrap()).unwrap();
-    poll.registry()
-        .register(&mut socket, mio::Token(0), mio::Interest::READABLE)
-        .unwrap();
+        tokio::net::UdpSocket::bind(SocketAddrV4::new(Ipv4Addr::new(127,0,0,1), 4433)).await.unwrap();
 
     // Create the configuration for the QUIC connections.
     let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
     configure_quic(&mut config);
 
+    let expected_server_str = "stun:stun.l.google.com:19302";
+    let peer_config = RTCConfiguration {
+        ice_servers: vec![RTCIceServer {
+            urls: vec![expected_server_str.to_owned()],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    
+    // Create a MediaEngine object to configure the supported codec
+    let mut m = MediaEngine::default();
+    m.register_default_codecs().unwrap();
+
+    let mut registry = Registry::new();
+
+    // Use the default set of Interceptors
+    registry = register_default_interceptors(registry, &mut m).unwrap();
+
+    // Create the API object with the MediaEngine
+    let api = APIBuilder::new()
+        .with_media_engine(m)
+        .with_interceptor_registry(registry)
+        .build();
+
+    // Create a new RTCPeerConnection
+    let peer_connection = Arc::new(api.new_peer_connection(peer_config).await.unwrap());
+
+    // QUIC stuff
     let rng = SystemRandom::new();
     let conn_id_seed = ring::hmac::Key::generate(ring::hmac::HMAC_SHA256, &rng).unwrap();
 
@@ -297,9 +330,13 @@ fn main() {
         // Find the shorter timeout from all the active connections.
         //
         // TODO: use event loop that properly supports timers
-        let timeout = clients.values().filter_map(|c| c.conn.timeout()).min();
+        // let timeout = clients.values().filter_map(|c| c.conn.timeout()).min();
 
-        poll.poll(&mut events, timeout).unwrap();
+        // poll.poll(&mut events, timeout).unwrap();
+
+        // TODO: Multiplex the peer connection and quic on one socket
+        // TODO: Handling of the external signalling of data via http in ice
+        
 
         // Read incoming UDP packets from the socket and feed them to quiche,
         // until there are no more packets to read.
@@ -307,15 +344,15 @@ fn main() {
             // If the event loop reported no events, it means that the timeout
             // has expired, so handle it without attempting to read packets. We
             // will then proceed with the send loop.
-            if events.is_empty() {
-                debug!("timed out");
+            // if events.is_empty() {
+            //     debug!("timed out");
 
-                clients.values_mut().for_each(|c| c.conn.on_timeout());
+            //     clients.values_mut().for_each(|c| c.conn.on_timeout());
 
-                break 'read;
-            }
+            //     break 'read;
+            // }
 
-            let (len, from) = match socket.recv_from(&mut buf) {
+            let (len, from) = match socket.recv_from(&mut buf).await {
                 Ok(v) => v,
 
                 Err(e) => {
@@ -379,7 +416,7 @@ fn main() {
 
                     let out = &out[..len];
 
-                    if let Err(e) = socket.send_to(out, from) {
+                    if let Err(e) = socket.send_to(out, from).await {
                         if e.kind() == std::io::ErrorKind::WouldBlock {
                             debug!("send() would block");
                             break;
@@ -416,7 +453,7 @@ fn main() {
 
                     let out = &out[..len];
 
-                    if let Err(e) = socket.send_to(out, from) {
+                    if let Err(e) = socket.send_to(out, from).await {
                         if e.kind() == std::io::ErrorKind::WouldBlock {
                             debug!("send() would block");
                             break;
@@ -543,7 +580,7 @@ fn main() {
                     },
                 };
 
-                if let Err(e) = socket.send_to(&out[..write], send_info.to) {
+                if let Err(e) = socket.send_to(&out[..write], send_info.to).await {
                     if e.kind() == std::io::ErrorKind::WouldBlock {
                         debug!("send() would block");
                         break;
