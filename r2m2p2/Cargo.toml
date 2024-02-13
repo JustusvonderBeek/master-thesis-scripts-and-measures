@@ -6,15 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name="server"
-path="src/server.rs"
-
-[[bin]]
-name="client"
-path="src/client.rs"
+name="quic-multiplex"
+path="src/quic_multiplex.rs"
 
 [dependencies]
-quiche = "0.18.0"
+# quiche = "0.18.0"
+quiche = { path = "../../quiche-cm/quiche", features = ["qlog"] }
+quicheperf = { path = "../../quicheperf" }
 log = { version = "0.4", features = ["std"] }
 ring = "0.16"
 mio = { version = "0.8", features = ["net", "os-poll"] }
@@ -31,5 +29,9 @@ serde_json = "1"
 octets = { version = "0.3.0"}
 clap = "3"
 rand = "0.8.5"
-net2 = "0.2.39"
 async-trait = "0.1"
+nix = { version = "0.27", features = ["net", "socket", "uio"] }
+libc = "0.2"
+slab = "0.4"
+synchronized-writer = "1.1.11"
+zstd = { version = "0.12.0", features=["zstdmt"] }
