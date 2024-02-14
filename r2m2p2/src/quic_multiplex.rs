@@ -274,6 +274,7 @@ async fn main() {
                 .takes_value(true)
                 .long("remote")
                 .short('r')
+                .default_value("127.0.0.1")
                 .help("Remote endpoint ip to send the ICE candidates to")
         )
         .arg(
@@ -282,6 +283,14 @@ async fn main() {
                 .long("controlling")
                 .short('c')
                 .help("If the program is controlled or controlling")
+        )
+        .arg(
+            Arg::with_name("local-quic-address")
+                .takes_value(true)
+                .long("local")
+                .short('l')
+                .default_value("127.0.0.1")
+                .help("The address the local quic socket should bind to")
         )
         ;
 
@@ -292,6 +301,7 @@ async fn main() {
     // FIXME: Add argument to specify where to bind the socket to
 
     let remote_endpoint = Arc::new(matches.value_of("remote").expect("Remote endpoint not given but required!"));
+    let local_endpoint = matches.value_of("local-quic-address").expect("Expected local address but non was given!");
     // Controlling in this case also means server (quic related)
     let is_controlling = matches.is_present("controlling");
     let (local_http_port, remote_http_port) = if is_controlling {
@@ -300,8 +310,9 @@ async fn main() {
         (9001, 9000)
     };
     let port = if is_controlling { 4000 } else { 4001 };
+    let remote_quic_port = if is_controlling { 4001 } else { 4000 };
     // Let the computer decide which socket and IP to use
-    let udp_socket = UdpSocket::bind(("192.168.2.10", port)).await.unwrap();
+    let udp_socket = UdpSocket::bind((local_endpoint, port)).await.unwrap();
     let udp_socket2 = Arc::new(udp_socket);
     let udp_socket3 = Arc::clone(&udp_socket2);
     let udp_socket_struct = ArcConnStruct {
@@ -324,7 +335,7 @@ async fn main() {
 
     // Step 1: Start a local http server that can receive ice candidates out-of-band
     // FIXME: This should later probably be replaced with a TURN server in case we cannot create a direct connection
-    println!("Listening on http://localhost:{local_http_port}");
+    println!("Listening on http://{local_endpoint}:{local_http_port}");
     // let mut done_http_server = done_rx.clone();
     tokio::spawn(async move {
         let addr = ([0, 0, 0, 0], local_http_port).into();
@@ -603,7 +614,9 @@ async fn main() {
             // FIXME: Fix the hardcoded parameters to allow for the same options as the quicheperf command line
             let mut peer_addrs = Vec::new();
             // TODO: Fix this hardcoded value later on
-            peer_addrs.push(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 168, 2, 10)), port));
+            // Use the remote address for now to connect to the correct remote endpoint
+            let remote_ipv4 : Ipv4Addr = remote_endpoint.parse().unwrap();
+            peer_addrs.push(SocketAddr::new(IpAddr::V4(remote_ipv4), remote_quic_port));
 
             // FIXME: Should be fine if empty, handling of paths etc. should be done by the ICE crate anyways
             let path_statuses = Vec::<(Duration, usize, PathStatus)>::new();
