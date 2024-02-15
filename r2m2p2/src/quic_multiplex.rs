@@ -585,12 +585,12 @@ async fn main() {
             };
 
 
-            let (read, remote_addr) = match udp_socket3.recv_from(&mut buf).await {
-                Ok(u) => u,
-                Err(_) => panic!("Failed to read remote")
-            };
+            // let (read, remote_addr) = match udp_socket3.recv_from(&mut buf).await {
+            //     Ok(u) => u,
+            //     Err(_) => panic!("Failed to read remote")
+            // };
             
-            println!("Received from {remote_addr}");
+            // println!("Received from {remote_addr}");
             let server = match QuicheperfServer::new(local_addrs, None, config, scheduler, Some(udp_socket_vec)) {
                 Ok(v) => v,
                 Err(e) => {
