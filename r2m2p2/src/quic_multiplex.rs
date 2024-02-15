@@ -300,7 +300,10 @@ async fn main() {
         (9001, 9000)
     };
     let port = if is_controlling { 4000 } else { 4001 };
+    let remote_quic_port = if is_controlling { 4001 } else { 4000 };
     // Let the computer decide which socket and IP to use
+    // TODO: Instead of letting each application poll, we need to poll in one place and the multiplex
+    // depending on the packet. Now, the ice thingy doesn't get the ice packets anymore
     let udp_socket = UdpSocket::bind(("192.168.2.10", port)).await.unwrap();
     let udp_socket2 = Arc::new(udp_socket);
     let udp_socket3 = Arc::clone(&udp_socket2);
@@ -576,6 +579,7 @@ async fn main() {
                 Ok(u) => u,
                 Err(_) => panic!("Failed to read remote")
             };
+            
             println!("Received from {remote_addr}");
             let server = match QuicheperfServer::new(local_addrs, None, config, scheduler, Some(udp_socket_vec)) {
                 Ok(v) => v,
@@ -603,7 +607,7 @@ async fn main() {
             // FIXME: Fix the hardcoded parameters to allow for the same options as the quicheperf command line
             let mut peer_addrs = Vec::new();
             // TODO: Fix this hardcoded value later on
-            peer_addrs.push(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 168, 2, 10)), port));
+            peer_addrs.push(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 168, 2, 10)), remote_quic_port));
 
             // FIXME: Should be fine if empty, handling of paths etc. should be done by the ICE crate anyways
             let path_statuses = Vec::<(Duration, usize, PathStatus)>::new();
