@@ -256,35 +256,39 @@ fn main() -> ExitCode {
             key,
             oneshot: _,
         } => {
-            if let Err(e) = config.load_cert_chain_from_pem_file(cert.to_str().unwrap()) {
-                eprintln!("Error loading certificate from {:?}: {}", cert, e);
-                return ExitCode::FAILURE;
-            };
+            return ExitCode::SUCCESS;
+            // if let Err(e) = config.load_cert_chain_from_pem_file(cert.to_str().unwrap()) {
+            //     eprintln!("Error loading certificate from {:?}: {}", cert, e);
+            //     return ExitCode::FAILURE;
+            // };
 
-            if let Err(e) = config.load_priv_key_from_pem_file(key.to_str().unwrap()) {
-                eprintln!("Error loading private key from {:?}: {}", key, e);
-                return ExitCode::FAILURE;
-            };
+            // if let Err(e) = config.load_priv_key_from_pem_file(key.to_str().unwrap()) {
+            //     eprintln!("Error loading private key from {:?}: {}", key, e);
+            //     return ExitCode::FAILURE;
+            // };
 
-            let server = match server::Server::new(local_addrs, args.password, config, scheduler, None) {
-                Ok(v) => v,
-                Err(e) => {
-                    eprintln!("Failed to set up server: {:?}", e);
-                    return ExitCode::FAILURE;
-                }
-            };
+            // let scheduler2 = Arc::new(scheduler);
+            // let scheduler3 = Box::new(&scheduler);
+            // Vec::new(_)
+            // let server = match server::Server::new(local_addrs, args.password, config, scheduler, None, ) {
+            //     Ok(v) => v,
+            //     Err(e) => {
+            //         eprintln!("Failed to set up server: {:?}", e);
+            //         return ExitCode::FAILURE;
+            //     }
+            // };
 
-            return match quicheperf_server(server, terminate) {
-                Ok(_) => ExitCode::SUCCESS,
-                Err(server::ServerError::FatalSocket(e)) => {
-                    eprintln!("Fatal: {}", e);
-                    ExitCode::FAILURE
-                }
-                Err(server::ServerError::Unexpected(e)) => {
-                    eprintln!("Unexpected: {}", e);
-                    ExitCode::FAILURE
-                }
-            };
+            // return match quicheperf_server(server, terminate) {
+            //     Ok(_) => ExitCode::SUCCESS,
+            //     Err(server::ServerError::FatalSocket(e)) => {
+            //         eprintln!("Fatal: {}", e);
+            //         ExitCode::FAILURE
+            //     }
+            //     Err(server::ServerError::Unexpected(e)) => {
+            //         eprintln!("Unexpected: {}", e);
+            //         ExitCode::FAILURE
+            //     }
+            // };
         }
     }
 }
@@ -392,18 +396,18 @@ pub fn quicheperf_server(
             // if event.is_writable() {
             server.on_writable(token)?;
             // }
-            if let Err(e) = server.on_readable(token) {
-                match e {
-                    server::ServerError::FatalSocket(e) => {
-                        error!("{}", e);
-                        break;
-                    }
-                    server::ServerError::Unexpected(e) => {
-                        trace!("{}", e);
-                        continue;
-                    }
-                }
-            }
+            // if let Err(e) = server.on_readable(token) {
+            //     match e {
+            //         server::ServerError::FatalSocket(e) => {
+            //             error!("{}", e);
+            //             break;
+            //         }
+            //         server::ServerError::Unexpected(e) => {
+            //             trace!("{}", e);
+            //             continue;
+            //         }
+            //     }
+            // }
         }
         server.send()?;
         server.garbage_collect();
