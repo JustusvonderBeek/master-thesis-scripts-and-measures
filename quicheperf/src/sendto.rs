@@ -27,6 +27,9 @@
 use std::cmp;
 
 use std::io;
+use std::sync::Arc;
+
+use webrtc_util::Conn;
 
 /// For Linux, try to detect GSO is available.
 #[cfg(target_os = "linux")]
@@ -139,6 +142,40 @@ pub fn send_to(
                 written += v;
             }
             Err(e) => return Err(e),
+        }
+
+        off += pkt_len;
+        left -= pkt_len;
+    }
+
+    Ok(written)
+}
+
+pub async fn send_to_with_conn(
+    socket: Arc<dyn Conn + Send + Sync>,
+    buf: &[u8],
+    send_info: &quiche::SendInfo,
+    segment_size: usize,
+) -> io::Result<usize> {
+    // if pacing && enable_gso {
+    //     return send_to_gso_pacing(socket, buf, send_info, segment_size);
+    // }
+
+    let mut off = 0;
+    let mut left = buf.len();
+    let mut written = 0;
+
+    while left > 0 {
+        let pkt_len = cmp::min(left, segment_size);
+
+        match socket.send_to(&buf[off..off + pkt_len], send_info.to).await {
+            Ok(v) => {
+                written += v;
+            }
+            Err(e) => {
+                let mapped = io::Error::new(io::ErrorKind::Other, e);
+                return Err(mapped);
+            },
         }
 
         off += pkt_len;
