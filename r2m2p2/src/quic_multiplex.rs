@@ -30,10 +30,12 @@ extern crate log;
 #[macro_use]
 extern crate lazy_static;
 
+use env_logger;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4};
 use std::os::fd::{AsRawFd, FromRawFd};
 use std::sync::Arc;
-use std::thread;
+use std::sync::atomic::Ordering;
+use std::{process, thread};
 use std::sync::atomic::AtomicBool;
 use std::io;
 use std::process::ExitCode;
@@ -42,7 +44,7 @@ use rand::{thread_rng, Rng};
 use async_trait::async_trait;
 
 use anyhow::Result;
-use quiche::{scheduler, PathStatus};
+use quiche::{scheduler, Connection, PathStatus};
 use tokio::net::UdpSocket;
 use tokio::sync::{mpsc, Mutex};
 use webrtc_ice::state::ConnectionState;
@@ -61,6 +63,7 @@ use ring::rand::*;
 
 mod ice;
 mod multiplexer;
+use multiplexer::is_packet_quic;
 
 // Parsing the command line
 use clap::{App, Arg};
@@ -72,6 +75,9 @@ use quicheperf::client::Client as QuicheperfClient;
 use quicheperf::common;
 use quicheperf::protocol::TestConfig;
 use quicheperf::quicheperf_client;
+
+// Debugging
+use hexdump::hexdump;
 
 const QUICHEPERF_ALPN: [&[u8]; 2] = [b"quicheperf", b"quicheperf-00"];
 const MAX_DATAGRAM_SIZE: usize = 1350;
@@ -265,6 +271,8 @@ fn make_quiche_config() -> Result<quiche::Config, ExitCode> {
 #[tokio::main]
 async fn main() {
 
+    env_logger::init();
+
     // Parsing the command line
     let app = App::new("ICE & QUIC Multiplex")
         .version("0.1")
@@ -291,8 +299,17 @@ async fn main() {
                 .short('l')
                 .default_value("127.0.0.1")
                 .help("The address the local quic socket should bind to")
-        )
-        ;
+        );
+
+    let terminate = Arc::new(AtomicBool::new(false));
+    // let t = terminate.clone();
+
+    ctrlc::set_handler(move || {
+        info!("SIGINT received");
+        // t.store(true, Ordering::SeqCst);
+        process::exit(0);
+    })
+    .expect("Error setting Ctrl-C handler");
 
     // Extracting the given arguments
     let matches = app.clone().get_matches();
@@ -488,36 +505,54 @@ async fn main() {
     };
 
     // Send messages in a loop to the remote peer
+    // let send_conn_quic = Box::new(conn);
     let conn_tx = Arc::clone(&conn);
     // let mut done_send = done_rx.clone();
-    tokio::spawn(async move {
-        const RANDOM_STRING: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        loop {
-            tokio::time::sleep(Duration::from_secs(3)).await;
+    
+    // TODO:
+    // TODO:
+    // TODO: These two functions below are what sends and receives the whole data AFTER the connection has been established
+    // Now: can they be used to multiplex / send our data to the other quic client/server ?
+    // What type of packets are exchanged here?
+    // TODO: Test this out
+    
+    // tokio::spawn(async move {
+    //     const RANDOM_STRING: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    //     loop {
+    //         tokio::time::sleep(Duration::from_secs(3)).await;
 
-            let val: String = (0..15)
-                .map(|_| {
-                    let idx = thread_rng().gen_range(0..RANDOM_STRING.len());
-                    RANDOM_STRING[idx] as char
-                })
-                .collect();
+    //         let val: String = (0..15)
+    //             .map(|position| {
+    //                 let idx = thread_rng().gen_range(0..RANDOM_STRING.len());
+    //                 if position == 0 {
+    //                     // Prevent this from setting the QUIC bit
+    //                     (RANDOM_STRING[idx] & !0x40) as char
+    //                 } else {
+    //                     RANDOM_STRING[idx] as char
+    //                 }
+    //             })
+    //             .collect();
 
-            tokio::select! {
-                //  _ = done_send.changed() => {
-                //     println!("receive cancel ice send!");
-                //     break;
-                // }
-                result = conn_tx.send(val.as_bytes()) => {
-                    if let Err(err) = result {
-                        eprintln!("conn_tx send error: {err}");
-                        break;
-                    }else{
-                        println!("Sent: '{val}'");
-                    }
-                }
-            };
-        }
-    });
+    //         tokio::select! {
+    //             //  _ = done_send.changed() => {
+    //             //     println!("receive cancel ice send!");
+    //             //     break;
+    //             // }
+    //             result = conn_tx.send(val.as_bytes()) => {
+    //                 if let Err(err) = result {
+    //                     eprintln!("conn_tx send error: {err}");
+    //                     break;
+    //                 }else{
+    //                     println!("Sent: '{val}'");
+    //                 }
+    //             }
+    //         };
+    //     }
+    // });
+
+    
+
+    // thread::sleep(Duration::from_secs(1));
 
     // ------------------------------------
     // at this point ice is sending happily data from the server to the client.
@@ -550,15 +585,15 @@ async fn main() {
     // let mut clients = ClientMap::new();
     // For now hardcode the local address
     let local_addr = udp_socket3.local_addr().unwrap();
+    let local_addr2 = Arc::new(local_addr);
     let mut local_addrs = Vec::new();
     local_addrs.push(local_addr);
 
-    let scheduler: Box<dyn scheduler::MultipathScheduler> = Box::new(scheduler::MinRTT::new());
 
     let terminate = Arc::new(AtomicBool::new(false));
     let t = terminate.clone();
     
-    // Convert the tokio::net::UdpSocket into a mio::net::UdpSocket because thats the type quichperf is working with
+    // Convert the tokio::net::UdpSocket into a mio::net::UdpSocket because thats the type quicheperf is working with
     let raw_udp_fd = udp_socket3.as_raw_fd();
     let mio_udp_socket : mio::net::UdpSocket;
     unsafe {
@@ -574,6 +609,7 @@ async fn main() {
         true => {
             // Server
             println!("Starting server...");
+
             if let Err(e) = config.load_cert_chain_from_pem_file("resources/cert.crt") {
                 eprintln!("Error loading certificate from {:?}: {}", "resources/cert.crt", e);
                 panic!("No cert found");
@@ -584,14 +620,11 @@ async fn main() {
                 panic!("No key found");
             };
 
+            // let scheduler3 = Arc::clone(&scheduler2);
+            let scheduler: Box<dyn scheduler::MultipathScheduler> = Box::new(scheduler::MinRTT::new());
 
-            // let (read, remote_addr) = match udp_socket3.recv_from(&mut buf).await {
-            //     Ok(u) => u,
-            //     Err(_) => panic!("Failed to read remote")
-            // };
-            
-            // println!("Received from {remote_addr}");
-            let server = match QuicheperfServer::new(local_addrs, None, config, scheduler, Some(udp_socket_vec)) {
+            let send_conn_quic = Arc::clone(&conn);
+            let mut quic_server = match QuicheperfServer::new(local_addrs, None, config, scheduler, Some(udp_socket_vec), send_conn_quic) {
                 Ok(v) => v,
                 Err(e) => {
                     eprintln!("Failed to set up server: {:?}", e);
@@ -599,21 +632,75 @@ async fn main() {
                 }
             };
 
-            let _ = match quicheperf_server(server, t) {
-                Ok(_) => ExitCode::SUCCESS,
-                Err(quicheperf::server::ServerError::FatalSocket(e)) => {
-                    eprintln!("Fatal: {}", e);
-                    ExitCode::FAILURE
+            let send_conn_quic2 = Arc::clone(&conn);
+            tokio::spawn(async move {
+                // Receive messages in a loop from the remote peer
+                let mut buf = vec![0u8; 1500];
+                let local_addr3 = local_addr2.as_ref();
+                let send_conn_quic3 = Arc::clone(&send_conn_quic2);
+                loop {
+                    // tokio::select! {
+                        // _ = done_recv.changed() => {
+                        //     println!("receive cancel ice recv!");
+                        //     break;
+                        // }
+                        let send_conn_quic4 = send_conn_quic3.clone();
+                        match quic_server.on_writeable_async(*local_addr3).await {
+                            Ok(_) => {},
+                            Err(e) => {
+                                println!("Failed to write to endpoint: {:?}", e);
+                                panic!("Failed to write to endpoint");
+                            }
+                        }
+                        match conn.recv_from(&mut buf).await {
+                            // Multiplexing between QUIC and other packets on the socket
+                            Ok((len, from)) => {
+                                println!("Received {} bytes", len);
+                                // println!("Received: '{}'", std::str::from_utf8(&buf[..len]).unwrap());
+                                if is_packet_quic(&buf[..1]) {
+                                    println!("Quic");
+                                    // hexdump(&buf);
+                                    // TODO: Introduce the data from here to the QUIC stack
+                                    quic_server.read(&mut buf[..len], *local_addr3, from, len, send_conn_quic4).await.unwrap();
+                                } else {
+                                    println!("Received: '{}'", std::str::from_utf8(&buf[..len]).unwrap());
+                                }
+                            }
+                            Err(err) => {
+                                eprintln!("conn_tx send error: {err}");
+                                break;
+                            }
+                        }
+                        match quic_server.send_with_conn().await {
+                            Ok(_) => {},
+                            Err(e) => {
+                                panic!("Failed to send to endpoint");
+                            }
+                        }
+                    // };
                 }
-                Err(quicheperf::server::ServerError::Unexpected(e)) => {
-                    eprintln!("Unexpected: {}", e);
-                    ExitCode::FAILURE
-                }
-            };
+            });
+
+            loop {
+                thread::sleep(Duration::from_secs(1));
+            }
+
+            // let _ = match quicheperf_server(server, t) {
+            //     Ok(_) => ExitCode::SUCCESS,
+            //     Err(quicheperf::server::ServerError::FatalSocket(e)) => {
+            //         eprintln!("Fatal: {}", e);
+            //         ExitCode::FAILURE
+            //     }
+            //     Err(quicheperf::server::ServerError::Unexpected(e)) => {
+            //         eprintln!("Unexpected: {}", e);
+            //         ExitCode::FAILURE
+            //     }
+            // };
         },
         false => {
             // Client
             println!("Starting client...");
+
             // FIXME: Fix the hardcoded parameters to allow for the same options as the quicheperf command line
             let mut peer_addrs = Vec::new();
             // TODO: Fix this hardcoded value later on
@@ -646,6 +733,9 @@ async fn main() {
                 bitrate_target: None,
             };
 
+            let scheduler: Box<dyn scheduler::MultipathScheduler> = Box::new(scheduler::MinRTT::new());
+            // let scheduler2 = Arc::new(scheduler);
+
             let client = QuicheperfClient::new(local_addrs, peer_addrs, config, Some(udp_socket_vec)).unwrap();
 
             let _ = match quicheperf_client(client, scheduler, tc, psu, terminate) {
@@ -660,5 +750,4 @@ async fn main() {
             };
         }
     }
-
 }
