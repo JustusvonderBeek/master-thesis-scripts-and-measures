@@ -138,6 +138,12 @@ checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
 
 [[package]]
 name = "arrayvec"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
+
+[[package]]
+name = "arrayvec"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
@@ -748,7 +754,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aafcde04e90a5226a6443b7aabdb016ba2f8307c847d524724bd9b346dd1a2d3"
 dependencies = [
  "atty",
- "humantime",
+ "humantime 1.3.0",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
+dependencies = [
+ "atty",
+ "humantime 2.1.0",
  "log",
  "regex",
  "termcolor",
@@ -1010,6 +1029,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "hexdump"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e40283dadb02f3af778878be1d717b17b4e4ab92e1d935ab03a730b0542905f2"
+dependencies = [
+ "arrayvec 0.5.2",
+ "itertools 0.4.19",
+]
+
+[[package]]
 name = "hkdf"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1069,6 +1098,12 @@ checksum = "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
 dependencies = [
  "quick-error",
 ]
+
+[[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "hyper"
@@ -1200,6 +1235,12 @@ name = "ipnet"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f518f335dce6725a761382244631d86cf0ccb2863413590b31338feb467f9c3"
+
+[[package]]
+name = "itertools"
+version = "0.4.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4a9b56eb56058f43dc66e58f40a214b2ccbc9f3df51861b63d51dec7b65bc3f"
 
 [[package]]
 name = "itertools"
@@ -1658,9 +1699,10 @@ dependencies = [
  "chrono",
  "clap 4.5.0",
  "ctrlc",
- "env_logger",
+ "env_logger 0.6.2",
  "git-testament",
- "itertools",
+ "hexdump",
+ "itertools 0.10.5",
  "libc",
  "log",
  "mio",
@@ -1676,6 +1718,7 @@ dependencies = [
  "slab",
  "synchronized-writer",
  "url 1.7.2",
+ "webrtc-util",
  "zstd",
 ]
 
@@ -1701,6 +1744,9 @@ dependencies = [
  "anyhow",
  "async-trait",
  "clap 3.2.25",
+ "ctrlc",
+ "env_logger 0.9.3",
+ "hexdump",
  "hyper",
  "lazy_static",
  "libc",
@@ -1874,7 +1920,7 @@ version = "1.34.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b39449a79f45e8da28c57c341891b69a183044b29518bb8f86dbac9df60bb7df"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.4",
  "num-traits",
 ]
 
