@@ -43,6 +43,8 @@ git-testament = "0.2.1"
 clap = { version = "4.1.4", features = ["derive"] }
 parse-size = "1.0.0"
 ctrlc = "3.4.0"
+webrtc-util = "0.8.0"
+hexdump = "0.1.1"
 
 [lib]
 crate = "quicheperf"
