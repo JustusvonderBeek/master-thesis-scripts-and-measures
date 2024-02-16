@@ -293,6 +293,12 @@ pub fn configure_keylog() -> Option<File> {
     None
 }
 
+#[inline]
+pub fn is_packet_quic(buf: &[u8]) -> bool {
+    // For now we aim for the 2nd highest bit = 1
+    buf[0] & 0x40 != 0
+}
+
 /* /// Generate a ordered list of 4-tuples on which the host should send packets,
 /// following a lowest-latency scheduling.
 pub fn lowest_latency_scheduler(
