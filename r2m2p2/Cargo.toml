@@ -11,6 +11,7 @@ path="src/quic_multiplex.rs"
 
 [dependencies]
 # quiche = "0.18.0"
+env_logger = "0.9"
 quiche = { path = "../../quiche-cm/quiche", features = ["qlog"] }
 quicheperf = { path = "../quicheperf" }
 log = { version = "0.4", features = ["std"] }
@@ -35,3 +36,5 @@ libc = "0.2"
 slab = "0.4"
 synchronized-writer = "1.1.11"
 zstd = { version = "0.12.0", features=["zstdmt"] }
+hexdump = "0.1.1"
+ctrlc = "3.4.0"
