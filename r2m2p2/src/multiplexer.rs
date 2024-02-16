@@ -47,42 +47,43 @@ impl MultiplexUdpSocket for mio::net::UdpSocket {
     }
 }
 
-async fn poll_udp_socket<M: MultiplexUdpSocket>(udp_socket : Arc<&M>, buf: &mut [u8]) -> Result<(usize, SocketAddr)> {
+async fn poll_udp_socket(udp_socket : Arc<dyn MultiplexUdpSocket>, buf: &mut [u8]) -> Result<(usize, SocketAddr)> {
     udp_socket.recv_from(buf).await
 }
 
 // Expecting the QUIC or other header as input
 // Deciding if the given input is QUIC or not
 // Returns true if the packet is QUIC
-pub fn is_packet_quic(b: &mut Octets) -> bool {
-    let first = b.get_u8().unwrap();
-
+pub fn is_packet_quic(b: &[u8]) -> bool {
     // For now we aim for the 2nd highest bit = 1
-    if first & 0x40 == 0 {
-        return false;
-    }
-
-    info!("Found quic packet");
-    true
+    return b[0] & 0x40 != 0;
 }
 
 pub struct Multiplexer {
     // Allows ICE and QUICHE to register their callbacks here
-    ice_callback: Option<fn(&[u8]) -> Result<()>>,
-    quic_callback: Option<fn(&[u8]) -> Result<()>>,
+    ice_callback: Option<fn(&mut [u8]) -> Result<()>>,
+    quic_callback: Option<fn(&mut [u8]) -> Result<()>>,
 }
 
 impl Multiplexer {
 
-    pub fn register_ice_callback(&mut self, ice_callback: fn(&[u8]) -> Result<()>) {
+    pub fn new() -> Multiplexer {
+        let m = Multiplexer { 
+            ice_callback: None, 
+            quic_callback: None 
+        };
+        m
+    }
+
+    pub fn register_ice_callback(&mut self, ice_callback: fn(&mut [u8]) -> Result<()>) {
         self.ice_callback = Some(ice_callback);
     }
 
-    pub fn register_quic_callback(&mut self, quic_callback: fn(&[u8]) -> Result<()>) {
+    pub fn register_quic_callback(&mut self, quic_callback: fn(&mut [u8]) -> Result<()>) {
         self.quic_callback = Some(quic_callback);
     }
 
-    pub async fn start_multiplex<M: MultiplexUdpSocket>(&mut self, udp_socket : Arc<&M>) {
+    pub async fn start_multiplex(&mut self, udp_socket : Arc<dyn MultiplexUdpSocket>) {
         let mut buf = [0; 65535];
         
         loop {
@@ -94,16 +95,15 @@ impl Multiplexer {
                     break;
                 }
             };
-            let mut quic_deciding_bytes = Octets::with_slice(&buf[..8]);
-            if is_packet_quic(&mut quic_deciding_bytes) {
+            if is_packet_quic(&buf[..1]) {
                 debug!("Quic packet");
                 if let Some(callback) = self.quic_callback {
-                    callback(&buf).unwrap();
+                    callback(&mut buf).unwrap();
                 }
             } else {
                 debug!("Other packet");
                 if let Some(callback) = self.ice_callback {
-                    callback(&buf).unwrap();
+                    callback(&mut buf).unwrap();
                 }
             }
         }
