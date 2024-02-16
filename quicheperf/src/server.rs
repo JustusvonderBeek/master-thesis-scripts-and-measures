@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::net::SocketAddr;
 
 use crate::common;
@@ -5,6 +6,7 @@ use crate::protocol::Protocol;
 
 use super::common::*;
 use super::sendto;
+use hexdump::hexdump;
 use mio::net::UdpSocket;
 use quiche::scheduler::MultipathScheduler;
 use quiche::RecvInfo;
@@ -15,6 +17,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use quiche::ConnectionId;
+
+use webrtc_util::Conn;
 
 type ClientId = u64;
 
@@ -33,6 +37,7 @@ enum PacketRecvAction {
 struct SocketState {
     // Constant, set with new()
     socket: mio::net::UdpSocket,
+    connection: Arc<dyn Conn + Send + Sync>,
     pacing: bool,
     enable_gso: bool,
 
@@ -44,9 +49,10 @@ struct SocketState {
 }
 
 impl SocketState {
-    fn new(socket: mio::net::UdpSocket, pacing: bool, enable_gso: bool) -> SocketState {
+    fn new(socket: mio::net::UdpSocket, conn: Arc<dyn Conn + Send + Sync>, pacing: bool, enable_gso: bool) -> SocketState {
         SocketState {
             socket: socket,
+            connection: conn,
             pacing,
             enable_gso,
             buf: [0; MAX_BUF_SIZE],
@@ -116,6 +122,49 @@ impl SocketState {
             }
         }
     }
+
+    async fn try_send_with_conn(&mut self) -> Result<usize, ServerError> {
+        let send_info = match self.send_info {
+            Some(v) => v,
+            None => return Ok(0),
+        };
+        // println!("Reached try_send_with_conn!");
+        trace!(
+            "{:}->{:} try sending scheduled {} bytes",
+            send_info.from,
+            send_info.to,
+            self.until
+        );
+        let conn2 = Arc::clone(&self.connection);
+        // let conn3 = Box::new(conn2);
+        match sendto::send_to_with_conn(
+            conn2,
+            &self.buf[..self.until],
+            &send_info,
+            self.max_datagram_size
+        ).await {
+            Ok(n) => {
+                let to = self.send_info.unwrap();
+                trace!("{:}->{:} written {} bytes", to.from, to.to, self.until);
+                self.reset();
+                Ok(n)
+            }
+            Err(e) => {
+                if e.kind() == std::io::ErrorKind::WouldBlock {
+                    // TODO: The data of "out" is thrown away, right? Should I handle this?
+                    // Is this assertion correct? It isn't, right?
+                    trace!("send() would block");
+                    return Ok(0);
+                }
+
+                return Err(ServerError::FatalSocket(format!(
+                    "send_to() failed: {:?}",
+                    e
+                )));
+            }
+        }
+    }
+
 }
 
 /// Holds state of one QUIC connection.
@@ -289,7 +338,8 @@ impl Server {
         password: Option<String>,
         config: quiche::Config,
         scheduler: Box<dyn MultipathScheduler>,
-        udp_socket: Option<Vec<UdpSocket>>,
+        udp_sockets: Option<Vec<UdpSocket>>,
+        send_sockets: Arc<dyn Conn + Send + Sync>,
     ) -> Result<Server, ServerError> {
         let poll = mio::Poll::new().unwrap();
         let mut sockets: Slab<SocketState> =
@@ -303,24 +353,29 @@ impl Server {
 
         let mut addrs = Vec::new();
         let mut udp_sockets_unpacked : Vec<UdpSocket>;
-        let sockets_given = match udp_socket {
+        let sockets_given = match udp_sockets {
             Some(_) => {
                 true
             },
             None => false
         };
         if sockets_given {
-            udp_sockets_unpacked = udp_socket.unwrap();
+            udp_sockets_unpacked = udp_sockets.unwrap();
         } else {
             udp_sockets_unpacked = Vec::new();
         }
+        // let mut counter = 0;
+        // let send_socket_glob = Arc::new(send_sockets);
+        // let send_socket_glob = Box::new(send_sockets);
         for src_addr in local_addrs {
             println!("listening on {:?}", src_addr);
             
-            let socket : mio::net::UdpSocket = if sockets_given {
+            let socket : UdpSocket = if sockets_given {
                 udp_sockets_unpacked.pop().unwrap()
             } else {
+                // Box::new(tokio::net::UdpSocket(src_addr))
                 mio::net::UdpSocket::bind(src_addr).unwrap()
+                // return Err(ServerError::FatalSocket("Failed to create socket".to_string()));
             };
 
             let local_addr = socket.local_addr().unwrap();
@@ -344,21 +399,26 @@ impl Server {
                 };
             }
 
-            let socket_state = SocketState::new(socket, pacing, enable_gso);
+            // FIXME: What happens if we have more than a single connection? For now ignore
+            // let local_socket_conn : Box<dyn Conn + Send + Sync> = Box::into(send_sockets[counter]);
+            let send_socket = Arc::clone(&send_sockets);
+            let socket_state = SocketState::new(socket, send_socket,  pacing, enable_gso);
             let token = sockets.insert(socket_state);
             src_addr_tokens.insert(local_addr, token);
             addrs.push(local_addr);
 
             // Disabled WRITABLE for now. See client.rs for details on the implications.
-            poll.registry()
-                .register(
-                    &mut sockets[token].socket,
-                    mio::Token(token),
-                    mio::Interest::READABLE, // .add(mio::Interest::WRITABLE),
-                )
-                .unwrap();
+            // poll.registry()
+            //     .register(
+            //         &mut sockets[token].socket,
+            //         mio::Token(token),
+            //         mio::Interest::READABLE, // .add(mio::Interest::WRITABLE),
+            //     )
+            //     .unwrap();
 
             info!("listening on {:}", local_addr);
+            // counter = counter + 1;
+            
         }
 
         let rng = SystemRandom::new();
@@ -446,31 +506,50 @@ impl Server {
         Ok(())
     }
 
+    pub async fn on_writeable_async(&mut self, local_addr: SocketAddr) -> Result<(), ServerError> {
+        let token = self.src_addr_tokens.get(&local_addr).unwrap();
+        let socket = &mut self.sockets[*token];
+        if let Err(e) = socket.try_send_with_conn().await {
+            return Err(ServerError::FatalSocket(format!(
+                "socket.try_send failed: {:?}",
+                e
+            )));
+        };
+        Ok(())
+    }
+
     /// Read incoming UDP packets from the socket and feed them to quiche,
     /// until there are no more packets to read.
-    pub fn on_readable(&mut self, token: usize) -> Result<(), ServerError> {
+    pub fn on_readable(&mut self, buf: &mut [u8], local_addr: SocketAddr, from: SocketAddr, len: usize) -> Result<(), ServerError> {
         // let socket = &self.sockets[token].socket;
-        let local_addr = self.sockets[token].socket.local_addr().unwrap();
+        info!("On readable called");
+        // let local_addr = self.sockets[token].socket.local_addr().unwrap();
         loop {
-            let socket_recv = self.sockets[token].socket.recv_from(&mut self.buf);
-            let (len, from) = match socket_recv {
-                Ok(v) => v,
-                Err(e) => {
-                    // There are no more UDP packets to read, so end the read loop
-                    if e.kind() == std::io::ErrorKind::WouldBlock {
-                        trace!("recv() from {:} would block", local_addr);
-                        return Ok(());
-                    }
-                    return Err(ServerError::FatalSocket(format!(
-                        "recv() from {:} failed: {:?}",
-                        local_addr, e
-                    )));
-                }
-            };
+            // let socket_recv = self.sockets[token].socket.recv_from(&mut self.buf);
+            // let (len, from) = match socket_recv {
+            //     Ok(v) => v,
+            //     Err(e) => {
+            //         // There are no more UDP packets to read, so end the read loop
+            //         if e.kind() == std::io::ErrorKind::WouldBlock {
+            //             trace!("recv() from {:} would block", local_addr);
+            //             return Ok(());
+            //         }
+            //         return Err(ServerError::FatalSocket(format!(
+            //             "recv() from {:} failed: {:?}",
+            //             local_addr, e
+            //         )));
+            //     }
+            // };
+
+            // TODO: Decide what type of packet and pass to ICE / QUIC
+            // if !is_packet_quic(&self.buf[..1]) {
+            //     info!("Packet is NOT QUIC");
+            //     continue;
+            // }
 
             // Parse the QUIC packet's header.
             let hdr = {
-                let mut pkt_buf = &mut self.buf[..len];
+                let mut pkt_buf = &mut buf[..len];
                 match quiche::Header::from_slice(&mut pkt_buf, quiche::MAX_CONN_ID_LEN) {
                     Ok(v) => v,
                     Err(e) => {
@@ -500,22 +579,23 @@ impl Server {
                         return Err(ServerError::Unexpected("Expected initial packet".into()))
                     }
                     PacketRecvAction::VersionNegotiation => {
+                        // TODO: Should not be necessary for now, but rather nice to have later on
                         warn!("Doing version negotiation");
                         let len =
                             quiche::negotiate_version(&hdr.scid, &hdr.dcid, &mut self.out).unwrap();
                         let out = &self.out[..len];
                         // TODO: refactor
-                        if let Err(e) = self.sockets[token].socket.send_to(out, from) {
-                            if e.kind() == std::io::ErrorKind::WouldBlock {
-                                return Err(ServerError::Unexpected(
-                                    "send() would block in connection establishment".into(),
-                                ));
-                            }
-                            return Err(ServerError::FatalSocket(format!(
-                                "send() failed: {:?}",
-                                e
-                            )));
-                        }
+                        // if let Err(e) = send_socket.send_to(out, from) {
+                        //     if e.kind() == std::io::ErrorKind::WouldBlock {
+                        //         return Err(ServerError::Unexpected(
+                        //             "send() would block in connection establishment".into(),
+                        //         ));
+                        //     }
+                        //     return Err(ServerError::FatalSocket(format!(
+                        //         "send() failed: {:?}",
+                        //         e
+                        //     )));
+                        // }
                         return Ok(());
                     }
                 },
@@ -555,6 +635,99 @@ impl Server {
             }
         }
     }
+
+    pub async fn read(&mut self, buf: &mut [u8], local_addr: SocketAddr, from: SocketAddr, len: usize, send_socket: Arc<dyn Conn + Send + Sync>) -> Result<(), ServerError> {
+        // info!("On readable called");
+        // Parse the QUIC packet's header.
+        let hdr = {
+            let mut pkt_buf = &mut buf[..len];
+            match quiche::Header::from_slice(&mut pkt_buf, quiche::MAX_CONN_ID_LEN) {
+                Ok(v) => v,
+                Err(e) => {
+                    return Err(ServerError::Unexpected(format!(
+                        "Parsing packet header failed: {:?}",
+                        e
+                    )));
+                }
+            }
+        };
+
+        trace!("{:}->{:}: {} bytes, {:?}", from, local_addr, len, hdr);
+
+        let recv_info = quiche::RecvInfo {
+            to: local_addr,
+            from,
+        };
+
+        let conn_id = ring::hmac::sign(&self.conn_id_seed, &hdr.dcid);
+        let conn_id = &conn_id.as_ref()[..quiche::MAX_CONN_ID_LEN];
+        let conn_id = conn_id.to_vec().into();
+
+        let client_id = match self.get_client_id(&recv_info, &hdr, conn_id) {
+            Ok(v) => v,
+            Err(e) => match e {
+                PacketRecvAction::NotInitial => {
+                    return Err(ServerError::Unexpected("Expected initial packet".into()))
+                }
+                PacketRecvAction::VersionNegotiation => {
+                    // TODO: Should not be necessary for now, but rather nice to have later on
+                    warn!("Doing version negotiation");
+                    let len =
+                        quiche::negotiate_version(&hdr.scid, &hdr.dcid, &mut self.out).unwrap();
+                    let out = &self.out[..len];
+                    if let Err(e) = send_socket.send_to(out, from).await {
+                        // if e.kind() == std::io::ErrorKind::WouldBlock {
+                        //     return Err(ServerError::Unexpected(
+                        //         "send() would block in connection establishment".into(),
+                        //     ));
+                        // }
+                        return Err(ServerError::FatalSocket(format!(
+                            "send() failed: {:?}",
+                            e
+                        )));
+                    }
+                    return Ok(());
+                }
+            },
+        };
+
+        let client = match self.clients.get_mut(&client_id) {
+            Some(v) => v,
+            None => {
+                return Err(ServerError::Unexpected(format!(
+                    "No client in map for client_id={}",
+                    client_id
+                )))
+            }
+        };
+
+        let mut pkt_buf = &mut buf[..len];
+        // hexdump(&pkt_buf);
+        client.recv(&mut pkt_buf, recv_info)?;
+
+        // See whether source Connection IDs have been retired.
+        while let Some(retired_scid) = client.conn.retired_scid_next() {
+            info!("Retiring source CID {:?}", retired_scid);
+            self.clients_ids.remove(&retired_scid);
+        }
+
+        // Provides as many CIDs as possible.
+        while client.conn.source_cids_left() > 0 {
+            let (scid, reset_token) = generate_cid_and_reset_token(&self.rng);
+            if client
+                .conn
+                .new_source_cid(&scid, reset_token, false)
+                .is_err()
+            {
+                break;
+            }
+
+            self.clients_ids.insert(scid, client.client_id);
+        };
+
+        Ok(())
+    }
+
 
     fn get_client_id(
         &mut self,
@@ -751,6 +924,130 @@ impl Server {
         }
         Ok(())
     }
+
+    pub async fn send_with_conn(&mut self) -> Result<(), ServerError> {
+        for client in self.clients.values_mut() {
+            // Reduce max_send_burst by 25% if loss is increasing more than 0.1%.
+            // let loss_rate = client.conn.stats().lost as f64 / client.conn.stats().sent as f64;
+            // if loss_rate > client.loss_rate + 0.001 {
+            //     let prev_max_send_burst = client.max_send_burst;
+            //     let prev_loss_rate = client.loss_rate;
+            //     client.max_send_burst = client.max_send_burst / 4 * 3;
+            //     // Minimun bound of 10xMSS.
+            //     client.max_send_burst = client.max_send_burst.max(client.max_datagram_size * 10);
+            //     client.loss_rate = loss_rate;
+            //     debug!("Decreased max_send_burst of {} from {} to {} since loss increased from {} to {}",
+            //             client.conn.trace_id(),
+            //             prev_max_send_burst, client.max_send_burst, prev_loss_rate, loss_rate);
+            // }
+
+            let mut continue_write = true;
+            while continue_write {
+                continue_write = false;
+
+                // The maximum amount of data that should be written in one burst with GSO.
+                // Explanation division and multiplication: https://github.com/cloudflare/quiche/pull/1213
+                // Applies to each socket individually.
+                let max_send_burst = client.conn.send_quantum().min(client.max_send_burst)
+                    / client.max_datagram_size
+                    * client.max_datagram_size;
+
+                let mut it = 0;
+                while let Some((local_addr, peer_addr, send_instr)) =
+                    self.scheduler.get_best_path(&mut client.conn)
+                {
+                    it += 1;
+
+                    let token = self.src_addr_tokens[&local_addr];
+                    let socket = &mut self.sockets[token];
+
+                    if !socket.writable_for_dest(&peer_addr) {
+                        // The socket has already data queued for sending. Only more packets toward the same
+                        // destination can be queued.
+                        break;
+                    }
+
+                    // TODO: get send quantum for that specific path
+
+                    if socket.until >= max_send_burst {
+                        // The QUIC connection might have more data to write than max_send_burst.
+                        // Write data to the socket and try to generate more packets.
+                        continue_write = true;
+                        break;
+                    }
+
+                    let (written, send_info) = match client.conn.send_on_path_with_instructions(
+                        &mut socket.buf[socket.until..max_send_burst],
+                        Some(local_addr),
+                        Some(peer_addr),
+                        Some(send_instr),
+                    ) {
+                        Ok(v) => v,
+
+                        Err(quiche::Error::Done) => {
+                            trace!(
+                                "{}->{} {}, [{}], conn.send returned Done",
+                                local_addr,
+                                peer_addr,
+                                it,
+                                client.conn.trace_id()
+                            );
+                            break;
+                        }
+
+                        Err(e) => {
+                            error!("{} conn.send failed: {:?}", client.conn.trace_id(), e);
+                            client.conn.close(false, 0x1, b"fail").ok();
+                            // Not sure what's correct in this situation.
+                            break;
+                        }
+                    };
+
+                    socket.until += written;
+                    let _ = socket.send_info.get_or_insert(send_info);
+                    socket.max_datagram_size = client.max_datagram_size;
+
+                    trace!(
+                        "{:}->{:} conn.send [{}] returned {} bytes, max_datagram_size={}",
+                        send_info.from,
+                        send_info.to,
+                        it,
+                        written,
+                        client.max_datagram_size,
+                    );
+
+                    if !client.conn.is_established() {
+                        trace!("Disabled GSO packet assembly during connection establishment");
+                        continue_write = true;
+                        break;
+                    }
+
+                    if written < client.max_datagram_size {
+                        // https://github.com/cloudflare/quiche/commit/eac98fae15ce67ee774125c90db0d59c4deda5da
+                        // The QUIC connection might has more data to write.
+                        continue_write = true;
+
+                        // No full-sized packet has been written; only the last packet can be less than
+                        // max_datagram_size if we want to use GSO.
+                        break;
+                    }
+                }
+
+                // Try to send the queued data
+                for (_, token) in self.src_addr_tokens.iter() {
+                    let socket = &mut self.sockets[*token];
+                    if let Err(e) = socket.try_send_with_conn().await {
+                        return Err(ServerError::FatalSocket(format!(
+                            "socket.try_send failed: {:?}",
+                            e
+                        )));
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
 
     pub fn garbage_collect(&mut self) {
         let closed_cids: Vec<u64> = self
