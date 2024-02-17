@@ -164,22 +164,29 @@ def ice_ping_pong():
 
     h1 = net.get("h1")
     h2 = net.get("h2")
-    server = h2.popen(f"../webrtc/target/debug/examples/ping_pong", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    client = h1.popen(f"../webrtc/target/debug/examples/ping_pong --controlling -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    # Cert dir depending on call dir, expecting: master-dir
+    server = h2.popen(f"./r2m2p2/target/debug/quic-multiplex -k r2m2p2/resources -l 192.168.1.3 -r 192.168.1.2 -c -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    client = h1.popen(f"./r2m2p2/target/debug/quic-multiplex -l 192.168.1.2 -r 192.168.1.3 -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     # Processes require the enter key to start
-    client.communicate(input=b"\n")
-    server.communicate(input=b"\n")
+    # time.sleep(1)
+    # print("Starting controlling")
+    # server.communicate(input=b"\n\r") # Doesn't work for controlling?
+    # time.sleep(1)
+    # print("Starting controlled")
+    # client.communicate(input=b"\n\r")
 
-    print("Waiting 10s...")
-    time.sleep(10)
+    print("Waiting 20s...")
+    time.sleep(20)
+
+    CLI(net)
 
     terminate(h1_pcap)
     terminate(h2_pcap)
     terminate(server, "h2/")
     terminate(client, "h1/")
 
-    CLI(net)
     net.stop()
+    
     exit(0)
 
 # TODO: Repeat the experiment with our own implementation
