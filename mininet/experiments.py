@@ -101,6 +101,18 @@ def start_webrtc_client(net):
     client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 192.168.1.3:60000", stdout=subprocess.PIPE)
     return client
 
+def start_turn_server(net):
+    """
+    Starting a TURN/STUN server at the host in the 'internet' localtion
+    """
+
+    h1 = net.get("turn")
+    Path("turn").mkdir(parents=True, exist_ok=True)
+    
+    turnserver = h1.popen(f"../coturn/bin/turnserver", stdout=subprocess.PIPE)
+    return turnserver
+
+
 def p2p_webrtc():
     """
     Launching a direct peer-to-peer connection between two WebRTC clients
