@@ -111,7 +111,7 @@ impl SocketState {
 pub struct Client {
     local_addrs: Vec<SocketAddr>,
     peer_addrs: Vec<SocketAddr>,
-
+    ice_callback: Option<fn(&mut [u8], len: usize)>,
     pub conn: quiche::Connection,
     sockets: Slab<SocketState>,
     src_addr_tokens: HashMap<SocketAddr, usize>,
@@ -130,6 +130,7 @@ impl Client {
         peer_addrs: Vec<SocketAddr>,
         mut config: quiche::Config,
         udp_sockets: Option<Vec<UdpSocket>>,
+        ice_callback: Option<fn(&mut [u8], len: usize)>,
     ) -> Result<Client, ClientError> {
         let mut sockets = Slab::with_capacity(std::cmp::max(local_addrs.len(), 1));
         let mut src_addr_tokens = HashMap::new();
@@ -233,7 +234,7 @@ impl Client {
         Ok(Client {
             local_addrs: addrs,
             peer_addrs,
-
+            ice_callback,
             conn: conn,
             sockets,
             src_addr_tokens,
@@ -357,6 +358,17 @@ impl Client {
                     };
 
                     trace!("{}->{}: got {} bytes", from, local_addr, len);
+
+                    if !is_packet_quic(&self.recv_buf[..1]) {
+                        let callback = match self.ice_callback {
+                            Some(c) => c,
+                            None => {
+                                continue;
+                            }
+                        };
+                        callback(&mut self.recv_buf, len);
+                        continue;
+                    }
 
                     let recv_info = quiche::RecvInfo {
                         to: local_addr,

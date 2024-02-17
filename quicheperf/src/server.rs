@@ -318,6 +318,8 @@ pub struct Server {
     sockets: Slab<SocketState>,
     src_addr_tokens: HashMap<SocketAddr, usize>,
 
+    ice_callback: Option<fn(&mut [u8], len: usize)>,
+
     keylog: Option<std::fs::File>,
 
     poll: mio::Poll,
@@ -340,6 +342,7 @@ impl Server {
         scheduler: Box<dyn MultipathScheduler>,
         udp_sockets: Option<Vec<UdpSocket>>,
         send_sockets: Arc<dyn Conn + Send + Sync>,
+        ice_callback: Option<fn(&mut [u8], len: usize)>,
     ) -> Result<Server, ServerError> {
         let poll = mio::Poll::new().unwrap();
         let mut sockets: Slab<SocketState> =
@@ -408,13 +411,13 @@ impl Server {
             addrs.push(local_addr);
 
             // Disabled WRITABLE for now. See client.rs for details on the implications.
-            // poll.registry()
-            //     .register(
-            //         &mut sockets[token].socket,
-            //         mio::Token(token),
-            //         mio::Interest::READABLE, // .add(mio::Interest::WRITABLE),
-            //     )
-            //     .unwrap();
+            poll.registry()
+                .register(
+                    &mut sockets[token].socket,
+                    mio::Token(token),
+                    mio::Interest::READABLE, // .add(mio::Interest::WRITABLE),
+                )
+                .unwrap();
 
             info!("listening on {:}", local_addr);
             // counter = counter + 1;
@@ -431,6 +434,8 @@ impl Server {
 
             sockets,
             src_addr_tokens,
+
+            ice_callback,
 
             keylog: configure_keylog(),
 
@@ -520,36 +525,41 @@ impl Server {
 
     /// Read incoming UDP packets from the socket and feed them to quiche,
     /// until there are no more packets to read.
-    pub fn on_readable(&mut self, buf: &mut [u8], local_addr: SocketAddr, from: SocketAddr, len: usize) -> Result<(), ServerError> {
+    pub fn on_readable(&mut self, token: usize) -> Result<(), ServerError> {
         // let socket = &self.sockets[token].socket;
-        info!("On readable called");
-        // let local_addr = self.sockets[token].socket.local_addr().unwrap();
+        let local_addr = self.sockets[token].socket.local_addr().unwrap();
         loop {
-            // let socket_recv = self.sockets[token].socket.recv_from(&mut self.buf);
-            // let (len, from) = match socket_recv {
-            //     Ok(v) => v,
-            //     Err(e) => {
-            //         // There are no more UDP packets to read, so end the read loop
-            //         if e.kind() == std::io::ErrorKind::WouldBlock {
-            //             trace!("recv() from {:} would block", local_addr);
-            //             return Ok(());
-            //         }
-            //         return Err(ServerError::FatalSocket(format!(
-            //             "recv() from {:} failed: {:?}",
-            //             local_addr, e
-            //         )));
-            //     }
-            // };
+            let socket_recv = self.sockets[token].socket.recv_from(&mut self.buf);
+            let (len, from) = match socket_recv {
+                Ok(v) => v,
+                Err(e) => {
+                    // There are no more UDP packets to read, so end the read loop
+                    if e.kind() == std::io::ErrorKind::WouldBlock {
+                        trace!("recv() from {:} would block", local_addr);
+                        return Ok(());
+                    }
+                    return Err(ServerError::FatalSocket(format!(
+                        "recv() from {:} failed: {:?}",
+                        local_addr, e
+                    )));
+                }
+            };
 
-            // TODO: Decide what type of packet and pass to ICE / QUIC
-            // if !is_packet_quic(&self.buf[..1]) {
-            //     info!("Packet is NOT QUIC");
-            //     continue;
-            // }
+            if !is_packet_quic(&self.buf[..1]) {
+                // TODO: Implement mechanism to transfer data to ICE
+                let callback = match self.ice_callback {
+                    Some(c) => c,
+                    None => {
+                        continue;
+                    }
+                };
+                callback(&mut self.buf[..len], len);
+                continue;
+            }
 
             // Parse the QUIC packet's header.
             let hdr = {
-                let mut pkt_buf = &mut buf[..len];
+                let mut pkt_buf = &mut self.buf[..len];
                 match quiche::Header::from_slice(&mut pkt_buf, quiche::MAX_CONN_ID_LEN) {
                     Ok(v) => v,
                     Err(e) => {
@@ -579,23 +589,22 @@ impl Server {
                         return Err(ServerError::Unexpected("Expected initial packet".into()))
                     }
                     PacketRecvAction::VersionNegotiation => {
-                        // TODO: Should not be necessary for now, but rather nice to have later on
                         warn!("Doing version negotiation");
                         let len =
                             quiche::negotiate_version(&hdr.scid, &hdr.dcid, &mut self.out).unwrap();
                         let out = &self.out[..len];
                         // TODO: refactor
-                        // if let Err(e) = send_socket.send_to(out, from) {
-                        //     if e.kind() == std::io::ErrorKind::WouldBlock {
-                        //         return Err(ServerError::Unexpected(
-                        //             "send() would block in connection establishment".into(),
-                        //         ));
-                        //     }
-                        //     return Err(ServerError::FatalSocket(format!(
-                        //         "send() failed: {:?}",
-                        //         e
-                        //     )));
-                        // }
+                        if let Err(e) = self.sockets[token].socket.send_to(out, from) {
+                            if e.kind() == std::io::ErrorKind::WouldBlock {
+                                return Err(ServerError::Unexpected(
+                                    "send() would block in connection establishment".into(),
+                                ));
+                            }
+                            return Err(ServerError::FatalSocket(format!(
+                                "send() failed: {:?}",
+                                e
+                            )));
+                        }
                         return Ok(());
                     }
                 },
@@ -635,6 +644,7 @@ impl Server {
             }
         }
     }
+
 
     pub async fn read(&mut self, buf: &mut [u8], local_addr: SocketAddr, from: SocketAddr, len: usize, send_socket: Arc<dyn Conn + Send + Sync>) -> Result<(), ServerError> {
         // info!("On readable called");
