@@ -238,7 +238,7 @@ fn main() -> ExitCode {
                 bitrate_target: bitrate_target,
             };
 
-            let client = client::Client::new(local_addrs, peer_addrs, config, None).unwrap();
+            let client = client::Client::new(local_addrs, peer_addrs, config, None, None).unwrap();
 
             return match quicheperf_client(client, scheduler, tc, psu, terminate) {
                 Err(client::ClientError::HandshakeFail) => ExitCode::FAILURE,
@@ -393,21 +393,21 @@ pub fn quicheperf_server(
             let token = event.token().into();
 
             // Writable mio notifications disabled for now
-            // if event.is_writable() {
-            server.on_writable(token)?;
-            // }
-            // if let Err(e) = server.on_readable(token) {
-            //     match e {
-            //         server::ServerError::FatalSocket(e) => {
-            //             error!("{}", e);
-            //             break;
-            //         }
-            //         server::ServerError::Unexpected(e) => {
-            //             trace!("{}", e);
-            //             continue;
-            //         }
-            //     }
-            // }
+            if event.is_writable() {
+                server.on_writable(token)?;
+            }
+            if let Err(e) = server.on_readable(token) {
+                match e {
+                    server::ServerError::FatalSocket(e) => {
+                        error!("{}", e);
+                        break;
+                    }
+                    server::ServerError::Unexpected(e) => {
+                        trace!("{}", e);
+                        continue;
+                    }
+                }
+            }
         }
         server.send()?;
         server.garbage_collect();
