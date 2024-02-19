@@ -106,10 +106,11 @@ def start_turn_server(net):
     Starting a TURN/STUN server at the host in the 'internet' localtion
     """
 
-    h1 = net.get("turn")
+    Path("turn").mkdir(parents=True, exist_ok=True)
+    turn = net.get("turn")
     Path("turn").mkdir(parents=True, exist_ok=True)
     
-    turnserver = h1.popen(f"../coturn/bin/turnserver", stdout=subprocess.PIPE)
+    turnserver = turn.popen(f"../coturn/bin/turnserver", stdout=subprocess.PIPE)
     return turnserver
 
 
@@ -164,7 +165,7 @@ def p2p_webrtc():
     # We don't want to start the CLI again
     exit(0)
 
-def ice_ping_pong():
+def quic_multiplex():
     test_duration=10
     topo = DirectAndInternet()
     net = Mininet(topo=topo, controller = OVSController)
@@ -176,7 +177,10 @@ def ice_ping_pong():
 
     h1 = net.get("h1")
     h2 = net.get("h2")
+    
+    # turn = start_turn_server(net)
     # Cert dir depending on call dir, expecting: master-dir
+    os.environ["RUST_LOG"] = "trace"
     server = h2.popen(f"./r2m2p2/target/debug/quic-multiplex -k r2m2p2/resources -l 192.168.1.3 -r 192.168.1.2 -c -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     client = h1.popen(f"./r2m2p2/target/debug/quic-multiplex -l 192.168.1.2 -r 192.168.1.3 -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     # Processes require the enter key to start
@@ -194,6 +198,7 @@ def ice_ping_pong():
 
     terminate(h1_pcap)
     terminate(h2_pcap)
+    # terminate(turn, "turn/")
     terminate(server, "h2/")
     terminate(client, "h1/")
 
@@ -203,9 +208,9 @@ def ice_ping_pong():
 
 # TODO: Repeat the experiment with our own implementation
 
-topologies = { 'quicheperf': (lambda: quicheperf()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: ice_ping_pong()) }
+topologies = { 'quicheperf': (lambda: quicheperf()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: quic_multiplex()) }
 
 if __name__ == "__main__":
     # quicheperf()
     # p2p_webrtc()
-    ice_ping_pong()
+    quic_multiplex()
