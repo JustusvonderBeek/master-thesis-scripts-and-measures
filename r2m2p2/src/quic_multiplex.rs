@@ -38,7 +38,7 @@ use std::sync::atomic::Ordering;
 use std::{option, process, thread};
 use std::sync::atomic::AtomicBool;
 use std::io;
-use std::process::ExitCode;
+use std::process::{exit, ExitCode};
 use std::time::{Duration, Instant};
 use rand::{thread_rng, Rng};
 use async_trait::async_trait;
@@ -459,6 +459,8 @@ async fn main() {
         if c == ConnectionState::Failed {
             // let _ = ice_done_tx.try_send(());
             println!("Connection state failed. You can end the program...");
+            thread::sleep(Duration::from_secs(5));
+            process::exit(1);
         }
         Box::pin(async move {})
     }));
@@ -532,6 +534,8 @@ async fn main() {
             .accept(cancel_rx, remote_ufrag, remote_pwd)
             .await.unwrap()
     };
+
+    println!("Connection established via: {} <-> {}", conn.remote_addr().unwrap(), conn.local_addr().unwrap());
 
     // Send messages in a loop to the remote peer
     // let send_conn_quic = Box::new(conn);
@@ -612,7 +616,7 @@ async fn main() {
                 Ok(s) => s,
                 Err(e) => {
                     println!("Failed to decode string: {}", e);
-                    println!("Buffer: {:x?}", &buf[..1]);
+                    println!("Buffer: {:x?}", &buf[..6]);
                     return;
                 }
             };
@@ -786,6 +790,13 @@ async fn main() {
 
                 Ok(_) => ExitCode::SUCCESS,
             };
+
+            // TODO: Continue the gathering process + send probes on the sockets that are given but not bound
+            // FIXME: either use the get_local_candidates or restart to continue/ restart the gathering
+            // FIXME: restart might lead to rebinding the socket and crashing
+            // let cand = ice_agent.get_local_candidates().await;
+            ice_agent.gather_candidates().unwrap();
+            
         }
     }
 }
