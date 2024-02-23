@@ -100,7 +100,8 @@ Beide Geräte waren im selben WiFi Hotspot. Das iPad hat einen Anruf an das iPho
 | facetime_23_01_10_26 | FaceTime Anruf 1:1, Beide im selben WiFi | iPad -> iPhone |
 | facetime_23_01_10_28 | FaceTime Anruf 1:1, Beide im selben WiFi | iPhone -> iPad |
 | facetime_23_01_10_31 | FaceTime Anruf 1:1, iPad wechselt WiFi. Erst lokal auf dem Laptop, dann im selben Wohnheimsnetz | iPhone -> iPad |
-
+| iphone_face_time_migration_idle(_2) | Facetime Anfruf 1:1, beide im lokalen Wifi + iPhone im Cellular, 1min (2:20min im 2. File) idle, Pings/Keep-Alives im Cellular | iPhone -> iPad |
+| iphone_face_time_migration_wifi_only | FaceTime Anfruf 1:1, Starten in unterschiedlichen WiFis, wechsel vom iPhone ins Wohnheimnetz, Verbindungsabbruch und Aufbau über Apple, dann wieder lokal | iPhone -> iPad |
 
 Die Erkenntnisse aus den Tests
 
@@ -110,11 +111,13 @@ Die Erkenntnisse aus den Tests
 | Informationsverbindung | QUIC | (Apple) 17.242.208.196 (beide Clients zur selben Adresse) | Wahrscheinlich Transportverbindung für Daten von FaceTime. Wieder direkt von bzw. zu Apple |
 | Datenverbindung | RTP via UDP | 10.151.13.199 (iPad) <-> 10.151.12.233 (iPhone) | DIREKTE Datenverbindung nachdem STUN erfolgreich war. Kein Server bzw. Apple involviert |
 | Abbruch der Verbindung | --- | --- | Wechsel von Laptop in Wohnheimnetz |
+| Verhalten abhängig von Interfaces | --- | Cellular -> Direkte Migration | Abbruch der WiFi Verbindung |
+| Verhalten abhängig von Interface | --- | WiFi -> Apple -> Direkte Verbindung | Abbruch der WiFi Verbindung ohne Cellular |
 | Anrufer/Empfänger versucht sich zu mit selber Adresse zu verbinden | ICMP | Dest. unreachable | Verbindung über alte Bindings schläft fehl |
 | Versucht alte Bindings wieder herzustellen | STUN | 10.151.12.233 | Schlägt fehl |
 | Gerät ohne Abbruch verbindet sich zu Apple | TLS | 17.57.146.174 | Wahrscheinlich Wiederaufnahme der Verbindung |
 | Verbindung an Apple | QUIC | lokal <-> (Apple) 17.252.29.4 | Transportverbindung. Beide stellen Verbindung an den selben Server her. Initial Handshakes |
-
+| Wiederherstellung der direkten Verbindung | QUIC + RTP | lokal -> iPad | Wenn die Verbindung lange genug weiterläuft, sucht und findet FaceTime auch wieder die lokale Verbindung und benutzt diese statt dem Apple Relay |
 
 ## WhatsApp Verhalten
 Die Tests auf die Dateinamen gemapped.
