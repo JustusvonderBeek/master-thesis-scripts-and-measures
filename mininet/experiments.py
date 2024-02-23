@@ -101,6 +101,19 @@ def start_webrtc_client(net):
     client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 192.168.1.3:60000", stdout=subprocess.PIPE)
     return client
 
+def start_turn_server(net):
+    """
+    Starting a TURN/STUN server at the host in the 'internet' localtion
+    """
+
+    Path("turn").mkdir(parents=True, exist_ok=True)
+    turn = net.get("turn")
+    Path("turn").mkdir(parents=True, exist_ok=True)
+    
+    turnserver = turn.popen(f"../coturn/bin/turnserver", stdout=subprocess.PIPE)
+    return turnserver
+
+
 def p2p_webrtc():
     """
     Launching a direct peer-to-peer connection between two WebRTC clients
@@ -152,7 +165,7 @@ def p2p_webrtc():
     # We don't want to start the CLI again
     exit(0)
 
-def ice_ping_pong():
+def quic_multiplex():
     test_duration=10
     topo = DirectAndInternet()
     net = Mininet(topo=topo, controller = OVSController)
@@ -164,29 +177,40 @@ def ice_ping_pong():
 
     h1 = net.get("h1")
     h2 = net.get("h2")
-    server = h2.popen(f"../webrtc/target/debug/examples/ping_pong", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    client = h1.popen(f"../webrtc/target/debug/examples/ping_pong --controlling -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+    # turn = start_turn_server(net)
+    # Cert dir depending on call dir, expecting: master-dir
+    os.environ["RUST_LOG"] = "trace"
+    server = h2.popen(f"./r2m2p2/target/debug/quic-multiplex -k r2m2p2/resources -l 192.168.1.3 -r 192.168.1.2 -c -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    client = h1.popen(f"./r2m2p2/target/debug/quic-multiplex -l 192.168.1.2 -r 192.168.1.3 -m", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     # Processes require the enter key to start
-    client.communicate(input=b"\n")
-    server.communicate(input=b"\n")
+    # time.sleep(1)
+    # print("Starting controlling")
+    # server.communicate(input=b"\n\r") # Doesn't work for controlling?
+    # time.sleep(1)
+    # print("Starting controlled")
+    # client.communicate(input=b"\n\r")
 
-    print("Waiting 10s...")
-    time.sleep(10)
+    print("Waiting 20s...")
+    time.sleep(20)
+
+    CLI(net)
 
     terminate(h1_pcap)
     terminate(h2_pcap)
+    # terminate(turn, "turn/")
     terminate(server, "h2/")
     terminate(client, "h1/")
 
-    CLI(net)
     net.stop()
+    
     exit(0)
 
 # TODO: Repeat the experiment with our own implementation
 
-topologies = { 'quicheperf': (lambda: quicheperf()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: ice_ping_pong()) }
+topologies = { 'quicheperf': (lambda: quicheperf()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: quic_multiplex()) }
 
 if __name__ == "__main__":
     # quicheperf()
     # p2p_webrtc()
-    ice_ping_pong()
+    quic_multiplex()

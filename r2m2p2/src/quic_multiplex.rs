@@ -35,10 +35,10 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4};
 use std::os::fd::{AsRawFd, FromRawFd};
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
-use std::{process, thread};
+use std::{option, process, thread};
 use std::sync::atomic::AtomicBool;
 use std::io;
-use std::process::ExitCode;
+use std::process::{exit, ExitCode};
 use std::time::{Duration, Instant};
 use rand::{thread_rng, Rng};
 use async_trait::async_trait;
@@ -297,8 +297,23 @@ async fn main() {
                 .takes_value(true)
                 .long("local")
                 .short('l')
-                .default_value("127.0.0.1")
+                .default_value("0.0.0.0")
                 .help("The address the local quic socket should bind to")
+        )
+        .arg(
+            Arg::with_name("cert-dir")
+                .takes_value(true)
+                .long("cert_dir")
+                .short('k')
+                .default_value("resources")
+                .help("The directory containing the certificate and private key")
+        )
+        .arg(
+            Arg::with_name("mininet")
+                .takes_value(false)
+                .long("mininet")
+                .short('m')
+                .help("If given both processes start after a given duration instead of pressing 'Enter'")
         );
 
     let terminate = Arc::new(AtomicBool::new(false));
@@ -317,6 +332,8 @@ async fn main() {
     // Create the UDP listening socket, and register it with the event loop.
     // FIXME: Add argument to specify where to bind the socket to
 
+    let mininet = matches.is_present("mininet");
+    let cert_dir = matches.value_of("cert-dir").expect("Certificate dir is required");
     let remote_endpoint = Arc::new(matches.value_of("remote").expect("Remote endpoint not given but required!"));
     let local_endpoint = matches.value_of("local-quic-address").expect("Expected local address but non was given!");
     // Controlling in this case also means server (quic related)
@@ -379,9 +396,21 @@ async fn main() {
     } else {
         println!("Local Agent is controlled");
     };
-    println!("Press 'Enter' when both processes have started");
-    let mut input = String::new();
-    let _ = io::stdin().read_line(&mut input).unwrap();
+
+    if !mininet {
+        println!("Press 'Enter' when both processes have started");
+        let mut input = String::new();
+        let _ = io::stdin().read_line(&mut input).unwrap();
+    } else {
+        if is_controlling {
+            println!("Server: waiting 1 second");
+            thread::sleep(Duration::from_secs(1));
+        } else {
+            println!("Client: waiting 2 seconds");
+            thread::sleep(Duration::from_secs(3));
+        }
+    }
+    
 
     // Step 2: For each candidate our ice agent finds, send out-of-band to the other end
     let client = Arc::new(Client::new());
@@ -430,6 +459,8 @@ async fn main() {
         if c == ConnectionState::Failed {
             // let _ = ice_done_tx.try_send(());
             println!("Connection state failed. You can end the program...");
+            thread::sleep(Duration::from_secs(5));
+            process::exit(1);
         }
         Box::pin(async move {})
     }));
@@ -504,6 +535,8 @@ async fn main() {
             .await.unwrap()
     };
 
+    println!("Connection established via: {} <-> {}", conn.remote_addr().unwrap(), conn.local_addr().unwrap());
+
     // Send messages in a loop to the remote peer
     // let send_conn_quic = Box::new(conn);
     let conn_tx = Arc::clone(&conn);
@@ -516,43 +549,39 @@ async fn main() {
     // What type of packets are exchanged here?
     // TODO: Test this out
     
-    // tokio::spawn(async move {
-    //     const RANDOM_STRING: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    //     loop {
-    //         tokio::time::sleep(Duration::from_secs(3)).await;
+    tokio::spawn(async move {
+        const RANDOM_STRING: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        loop {
+            tokio::time::sleep(Duration::from_secs(3)).await;
 
-    //         let val: String = (0..15)
-    //             .map(|position| {
-    //                 let idx = thread_rng().gen_range(0..RANDOM_STRING.len());
-    //                 if position == 0 {
-    //                     // Prevent this from setting the QUIC bit
-    //                     (RANDOM_STRING[idx] & !0x40) as char
-    //                 } else {
-    //                     RANDOM_STRING[idx] as char
-    //                 }
-    //             })
-    //             .collect();
+            let val: String = (0..15)
+                .map(|position| {
+                    let idx = thread_rng().gen_range(0..RANDOM_STRING.len());
+                    if position == 0 {
+                        // Prevent this from setting the QUIC bit
+                        (RANDOM_STRING[idx] & !0x40) as char
+                    } else {
+                        RANDOM_STRING[idx] as char
+                    }
+                })
+                .collect();
 
-    //         tokio::select! {
-    //             //  _ = done_send.changed() => {
-    //             //     println!("receive cancel ice send!");
-    //             //     break;
-    //             // }
-    //             result = conn_tx.send(val.as_bytes()) => {
-    //                 if let Err(err) = result {
-    //                     eprintln!("conn_tx send error: {err}");
-    //                     break;
-    //                 }else{
-    //                     println!("Sent: '{val}'");
-    //                 }
-    //             }
-    //         };
-    //     }
-    // });
-
-    
-
-    // thread::sleep(Duration::from_secs(1));
+            tokio::select! {
+                //  _ = done_send.changed() => {
+                //     println!("receive cancel ice send!");
+                //     break;
+                // }
+                result = conn_tx.send(val.as_bytes()) => {
+                    if let Err(err) = result {
+                        eprintln!("conn_tx send error: {err}");
+                        break;
+                    }else{
+                        println!("Sent: '{val}'");
+                    }
+                }
+            };
+        }
+    });
 
     // ------------------------------------
     // at this point ice is sending happily data from the server to the client.
@@ -580,7 +609,20 @@ async fn main() {
     let conn_id_seed = ring::hmac::Key::generate(ring::hmac::HMAC_SHA256, &rng).unwrap();
 
     // Let ICE do it's job and then proceed to perform some quic
-    thread::sleep(Duration::from_secs(5));
+    // thread::sleep(Duration::from_secs(5));
+    let ice_callback = |buf: &mut [u8], len: usize| {
+        if len > 1 {
+            let received = match std::str::from_utf8(&buf[..len]) {
+                Ok(s) => s,
+                Err(e) => {
+                    println!("Failed to decode string: {}", e);
+                    println!("Buffer: {:x?}", &buf[..6]);
+                    return;
+                }
+            };
+            println!("Received: '{}'", received);
+        }
+    };
 
     // let mut clients = ClientMap::new();
     // For now hardcode the local address
@@ -610,13 +652,13 @@ async fn main() {
             // Server
             println!("Starting server...");
 
-            if let Err(e) = config.load_cert_chain_from_pem_file("resources/cert.crt") {
-                eprintln!("Error loading certificate from {:?}: {}", "resources/cert.crt", e);
+            if let Err(e) = config.load_cert_chain_from_pem_file(format!("{cert_dir}/cert.crt").as_str()) {
+                eprintln!("Error loading certificate from {:?}{:?}: {}", cert_dir, "/cert.crt", e);
                 panic!("No cert found");
             };
 
-            if let Err(e) = config.load_priv_key_from_pem_file("resources/cert.key") {
-                eprintln!("Error loading private key from {:?}: {}", "resources/cert.key", e);
+            if let Err(e) = config.load_priv_key_from_pem_file(format!("{cert_dir}/cert.key").as_str()) {
+                eprintln!("Error loading private key from {:?}{:?}: {}", cert_dir, "/cert.key", e);
                 panic!("No key found");
             };
 
@@ -624,7 +666,7 @@ async fn main() {
             let scheduler: Box<dyn scheduler::MultipathScheduler> = Box::new(scheduler::MinRTT::new());
 
             let send_conn_quic = Arc::clone(&conn);
-            let mut quic_server = match QuicheperfServer::new(local_addrs, None, config, scheduler, Some(udp_socket_vec), send_conn_quic) {
+            let quic_server = match QuicheperfServer::new(local_addrs, None, config, scheduler, Some(udp_socket_vec), send_conn_quic, Some(ice_callback)) {
                 Ok(v) => v,
                 Err(e) => {
                     eprintln!("Failed to set up server: {:?}", e);
@@ -632,70 +674,70 @@ async fn main() {
                 }
             };
 
-            let send_conn_quic2 = Arc::clone(&conn);
-            tokio::spawn(async move {
-                // Receive messages in a loop from the remote peer
-                let mut buf = vec![0u8; 1500];
-                let local_addr3 = local_addr2.as_ref();
-                let send_conn_quic3 = Arc::clone(&send_conn_quic2);
-                loop {
-                    // tokio::select! {
-                        // _ = done_recv.changed() => {
-                        //     println!("receive cancel ice recv!");
-                        //     break;
-                        // }
-                        let send_conn_quic4 = send_conn_quic3.clone();
-                        match quic_server.on_writeable_async(*local_addr3).await {
-                            Ok(_) => {},
-                            Err(e) => {
-                                println!("Failed to write to endpoint: {:?}", e);
-                                panic!("Failed to write to endpoint");
-                            }
-                        }
-                        match conn.recv_from(&mut buf).await {
-                            // Multiplexing between QUIC and other packets on the socket
-                            Ok((len, from)) => {
-                                println!("Received {} bytes", len);
-                                // println!("Received: '{}'", std::str::from_utf8(&buf[..len]).unwrap());
-                                if is_packet_quic(&buf[..1]) {
-                                    println!("Quic");
-                                    // hexdump(&buf);
-                                    // TODO: Introduce the data from here to the QUIC stack
-                                    quic_server.read(&mut buf[..len], *local_addr3, from, len, send_conn_quic4).await.unwrap();
-                                } else {
-                                    println!("Received: '{}'", std::str::from_utf8(&buf[..len]).unwrap());
-                                }
-                            }
-                            Err(err) => {
-                                eprintln!("conn_tx send error: {err}");
-                                break;
-                            }
-                        }
-                        match quic_server.send_with_conn().await {
-                            Ok(_) => {},
-                            Err(e) => {
-                                panic!("Failed to send to endpoint");
-                            }
-                        }
-                    // };
+            // let send_conn_quic2 = Arc::clone(&conn);
+            // tokio::spawn(async move {
+            //     // Receive messages in a loop from the remote peer
+            //     let mut buf = vec![0u8; 1500];
+            //     let local_addr3 = local_addr2.as_ref();
+            //     let send_conn_quic3 = Arc::clone(&send_conn_quic2);
+            //     loop {
+            //         // tokio::select! {
+            //             // _ = done_recv.changed() => {
+            //             //     println!("receive cancel ice recv!");
+            //             //     break;
+            //             // }
+            //             let send_conn_quic4 = send_conn_quic3.clone();
+            //             match quic_server.on_writeable_async(*local_addr3).await {
+            //                 Ok(_) => {},
+            //                 Err(e) => {
+            //                     println!("Failed to write to endpoint: {:?}", e);
+            //                     panic!("Failed to write to endpoint");
+            //                 }
+            //             }
+            //             match conn.recv_from(&mut buf).await {
+            //                 // Multiplexing between QUIC and other packets on the socket
+            //                 Ok((len, from)) => {
+            //                     println!("Received {} bytes", len);
+            //                     // println!("Received: '{}'", std::str::from_utf8(&buf[..len]).unwrap());
+            //                     if is_packet_quic(&buf[..1]) {
+            //                         println!("Quic");
+            //                         // hexdump(&buf);
+            //                         // TODO: Introduce the data from here to the QUIC stack
+            //                         quic_server.read(&mut buf[..len], *local_addr3, from, len, send_conn_quic4).await.unwrap();
+            //                     } else {
+            //                         println!("Received: '{}'", std::str::from_utf8(&buf[..len]).unwrap());
+            //                     }
+            //                 }
+            //                 Err(err) => {
+            //                     eprintln!("conn_tx send error: {err}");
+            //                     break;
+            //                 }
+            //             }
+            //             match quic_server.send_with_conn().await {
+            //                 Ok(_) => {},
+            //                 Err(e) => {
+            //                     panic!("Failed to send to endpoint");
+            //                 }
+            //             }
+            //         // };
+            //     }
+            // });
+
+            // loop {
+            //     thread::sleep(Duration::from_secs(1));
+            // }
+
+            let _ = match quicheperf_server(quic_server, t) {
+                Ok(_) => ExitCode::SUCCESS,
+                Err(quicheperf::server::ServerError::FatalSocket(e)) => {
+                    eprintln!("Fatal: {}", e);
+                    ExitCode::FAILURE
                 }
-            });
-
-            loop {
-                thread::sleep(Duration::from_secs(1));
-            }
-
-            // let _ = match quicheperf_server(server, t) {
-            //     Ok(_) => ExitCode::SUCCESS,
-            //     Err(quicheperf::server::ServerError::FatalSocket(e)) => {
-            //         eprintln!("Fatal: {}", e);
-            //         ExitCode::FAILURE
-            //     }
-            //     Err(quicheperf::server::ServerError::Unexpected(e)) => {
-            //         eprintln!("Unexpected: {}", e);
-            //         ExitCode::FAILURE
-            //     }
-            // };
+                Err(quicheperf::server::ServerError::Unexpected(e)) => {
+                    eprintln!("Unexpected: {}", e);
+                    ExitCode::FAILURE
+                }
+            };
         },
         false => {
             // Client
@@ -736,7 +778,7 @@ async fn main() {
             let scheduler: Box<dyn scheduler::MultipathScheduler> = Box::new(scheduler::MinRTT::new());
             // let scheduler2 = Arc::new(scheduler);
 
-            let client = QuicheperfClient::new(local_addrs, peer_addrs, config, Some(udp_socket_vec)).unwrap();
+            let client = QuicheperfClient::new(local_addrs, peer_addrs, config, Some(udp_socket_vec), Some(ice_callback)).unwrap();
 
             let _ = match quicheperf_client(client, scheduler, tc, psu, terminate) {
                 Err(quicheperf::client::ClientError::HandshakeFail) => ExitCode::FAILURE,
@@ -748,6 +790,13 @@ async fn main() {
 
                 Ok(_) => ExitCode::SUCCESS,
             };
+
+            // TODO: Continue the gathering process + send probes on the sockets that are given but not bound
+            // FIXME: either use the get_local_candidates or restart to continue/ restart the gathering
+            // FIXME: restart might lead to rebinding the socket and crashing
+            // let cand = ice_agent.get_local_candidates().await;
+            ice_agent.gather_candidates().unwrap();
+            
         }
     }
 }
