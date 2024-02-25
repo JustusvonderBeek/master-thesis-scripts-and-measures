@@ -12,11 +12,13 @@ fi
 pcapFolder="/sdcard/Download/"
 device=$1
 filename=$2
-if [[ $# -le 3 ]]; then
+if [[ $# -lt 3 ]]; then
     outputPath="../nearbySharePcap/"
 else
     outputPath=$3
 fi
+
+echo "Pulling pcap to $outputPath"
 
 adb -s $device pull ${pcapFolder}${filename} "$outputPath/${device}_${filename}"
 
