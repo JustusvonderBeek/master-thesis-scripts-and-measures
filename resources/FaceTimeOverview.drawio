@@ -1,17 +1,26 @@
-<mxfile host="app.diagrams.net" modified="2024-02-26T18:27:58.269Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0" etag="jPBTLcrNVaSyHwvNUhGM" version="23.1.6" type="device">
+<mxfile host="app.diagrams.net" modified="2024-02-27T10:33:34.944Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0" etag="AAyKa0a-6X23mygWiYki" version="23.1.6" type="device">
   <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
-    <mxGraphModel dx="860" dy="861" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1013" dy="549" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-2" value=":Courier / SIP&lt;br&gt;eu-central.apple.com" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="210" y="70" width="140" height="610" as="geometry" />
+        <mxCell id="rzydGnRtXKhCAkmNG2az-18" value=":Apple&lt;br&gt;FaceTime (Relay)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="380" y="710" width="100" height="550" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-19" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="rzydGnRtXKhCAkmNG2az-18">
+          <mxGeometry x="45" y="150" width="10" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-21" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="rzydGnRtXKhCAkmNG2az-18">
+          <mxGeometry x="45" y="380" width="10" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-2" value=":Courier / SIP&lt;br&gt;eu-central.apple.com" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="1" vertex="1">
+          <mxGeometry x="210" y="70" width="140" height="550" as="geometry" />
         </mxCell>
         <mxCell id="aM9ryv3xv72pqoxQDRHE-6" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="T4F6Rnl3pkKhbMStzOWr-2" vertex="1">
           <mxGeometry x="65" y="75" width="10" height="265" as="geometry" />
         </mxCell>
         <mxCell id="aM9ryv3xv72pqoxQDRHE-1" value=":Caller" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="1" vertex="1">
-          <mxGeometry x="60" y="70" width="100" height="610" as="geometry" />
+          <mxGeometry x="60" y="70" width="100" height="550" as="geometry" />
         </mxCell>
         <mxCell id="aM9ryv3xv72pqoxQDRHE-2" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="aM9ryv3xv72pqoxQDRHE-1" vertex="1">
           <mxGeometry x="45" y="70" width="10" height="280" as="geometry" />
@@ -21,10 +30,10 @@
             <mxPoint x="-15" y="70" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-25" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="aM9ryv3xv72pqoxQDRHE-1">
-          <mxGeometry x="45" y="430" width="10" height="160" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-25" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="aM9ryv3xv72pqoxQDRHE-1" vertex="1">
+          <mxGeometry x="45" y="430" width="10" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-29" value="STUN Binding Request (every ~1s) eduroam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" edge="1" parent="aM9ryv3xv72pqoxQDRHE-1" source="T4F6Rnl3pkKhbMStzOWr-13">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-29" value="STUN Binding Request (every ~1s) eduroam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" parent="aM9ryv3xv72pqoxQDRHE-1" source="T4F6Rnl3pkKhbMStzOWr-13" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="310" y="290" as="targetPoint" />
             <Array as="points">
@@ -35,10 +44,10 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-13" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="aM9ryv3xv72pqoxQDRHE-1">
-          <mxGeometry x="50" y="181" width="10" height="269" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-13" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="aM9ryv3xv72pqoxQDRHE-1" vertex="1">
+          <mxGeometry x="50" y="160" width="10" height="320" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-28" value="STUN Binding Request (every ~1s) eduroam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" edge="1" parent="aM9ryv3xv72pqoxQDRHE-1" source="aM9ryv3xv72pqoxQDRHE-2">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-28" value="STUN Binding Request (every ~1s) eduroam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" parent="aM9ryv3xv72pqoxQDRHE-1" source="aM9ryv3xv72pqoxQDRHE-2" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="310" y="270" as="targetPoint" />
             <Array as="points">
@@ -50,13 +59,13 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="aM9ryv3xv72pqoxQDRHE-5" value=":Callee" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="1" vertex="1">
-          <mxGeometry x="510" y="70" width="100" height="610" as="geometry" />
+          <mxGeometry x="510" y="70" width="100" height="550" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-4" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="aM9ryv3xv72pqoxQDRHE-5">
-          <mxGeometry x="45" y="90" width="10" height="500" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-4" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="aM9ryv3xv72pqoxQDRHE-5" vertex="1">
+          <mxGeometry x="45" y="90" width="10" height="450" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-33" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="aM9ryv3xv72pqoxQDRHE-5">
-          <mxGeometry x="40" y="390" width="10" height="160" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-33" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="aM9ryv3xv72pqoxQDRHE-5" vertex="1">
+          <mxGeometry x="40" y="370" width="10" height="110" as="geometry" />
         </mxCell>
         <mxCell id="aM9ryv3xv72pqoxQDRHE-7" value="callOtherEndpoint" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="aM9ryv3xv72pqoxQDRHE-6" edge="1">
           <mxGeometry relative="1" as="geometry">
@@ -66,17 +75,17 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-1" value="FaceTime&lt;br&gt;No Cellular / Cellular" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="40" y="10" width="130" height="40" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-1" value="FaceTime&lt;br&gt;Cellular" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="65" y="10" width="80" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-3" value="incoming Call" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-6" target="T4F6Rnl3pkKhbMStzOWr-4">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-3" value="incoming Call" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" parent="1" source="aM9ryv3xv72pqoxQDRHE-6" target="T4F6Rnl3pkKhbMStzOWr-4" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="380" y="170" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="T4F6Rnl3pkKhbMStzOWr-4" target="aM9ryv3xv72pqoxQDRHE-6">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;dashed=1;endArrow=open;endFill=0;" parent="1" source="T4F6Rnl3pkKhbMStzOWr-4" target="aM9ryv3xv72pqoxQDRHE-6" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="380" y="190" />
@@ -84,104 +93,270 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-8" value=":Apple&lt;br&gt;FaceTime (Relay)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="380" y="70" width="100" height="610" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-8" value=":Apple&lt;br&gt;FaceTime (Relay)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="1" vertex="1">
+          <mxGeometry x="380" y="70" width="100" height="550" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-10" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="T4F6Rnl3pkKhbMStzOWr-8">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-10" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="T4F6Rnl3pkKhbMStzOWr-8" vertex="1">
           <mxGeometry x="45" y="150" width="10" height="150" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-12" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="T4F6Rnl3pkKhbMStzOWr-8">
-          <mxGeometry x="50" y="183" width="10" height="107" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-12" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="T4F6Rnl3pkKhbMStzOWr-8" vertex="1">
+          <mxGeometry x="50" y="160" width="10" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-31" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="T4F6Rnl3pkKhbMStzOWr-8">
-          <mxGeometry x="45" y="460" width="10" height="70" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-31" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" parent="T4F6Rnl3pkKhbMStzOWr-8" vertex="1">
+          <mxGeometry x="45" y="490" width="10" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-9" value="QUIC Connection (WiFi) (Call Information?)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;entryX=0;entryY=0;entryDx=0;entryDy=5;entryPerimeter=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="T4F6Rnl3pkKhbMStzOWr-10">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-9" value="QUIC Connection (WiFi) (Call Information?)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;entryX=0;entryY=0;entryDx=0;entryDy=5;entryPerimeter=0;startArrow=classic;startFill=1;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="T4F6Rnl3pkKhbMStzOWr-10" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-14" value="QUIC Connection (Cellular)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" target="T4F6Rnl3pkKhbMStzOWr-12">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-14" value="QUIC Connection (Cellular)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" parent="1" target="T4F6Rnl3pkKhbMStzOWr-12" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="120" y="260" as="sourcePoint" />
+            <mxPoint x="120" y="240" as="sourcePoint" />
             <Array as="points">
-              <mxPoint x="120" y="260" />
+              <mxPoint x="120" y="240" />
             </Array>
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-18" value="STUN Binding Request (Cellular)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="T4F6Rnl3pkKhbMStzOWr-4">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-18" value="STUN Binding Request (Cellular) @ eduroam-ipv6" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" target="T4F6Rnl3pkKhbMStzOWr-4" edge="1">
           <mxGeometry x="0.0004" relative="1" as="geometry">
             <mxPoint x="360" y="380" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="340" y="290" />
+              <mxPoint x="340" y="280" />
             </Array>
             <mxPoint as="offset" />
+            <mxPoint x="120" y="280" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-19" value="STUN Binding Request (WiFi)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="T4F6Rnl3pkKhbMStzOWr-4">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-19" value="STUN Binding Request (WiFi) @&amp;nbsp; eduroam-ipv4 + local-ip" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="T4F6Rnl3pkKhbMStzOWr-4" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="340" y="310" />
+              <mxPoint x="340" y="300" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-20" value="Data Exchange via RTP (WiFi)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="T4F6Rnl3pkKhbMStzOWr-4">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-20" value="Data Exchange via RTP (WiFi)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" source="aM9ryv3xv72pqoxQDRHE-2" target="T4F6Rnl3pkKhbMStzOWr-4" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="330" y="390" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-22" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.flash;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-22" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.flash;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="180" y="410" width="20" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-23" value="Disable WiFi" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-23" value="Disable WiFi" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="330" y="410" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-24" value="Data Exchange via RTP (Cellular)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="T4F6Rnl3pkKhbMStzOWr-13">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-24" value="Data Exchange via RTP (Cellular)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" source="T4F6Rnl3pkKhbMStzOWr-13" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="160" y="510" as="sourcePoint" />
-            <mxPoint x="550" y="470" as="targetPoint" />
+            <mxPoint x="550" y="450" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="380" y="470" />
+              <mxPoint x="360" y="450" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-26" value="Data Exchange via RTP (WiFi)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="T4F6Rnl3pkKhbMStzOWr-25" target="T4F6Rnl3pkKhbMStzOWr-4">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-26" value="Data Exchange via RTP (WiFi)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" parent="1" source="T4F6Rnl3pkKhbMStzOWr-25" target="T4F6Rnl3pkKhbMStzOWr-4" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="160" y="570" as="sourcePoint" />
             <mxPoint x="600" y="570" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="370" y="590" />
+              <mxPoint x="350" y="550" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-27" value="Enable WiFi" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="330" y="490" width="60" height="30" as="geometry" />
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-27" value="Enable WiFi" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="330" y="470" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-30" value="QUIC Connection (WiFi) Call Info?" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="T4F6Rnl3pkKhbMStzOWr-25" target="T4F6Rnl3pkKhbMStzOWr-31">
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-30" value="QUIC Connection (WiFi) Call Info?" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" parent="1" source="T4F6Rnl3pkKhbMStzOWr-25" target="T4F6Rnl3pkKhbMStzOWr-31" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="270" y="540" />
-              <mxPoint x="270" y="540" />
+              <mxPoint x="270" y="570" />
+              <mxPoint x="270" y="570" />
+            </Array>
+            <mxPoint x="120" y="510" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-34" value="In this initial Setup the devices must have found all their addresses" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="460" y="200" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="T4F6Rnl3pkKhbMStzOWr-36" value="Here the Caller knows all WiFi IPs and the correct other endpoints. Here eduroam + Local AP" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="380" y="324" width="190" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-2" value="FaceTime&lt;br&gt;No Cellular single WiFi" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="650" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-3" value=":Courier / SIP&lt;br&gt;eu-central.apple.com" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="210" y="710" width="140" height="550" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-4" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="rzydGnRtXKhCAkmNG2az-3">
+          <mxGeometry x="65" y="75" width="10" height="255" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-5" value=":Caller" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="60" y="710" width="100" height="550" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-6" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="rzydGnRtXKhCAkmNG2az-5">
+          <mxGeometry x="45" y="70" width="10" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-7" value="startCall" style="html=1;verticalAlign=bottom;startArrow=oval;endArrow=block;startSize=8;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="rzydGnRtXKhCAkmNG2az-5" target="rzydGnRtXKhCAkmNG2az-6">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-15" y="70" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-8" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="rzydGnRtXKhCAkmNG2az-5">
+          <mxGeometry x="45" y="370" width="10" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-12" value=":Callee" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
+          <mxGeometry x="510" y="710" width="100" height="550" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-13" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="rzydGnRtXKhCAkmNG2az-12">
+          <mxGeometry x="45" y="90" width="10" height="450" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-15" value="callOtherEndpoint" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-6" target="rzydGnRtXKhCAkmNG2az-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="215" y="800" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="200" y="790" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-32" value="TCP Connection (Test Connectivity?)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" edge="1" parent="1" source="T4F6Rnl3pkKhbMStzOWr-25" target="T4F6Rnl3pkKhbMStzOWr-4">
+        <mxCell id="rzydGnRtXKhCAkmNG2az-16" value="incoming Call" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-4" target="rzydGnRtXKhCAkmNG2az-13">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="340" y="570" />
-              <mxPoint x="340" y="570" />
+              <mxPoint x="380" y="810" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-34" value="In this initial Setup the devices must have found all their addresses" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="460" y="210" width="140" height="50" as="geometry" />
+        <mxCell id="rzydGnRtXKhCAkmNG2az-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-13" target="rzydGnRtXKhCAkmNG2az-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="830" />
+              <mxPoint x="380" y="830" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-36" value="Here the Caller knows all WiFi IPs and the correct other endpoints" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="380" y="324" width="150" height="50" as="geometry" />
+        <mxCell id="rzydGnRtXKhCAkmNG2az-22" value="QUIC Connection (WiFi) (Call Information?)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;entryX=0;entryY=0;entryDx=0;entryDy=5;entryPerimeter=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-6" target="rzydGnRtXKhCAkmNG2az-19">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="T4F6Rnl3pkKhbMStzOWr-37" value="No Cellular: Create only single connection.On Connection Error short interruption then IPv6 QUIC conn to Apple.&lt;br&gt;5s later start probing STUN for local Conn. If stable take. Then probing of old path stops&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="580" y="280" width="80" height="270" as="geometry" />
+        <mxCell id="rzydGnRtXKhCAkmNG2az-25" value="STUN Binding Request (every ~1s @ local-ip" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=none;startFill=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-6" target="rzydGnRtXKhCAkmNG2az-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="940" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-26" value="Data Exchange via RTP (WiFi)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-6" target="rzydGnRtXKhCAkmNG2az-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="1020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-27" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.flash;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="180" y="1040" width="20" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-28" value="Switch&lt;br&gt;WiFi" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1040" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-30" value="Data Exchange via RTP (WiFi)" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-8" target="rzydGnRtXKhCAkmNG2az-13">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="1210" as="sourcePoint" />
+            <mxPoint x="600" y="1210" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="350" y="1230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-34" value="In this initial Setup the devices must have found all their addresses" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="460" y="850" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-35" value="Here the Caller knows all WiFi IPs and the correct other endpoints. Here eduroam + Local AP" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="450" y="950" width="190" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-37" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-4" target="rzydGnRtXKhCAkmNG2az-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="840" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-38" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="aM9ryv3xv72pqoxQDRHE-6" target="aM9ryv3xv72pqoxQDRHE-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-11" value="STUN Binding Request (every ~1s) @ eduroam-ip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-6" target="rzydGnRtXKhCAkmNG2az-13">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="920" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="490" y="920" />
+              <mxPoint x="490" y="920" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-39" value="QUIC Relay Connection" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;entryX=0;entryY=0;entryDx=0;entryDy=5;entryPerimeter=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-8" target="rzydGnRtXKhCAkmNG2az-21">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="1100" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="190" y="1095" />
+              <mxPoint x="190" y="1095" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-40" value="Data Exchange Relay" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-21" target="rzydGnRtXKhCAkmNG2az-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="1110" />
+              <mxPoint x="500" y="1110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-42" value="QUIC Relay Connection" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-21" target="rzydGnRtXKhCAkmNG2az-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="1120" />
+              <mxPoint x="280" y="1120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-43" value="ICE: STUN Binding Request (every ~1s) @ eduroam-ip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-8" target="rzydGnRtXKhCAkmNG2az-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="1140" />
+              <mxPoint x="340" y="1140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-45" value="Ca. 3s searching for direct conn." style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1180" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-46" value="ICE: STUN Binding Request (every ~1s) @ local-ip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="rzydGnRtXKhCAkmNG2az-8" target="rzydGnRtXKhCAkmNG2az-13">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="125" y="1150" as="sourcePoint" />
+            <mxPoint x="565" y="1150" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="340" y="1160" />
+              <mxPoint x="340" y="1160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-47" value="ICE: STUN Binding Request @ eduroam-ipv6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="T4F6Rnl3pkKhbMStzOWr-25" target="T4F6Rnl3pkKhbMStzOWr-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="510" />
+              <mxPoint x="230" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rzydGnRtXKhCAkmNG2az-48" value="ICE: STUN Binding Request @ local-ip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;curved=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="T4F6Rnl3pkKhbMStzOWr-25" target="T4F6Rnl3pkKhbMStzOWr-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="530" />
+              <mxPoint x="340" y="530" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
