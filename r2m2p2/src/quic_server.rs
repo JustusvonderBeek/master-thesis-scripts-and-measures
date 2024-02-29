@@ -145,9 +145,11 @@ pub fn start_server() -> Result<(), Error> {
 
     let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
 
-    config.load_cert_chain_from_pem_file("../resources/cert.crt").unwrap();
-    config.load_priv_key_from_pem_file("../resources/cert.key").unwrap();
+    config.load_cert_chain_from_pem_file("resources/cert.crt").unwrap();
+    config.load_priv_key_from_pem_file("resources/cert.key").unwrap();
     create_quic_conf(&mut config);
+
+    debug!("Config created and cert loaded");
 
     let rng = SystemRandom::new();
     let conn_id_seed =
@@ -169,6 +171,12 @@ pub fn start_server() -> Result<(), Error> {
             let (len, from) = match socket.recv_from(&mut buf) {
                 Ok(v) => v,
                 Err(e) => {
+                    // FIXME: Because we are not using the polling library
+                    // this results in 100% load!!!
+                    if e.kind() == std::io::ErrorKind::WouldBlock {
+                        trace!("recv() would block");
+                        break 'read;
+                    }
                     panic!("recv_from() failed: {:?}", e);
                 }
             };
