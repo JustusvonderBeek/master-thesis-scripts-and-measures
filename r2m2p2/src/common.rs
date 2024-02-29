@@ -2,7 +2,7 @@
 // Defining a trait and implementation for an abstract sending and receiving channel
 // Allows to switch out the underlying socket infrastructure
 
-use std::{cmp, collections::HashMap, io::Error, net::SocketAddr};
+use std::{cmp, collections::HashMap, io::Error, net::SocketAddr, os::fd::{FromRawFd, IntoRawFd}};
 
 use anyhow::Result;
 use mio::net::{UdpSocket};
@@ -79,6 +79,14 @@ pub fn bind_socket(address: Option<&str>) -> Result<Box<dyn UdpSocketConnection>
     };
 
     let socket = mio::net::UdpSocket::bind(local_addr.parse().unwrap()).unwrap();
+
+    // Testing if converting to tokio would be possible
+    // let raw_socket = socket.into_raw_fd();
+    // let std_socket = unsafe {
+    //     std::net::UdpSocket::from_raw_fd(raw_socket)
+    // };
+    // let tokio_socket = tokio::net::UdpSocket::from_std(std_socket);
+
     let boxed_s = Box::new(socket);
 
     return Ok(boxed_s);
