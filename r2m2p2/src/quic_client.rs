@@ -6,7 +6,7 @@ use quiche::Connection;
 use quicheperf::{client::ClientError, make_quiche_config};
 use ring::rand::{SecureRandom, SystemRandom};
 
-use crate::common::{bind_socket, create_quic_client_conf, generate_cid_and_reset_token, STUN_TEST_ALPN};
+use crate::common::{bind_mio_socket, bind_socket, create_quic_client_conf, generate_cid_and_reset_token, STUN_TEST_ALPN};
 
 const MAX_DATAGRAM_SIZE: usize = 1350;
 
@@ -75,7 +75,7 @@ pub fn connect(remote : &str) -> Result<(), std::io::Error> {
     let mut buf = [0; 65535];
     let mut out = [0; MAX_DATAGRAM_SIZE];
 
-    let socket = bind_socket(None).unwrap();
+    let socket = bind_mio_socket(None).unwrap();
 
     let mut config = create_quic_client_conf().unwrap();
 
@@ -88,7 +88,7 @@ pub fn connect(remote : &str) -> Result<(), std::io::Error> {
     let scid = quiche::ConnectionId::from_ref(&scid);
 
     let local_addr = socket.local_addr().unwrap();
-    let peer_addr = "127.0.0.1:12345".parse().unwrap();
+    let peer_addr = remote.parse().unwrap();
     // Create a QUIC connection and initiate handshake.
     let mut conn = quiche::connect(
         None,
@@ -127,40 +127,57 @@ pub fn connect(remote : &str) -> Result<(), std::io::Error> {
     let mut new_path_probed = false;
     let mut migrated = false;
 
+    // Setup the event loop.
+    let mut poll = mio::Poll::new().unwrap();
+    let mut events = mio::Events::with_capacity(1024);
+
+
     loop {
 
+        if !conn.is_in_early_data() || app_proto_selected {
+            poll.poll(&mut events, conn.timeout()).unwrap();
+        }
 
-        'read: loop {
-            let (len, from) = match socket.recv_from(&mut buf) {
-                Ok(v) => v,
-                Err(e) => {
-                    if e.kind() == std::io::ErrorKind::WouldBlock {
-                        trace!("recv() would block");
-                        break 'read;
-                    }
-                    return Err(e);
-                },
-            };
+        if events.is_empty() {
+            debug!("timed out");
+            conn.on_timeout();
+        }
 
-            debug!("{}: got {} bytes", local_addr, len);
-            pkt_count += 1;
+        for _ in &events {
+            let local_addr = socket.local_addr().unwrap();
 
-            let recv_info = quiche::RecvInfo {
-                to: local_addr,
-                from,
-            };
-
-            // Process potentially coalesced packets.
-            let read = match conn.recv(&mut buf[..len], recv_info) {
-                Ok(v) => v,
-
-                Err(e) => {
-                    error!("{}: recv failed: {:?}", local_addr, e);
-                    continue 'read;
-                },
-            };
-
-            trace!("{}: processed {} bytes", local_addr, read);
+            'read: loop {
+                let (len, from) = match socket.recv_from(&mut buf) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        if e.kind() == std::io::ErrorKind::WouldBlock {
+                            trace!("recv() would block");
+                            break 'read;
+                        }
+                        return Err(e);
+                    },
+                };
+    
+                debug!("{}: got {} bytes", local_addr, len);
+                pkt_count += 1;
+    
+                let recv_info = quiche::RecvInfo {
+                    to: local_addr,
+                    from,
+                };
+    
+                // Process potentially coalesced packets.
+                let read = match conn.recv(&mut buf[..len], recv_info) {
+                    Ok(v) => v,
+    
+                    Err(e) => {
+                        error!("{}: recv failed: {:?}", local_addr, e);
+                        continue 'read;
+                    },
+                };
+    
+                trace!("{}: processed {} bytes", local_addr, read);
+            }
         }
 
         trace!("done reading");
