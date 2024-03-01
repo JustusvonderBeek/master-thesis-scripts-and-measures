@@ -2,6 +2,7 @@
 
 use std::{collections::HashMap, fmt::format, io::Error};
 
+use clap::ErrorKind;
 use quiche::Connection;
 use quicheperf::{client::ClientError, make_quiche_config};
 use ring::rand::{SecureRandom, SystemRandom};
@@ -75,7 +76,7 @@ pub fn connect(remote : &str) -> Result<(), std::io::Error> {
     let mut buf = [0; 65535];
     let mut out = [0; MAX_DATAGRAM_SIZE];
 
-    let socket = bind_mio_socket(None).unwrap();
+    let mut socket = bind_mio_socket(None).unwrap();
 
     let mut config = create_quic_client_conf().unwrap();
 
@@ -131,6 +132,8 @@ pub fn connect(remote : &str) -> Result<(), std::io::Error> {
     let mut poll = mio::Poll::new().unwrap();
     let mut events = mio::Events::with_capacity(1024);
 
+    // Register the socket to spit out events
+    poll.registry().register(&mut socket, mio::Token(0), mio::Interest::READABLE).unwrap();
 
     loop {
 
@@ -183,6 +186,13 @@ pub fn connect(remote : &str) -> Result<(), std::io::Error> {
         trace!("done reading");
 
         if conn.is_closed() {
+
+            if !conn.is_established() {
+                error!("connection timed out after {:?}", app_data_start.elapsed());
+
+                return Err(Error::new(std::io::ErrorKind::Other, "handshake failed"));
+            }
+
             break;   
         }
 
