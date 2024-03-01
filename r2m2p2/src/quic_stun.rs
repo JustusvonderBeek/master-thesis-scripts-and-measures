@@ -28,7 +28,7 @@ fn main() -> Result<(), Error> {
                 .takes_value(true)
                 .long("remote")
                 .short('r')
-                .default_value("127.0.0.1")
+                .default_value("127.0.0.1:12345")
                 .help("Remote endpoint ip to initially connect to")
         )
         .arg(
