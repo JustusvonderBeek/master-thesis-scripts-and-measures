@@ -92,6 +92,17 @@ pub fn bind_socket(address: Option<&str>) -> Result<Box<dyn UdpSocketConnection>
     return Ok(boxed_s);
 }
 
+pub fn bind_mio_socket(address: Option<&str>) -> Result<mio::net::UdpSocket> {
+    let local_addr = match address {
+        Some(s) => s,
+        None => "0.0.0.0:0",
+    };
+
+    let socket = mio::net::UdpSocket::bind(local_addr.parse().unwrap()).unwrap();
+
+    return Ok(socket);
+}
+
 pub fn create_quic_client_conf() -> Result<quiche::Config, Error> {
     let mut config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
     create_quic_conf(&mut config);
@@ -99,6 +110,9 @@ pub fn create_quic_client_conf() -> Result<quiche::Config, Error> {
 }
 
 pub fn create_quic_conf(config: &mut quiche::Config) {
+
+    config.set_application_protos(&STUN_TEST_ALPN).unwrap();
+
     // Values taken from quicheperf config
     config.set_max_idle_timeout(30_000);
     config.set_max_recv_udp_payload_size(MAX_DATAGRAM_SIZE);
@@ -174,4 +188,38 @@ pub fn send_to(socket: &Box<dyn UdpSocketConnection>, buf: &[u8], send_info: &qu
     }
 
     Ok(written)
+}
+
+pub fn send_to_mio(socket: &mio::net::UdpSocket, buf: &[u8], send_info: &quiche::SendInfo, segment_size: usize) -> std::io::Result<usize> {
+    // if pacing && enable_gso {
+    //     match send_to_gso_pacing(socket, buf, send_info, segment_size) {
+    //         Ok(v) => {
+    //             return Ok(v);
+    //         },
+    //         Err(e) => {
+    //             return Err(e);
+    //         },
+    //     }
+    // }
+
+    let mut off = 0;
+    let mut left = buf.len();
+    let mut written = 0;
+
+    while left > 0 {
+        let pkt_len = cmp::min(left, segment_size);
+
+        match socket.send_to(&buf[off..off + pkt_len], send_info.to) {
+            Ok(v) => {
+                written += v;
+            },
+            Err(e) => return Err(e),
+        }
+
+        off += pkt_len;
+        left -= pkt_len;
+    }
+
+    Ok(written)
+
 }
