@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 use anyhow::Error;
 use ring::rand::SystemRandom;
 
-use crate::common::{bind_socket, create_quic_conf, generate_cid_and_reset_token, send_to, Client, ClientIdMap, ClientMap, STUN_TEST_ALPN};
+use crate::common::{bind_mio_socket, bind_socket, create_quic_conf, generate_cid_and_reset_token, send_to, send_to_mio, Client, ClientIdMap, ClientMap, STUN_TEST_ALPN};
 
 const MAX_BUF_SIZE: usize = 65507;
 const MAX_DATAGRAM_SIZE: usize = 1350;
@@ -136,7 +136,7 @@ pub fn start_server() -> Result<(), Error> {
     // TODO: Add some termination token to cancel the server
     // gracefully
 
-    let socket = bind_socket(None).unwrap();
+    let mut socket = bind_mio_socket(Some("0.0.0.0:12345")).unwrap();
 
     let mut buf = [0; MAX_BUF_SIZE];
     let mut out = [0; MAX_BUF_SIZE];
@@ -165,14 +165,39 @@ pub fn start_server() -> Result<(), Error> {
 
     let local_addr = socket.local_addr().unwrap();
 
+    // TODO: Using mio's polling because it's faster and more universal than tokio
+    // Converting from tokio to mio is also easier possible than the other way around
+    let mut poll = mio::Poll::new().unwrap();
+    let mut events = mio::Events::with_capacity(1024);
+
+    // Allow polling in case we have a read event
+    poll.registry().register(&mut socket, mio::Token(0), mio::Interest::READABLE).unwrap();
+
     loop {
 
+        // Continue write
+        let timeout = match continue_write {
+            true => Some(std::time::Duration::from_secs(0)),
+            false => clients.values().filter_map(|c| c.conn.timeout()).min(),
+        };
+
+        poll.poll(&mut events, timeout).unwrap();
+
         'read: loop {
+
+            // Using the polling way of reading from the socket
+            if events.is_empty() && !continue_write {
+                // Timed out
+                trace!("timed out");
+
+                clients.values_mut().for_each(|c| c.conn.on_timeout());
+
+                break 'read;
+            }
+
             let (len, from) = match socket.recv_from(&mut buf) {
                 Ok(v) => v,
                 Err(e) => {
-                    // FIXME: Because we are not using the polling library
-                    // this results in 100% load!!!
                     if e.kind() == std::io::ErrorKind::WouldBlock {
                         trace!("recv() would block");
                         break 'read;
@@ -483,7 +508,7 @@ pub fn start_server() -> Result<(), Error> {
                 break;
             }
 
-            if let Err(e) = send_to(
+            if let Err(e) = send_to_mio(
                 &socket,
                 &out[..total_write],
                 &dst_info.unwrap(),
