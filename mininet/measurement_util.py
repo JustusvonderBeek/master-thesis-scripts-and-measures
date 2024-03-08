@@ -76,3 +76,17 @@ def start_path(net, host, switch):
     print(f"Starting path from {host}<->{switch}")
     net.configLinkStatus(host, switch, 'up')
     # net.cmd(f"link {host} {switch} up")
+
+def if_down(net, host, iface):
+    """Disabling the specified interface on the given host"""
+
+    print(f"Disabling interface {iface} on {host}")
+    h = net.get(host)
+    h.cmd(f"ip link set dev {iface} down")
+
+def if_up(net, host, iface):
+    """Enabling the specified interface on the given host"""
+
+    print(f"Enabling interface {iface} on {host}")
+    h = net.get(host)
+    h.cmd(f"ip link set dev {iface} up")
