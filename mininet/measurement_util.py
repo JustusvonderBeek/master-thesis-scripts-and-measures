@@ -90,3 +90,12 @@ def if_up(net, host, iface):
     print(f"Enabling interface {iface} on {host}")
     h = net.get(host)
     h.cmd(f"ip link set dev {iface} up")
+
+def write_new_if_file(local_addr, peer_addr):
+    """Writing a new local and remote address into the file that is read by quiche.
+    Allows creating a new path mid connection.
+    """
+
+    with open("new_socket.txt", "w") as if_file:
+        if_file.write(local_addr + "\n")
+        if_file.write(peer_addr)
