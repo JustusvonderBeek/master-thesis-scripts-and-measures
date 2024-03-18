@@ -10,7 +10,7 @@
 
 from mininet.node import Node, Switch, OVSController
 from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo
-from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file
+from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file, write_new_ice_cand_file
 from mininet.net import Mininet
 from mininet.cli import CLI
 from pathlib import Path
@@ -261,21 +261,28 @@ def quic_ice():
 
     os.environ["RUST_LOG"] = "info"
     server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
     print(f"Waiting {test_duration}s...")
     time.sleep(test_duration)
 
+    write_new_ice_cand_file("1.20.30.2:20000")
     # TODO: Add the functions to start the interface and probe on the new path
     # if_up(net, "h1", "h1-cellular")
-    time.sleep(0.5)
+    # time.sleep(0.5)
     # Everything else should happen automatically
     # time.sleep(test_duration)
 
     # WiFi-Direct is 100ms - Internet is 70ms so should be faster
     write_new_if_file("1.20.30.2:20000", "2.40.60.3:10000")
 
-    print(f"Waiting {test_duration}s")
+    print(f"Waiting {test_duration}s...")
+    time.sleep(test_duration)
+
+    # Testing if the implementation can switch the paths already
+    # if_down(net, "h1", "h1-wifi")
+    stop_path(net, "h1", "h2")
+    print(f"Waiting {test_duration}s...")
     time.sleep(test_duration)
 
     # Open the CLI and allow user input
