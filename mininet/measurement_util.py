@@ -76,3 +76,34 @@ def start_path(net, host, switch):
     print(f"Starting path from {host}<->{switch}")
     net.configLinkStatus(host, switch, 'up')
     # net.cmd(f"link {host} {switch} up")
+
+def if_down(net, host, iface):
+    """Disabling the specified interface on the given host"""
+
+    print(f"Disabling interface {iface} on {host}")
+    h = net.get(host)
+    h.cmd(f"ip link set dev {iface} down")
+
+def if_up(net, host, iface):
+    """Enabling the specified interface on the given host"""
+
+    print(f"Enabling interface {iface} on {host}")
+    h = net.get(host)
+    h.cmd(f"ip link set dev {iface} up")
+
+def write_new_if_file(local_addr, peer_addr):
+    """Writing a new local and remote address into the file that is read by quiche.
+    Allows creating a new path mid connection.
+    """
+
+    with open("new_socket.txt", "w") as if_file:
+        if_file.write(local_addr + "\n")
+        if_file.write(peer_addr)
+
+def write_new_ice_cand_file(local_addr):
+    """
+    Writing the given address into the specified file which leads to quiche sending this information to the other end.
+    """
+
+    with open("ice_addrs.txt", "w") as addr_file:
+        addr_file.write(local_addr + "\n")
