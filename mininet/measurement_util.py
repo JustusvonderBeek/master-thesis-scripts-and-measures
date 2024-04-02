@@ -47,9 +47,9 @@ def capture_pcap(net, host, outpath=None, outfile=None):
     # print(f"Outfile: {outfile}")
     host_pcap = h.popen(f"tcpdump -i any -w {outfile}")
 
-    return host_pcap
+    return host_pcap, outfile
 
-def terminate(process, outfile=None):
+def terminate(process, outfile=None, file_perm=None):
     """Ending the running 'pcap capturing' process"""
 
     process.terminate()
@@ -61,7 +61,13 @@ def terminate(process, outfile=None):
             proc_out.write(text.decode("utf-8"))
             proc_out.write("\n---------------------\n\n")
             proc_out.write(err.decode("utf-8"))
+
+        os.chmod(outfile, 0o666)
     
+    if file_perm is not None:
+        # Change the file access write
+        os.chmod(file_perm, 0o666)
+
 
 def stop_path(net, host, switch):
     """Disabling the routing / traffic via the given path"""
