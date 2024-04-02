@@ -247,8 +247,8 @@ def quic_ice():
     DirectAndInternet.add_internet(net)
     net.start()
 
-    h1_pcap = capture_pcap(net, "h1")
-    h2_pcap = capture_pcap(net, "h2")
+    h1_pcap, h1_pcap_file = capture_pcap(net, "h1")
+    h2_pcap, h2_pcap_file = capture_pcap(net, "h2")
 
     # Kill the second interface on the client
     # TODO: Fix the routes on these interfaces when setting down again
@@ -260,36 +260,36 @@ def quic_ice():
     h2 = net.get("h2")
 
     os.environ["RUST_LOG"] = "info"
-    server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    server = h2.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/ifrit/Documents/Code/quicheperf-stun/src/cert.crt --key /home/ifrit/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    client = h1.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
     print(f"Waiting {test_duration}s...")
     time.sleep(test_duration)
 
-    write_new_ice_cand_file("1.20.30.2:20000")
-    # TODO: Add the functions to start the interface and probe on the new path
-    # if_up(net, "h1", "h1-cellular")
-    # time.sleep(0.5)
-    # Everything else should happen automatically
+    # write_new_ice_cand_file("1.20.30.2:20000")
+    # # TODO: Add the functions to start the interface and probe on the new path
+    # # if_up(net, "h1", "h1-cellular")
+    # # time.sleep(0.5)
+    # # Everything else should happen automatically
+    # # time.sleep(test_duration)
+
+    # # WiFi-Direct is 100ms - Internet is 70ms so should be faster
+    # write_new_if_file("1.20.30.2:20000", "2.40.60.3:10000")
+
+    # print(f"Waiting {test_duration}s...")
     # time.sleep(test_duration)
 
-    # WiFi-Direct is 100ms - Internet is 70ms so should be faster
-    write_new_if_file("1.20.30.2:20000", "2.40.60.3:10000")
-
-    print(f"Waiting {test_duration}s...")
-    time.sleep(test_duration)
-
-    # Testing if the implementation can switch the paths already
-    # if_down(net, "h1", "h1-wifi")
-    stop_path(net, "h1", "h2")
-    print(f"Waiting {test_duration}s...")
-    time.sleep(test_duration)
+    # # Testing if the implementation can switch the paths already
+    # # if_down(net, "h1", "h1-wifi")
+    # stop_path(net, "h1", "h2")
+    # print(f"Waiting {test_duration}s...")
+    # time.sleep(test_duration)
 
     # Open the CLI and allow user input
     CLI(net)
 
-    terminate(h1_pcap)
-    terminate(h2_pcap)
+    terminate(h1_pcap, file_perm=h1_pcap_file)
+    terminate(h2_pcap, file_perm=h2_pcap_file)
     # terminate(turn, "turn/")
     terminate(server, "h2/")
     terminate(client, "h1/")
