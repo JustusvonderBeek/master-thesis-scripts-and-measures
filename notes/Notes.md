@@ -130,7 +130,7 @@ Im orginalen STUN [[RFC5389](https://datatracker.ietf.org/doc/html/rfc5389)] wir
    attacker to inject XOR-MAPPED-ADDRESS in responses.  The TLS/DTLS
    transport will also protect the SOFTWARE attribute, which can be used
    to find vulnerabilities in STUN implementations
-- Im TURN [RFC8656](https://datatracker.ietf.org/doc/html/rfc8656) wird ebenfalls TLS und DTLS aufgegriffen, das Dokument selber benutzt aber UDP als Beispiel. Und auch in der Praxis (Facetime) habe ich eigentlich immer nur UDP gesehen.
+- Im TURN [RFC8656](https://datatracker.ietf.org/doc/html/rfc8656) wird ebenfalls TLS und DTLS aufgegriffen, das Dokument selber benutzt aber UDP als Beispiel. Und auch in der Praxis (Facetime & Whatsapp) habe ich eigentlich immer nur UDP gesehen.
 - Es gibt im Zusammenhang noch ein Paper was WebRTC und STUN/TURN deaktiviert und nach Erlaubnis vom Nutzer fragt, nicht aber direkt die Verbindung verschlüsselt
 - Draft zur Idee von ICE über DTLS [draft-thomson-rtcweb-ice-dtls-00](https://datatracker.ietf.org/doc/html/draft-thomson-rtcweb-ice-dtls-00): DTLS und die ClientHello und ServerHello + spezielle Cookies werden benutzt um die Konnektivität zu überprüfen. Die Idee war eher gedacht um den Verbindungsaufbau zu verschnellern. Die Idee DTLS für ICE zu benutzen wird mehr als gegeben angesehen (vielleicht weil das schon verwendet werden kann) aber nicht als wirkliches Feature hervorgehoben.
 
