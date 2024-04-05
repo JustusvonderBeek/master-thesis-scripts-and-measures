@@ -283,9 +283,9 @@ def quic_ice():
     # Testing if the implementation can switch the paths already
     # if_down(net, "h1", "h1-wifi")
     # stop_path(net, "h1", "h2")
-    path_loss(net, "h1", "h1-wifi")
-    print(f"Waiting {test_duration}s...")
-    time.sleep(test_duration)
+    # path_loss(net, "h1", "h1-wifi")
+    # print(f"Waiting {test_duration}s...")
+    # time.sleep(test_duration)
 
     # Open the CLI and allow user input
     CLI(net)
@@ -367,6 +367,11 @@ def test_quic_multipath():
 topologies = { 'quicheperf': (lambda: quicheperf()), "quic-stun": (lambda: quic_stun()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: quic_multiplex()) }
 
 if __name__ == "__main__":
+    
+    # Parsing the command line
+    # Only options are to disable pcap or log output
+    # TODO:
+
     # quicheperf()
     # p2p_webrtc()
     # quic_multiplex()
