@@ -47,9 +47,9 @@ def capture_pcap(net, host, outpath=None, outfile=None):
     # print(f"Outfile: {outfile}")
     host_pcap = h.popen(f"tcpdump -i any -w {outfile}")
 
-    return host_pcap
+    return host_pcap, outfile
 
-def terminate(process, outfile=None):
+def terminate(process, outfile=None, file_perm=None):
     """Ending the running 'pcap capturing' process"""
 
     process.terminate()
@@ -61,7 +61,14 @@ def terminate(process, outfile=None):
             proc_out.write(text.decode("utf-8"))
             proc_out.write("\n---------------------\n\n")
             proc_out.write(err.decode("utf-8"))
+
+        os.chmod(outfile, 0o666)
+        print("Wrote logfile to: '{}'".format(outfile))
     
+    if file_perm is not None:
+        # Change the file access write
+        os.chmod(file_perm, 0o666)
+
 
 def stop_path(net, host, switch):
     """Disabling the routing / traffic via the given path"""
@@ -76,6 +83,14 @@ def start_path(net, host, switch):
     print(f"Starting path from {host}<->{switch}")
     net.configLinkStatus(host, switch, 'up')
     # net.cmd(f"link {host} {switch} up")
+
+def path_loss(net, host, iface, loss=100):
+    """Applying the given loss rate to the given interface on the host specified"""
+
+    h = net.get(host)
+    cmd = "tc qdisc add dev {} root netem loss {}%".format(iface, loss)
+    print("Executing: {}".format(cmd))
+    h.cmd(cmd)
 
 def if_down(net, host, iface):
     """Disabling the specified interface on the given host"""
@@ -96,7 +111,7 @@ def write_new_if_file(local_addr, peer_addr):
     Allows creating a new path mid connection.
     """
 
-    with open("new_socket.txt", "w") as if_file:
+    with open("mininet/new_socket.txt", "w") as if_file:
         if_file.write(local_addr + "\n")
         if_file.write(peer_addr)
 
@@ -105,5 +120,5 @@ def write_new_ice_cand_file(local_addr):
     Writing the given address into the specified file which leads to quiche sending this information to the other end.
     """
 
-    with open("ice_addrs.txt", "w") as addr_file:
+    with open("mininet/ice_addrs.txt", "w") as addr_file:
         addr_file.write(local_addr + "\n")

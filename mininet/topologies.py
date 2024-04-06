@@ -295,10 +295,28 @@ class DirectAndInternet(Topo):
         h2 = self.addHost("h2", ip="192.168.1.3/24")
 
         # Adding the link between the hosts
-        self.addLink(h1, h2, intfName1="h1-wifi", intfName2="h2-wifi", delay="100ms")
+        self.addLink(h1, h2, intfName1="h1-wifi", intfName2="h2-wifi", delay="10ms")
         # Adding the link into the internet
-        self.addLink(h1, s1, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay="20ms")
-        self.addLink(h2, s2, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="20ms")
+        self.addLink(h1, s1, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay="30ms")
+        self.addLink(h2, s2, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="30ms")
+
+    def add_directlink(net):
+        """Instead of adding a internet link which needs to be discovered by ICE, add a direct link
+        for testing
+        """
+
+        r1 = net.addHost("r1")
+
+        net.addLink("s1", "r1", params2={"ip":"1.20.30.1/28"})
+        net.addLink("s2", "r1", params2={"ip":"2.40.60.1/28"})
+
+        h1 = net.get("h1")
+        h1.cmd("ip route add 2.40.60.0/28 via 1.20.30.1 dev h1-cellular")
+        h2 = net.get("h2")
+        h2.cmd("ip route add 1.20.30.0/28 via 2.40.60.1 dev h2-cellular")
+        # r1 = net.get("r1")
+        # r1.cmd("ip route add 2.40.60.0/28 ")
+
 
     def add_internet(net):
         """
