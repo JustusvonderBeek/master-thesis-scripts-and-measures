@@ -10,7 +10,7 @@
 
 from mininet.node import Node, Switch, OVSController
 from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo
-from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file, write_new_ice_cand_file, path_loss, poll_output
+from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file, write_new_ice_cand_file, path_loss
 from mininet.net import Mininet
 from mininet.cli import CLI
 from pathlib import Path
