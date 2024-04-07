@@ -10,15 +10,17 @@
 
 from mininet.node import Node, Switch, OVSController
 from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo
-from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file, write_new_ice_cand_file, path_loss
+from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file, write_new_ice_cand_file, path_loss, poll_output
 from mininet.net import Mininet
 from mininet.cli import CLI
 from pathlib import Path
+from datetime import datetime
 
 import mininet.net as net
 import time
 import os
 import subprocess
+import threading
 
 def start_quicheperf_server(net):
     """Starting the quicheperf server"""
@@ -230,11 +232,11 @@ def quic_stun():
 
     CLI(net)
 
-    terminate(h1_pcap)
-    terminate(h2_pcap)
+    terminate(h1_pcap, terminate=True)
+    terminate(h2_pcap, terminate=True)
     # terminate(turn, "turn/")
-    terminate(server, "h2/")
-    terminate(client, "h1/")
+    terminate(server, "h2/", terminate=True)
+    terminate(client, "h1/", terminate=True)
 
     net.stop()
     
@@ -259,10 +261,19 @@ def quic_ice():
     h1 = net.get("h1")
     h2 = net.get("h2")
 
-    os.environ["RUST_LOG"] = "info"
+    log_level = "info"
+
+    os.environ["RUST_LOG"] = log_level
     # os.environ["RUST_BACKTRACE"] = "1"
-    server = h2.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/ifrit/Documents/Code/quicheperf-stun/src/cert.crt --key /home/ifrit/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    client = h1.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+    
+    if log_level == "trace" or log_level == "debug":
+        logfile_name = datetime.today().strftime("%d_%m_%H_%M") + ".log"
+        server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000 &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/h2/{logfile_name}",shell=True)
+        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/h1/{logfile_name}", shell=True)
+    else:
+        server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
     print(f"Waiting {test_duration}s...")
     time.sleep(test_duration)
@@ -293,8 +304,14 @@ def quic_ice():
     terminate(h1_pcap, file_perm=h1_pcap_file)
     terminate(h2_pcap, file_perm=h2_pcap_file)
     # terminate(turn, "turn/")
-    terminate(server, "h2/")
-    terminate(client, "h1/")
+    
+    if log_level == "trace" or log_level == "debug":
+        terminate(server)
+        terminate(client)
+        print(f"Stored logfile to: '{logfile_name}'")
+    else:
+        terminate(server, "h2/")
+        terminate(client, "h1/")
 
     net.stop()
     
@@ -319,10 +336,20 @@ def test_quic_multipath():
     h1 = net.get("h1")
     h2 = net.get("h2")
 
-    os.environ["RUST_LOG"] = "info"
+    os.environ["RUST_LOG"] = "trace"
     # os.environ["RUST_BACKTRACE"] = "1"
     server = h2.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/ifrit/Documents/Code/quicheperf-stun/src/cert.crt --key /home/ifrit/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    client = h1.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -l 1.20.30.2:20000 -c 192.168.1.3:10000 -c 2.40.60.3:10000 -b 10MB --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+    client_testfile = open("h1/test.log", "w+")
+    
+    client = h1.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -l 1.20.30.2:20000 -c 192.168.1.3:10000 -c 2.40.60.3:10000 -b 10MB --mp true &> /home/", stdout=client_testfile, stdin=client_testfile, bufsize=8192)
+
+    # Polling from popen
+    # poll_thread1 = threading.Thread(target=poll_output, args=(client, "h1/"))
+    # poll_thread1.daemon = True # Terminate as soon as the process terminates
+    # poll_thread1.start()
+
+    terminate(client, outfile="h1/", overwrite=True)
 
     print(f"Waiting {test_duration}s...")
     time.sleep(test_duration)
@@ -354,8 +381,11 @@ def test_quic_multipath():
     terminate(h1_pcap, file_perm=h1_pcap_file)
     terminate(h2_pcap, file_perm=h2_pcap_file)
     # terminate(turn, "turn/")
-    terminate(server, "h2/")
-    terminate(client, "h1/")
+    terminate(server, "h2/", terminate=True)
+    # terminate(client, "h1/")
+    terminate(client, terminate=True)
+
+    client_testfile.close()
 
     net.stop()
     
