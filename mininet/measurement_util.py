@@ -7,7 +7,7 @@ from pathlib import Path
 from datetime import datetime
 
 import mininet.net as net
-import subprocess
+import subprocess, select
 import os
 import time
 
@@ -49,21 +49,28 @@ def capture_pcap(net, host, outpath=None, outfile=None):
 
     return host_pcap, outfile
 
-def terminate(process, outfile=None, file_perm=None):
+def terminate(process, outfile=None, file_perm=None, terminate=True, overwrite=False):
     """Ending the running 'pcap capturing' process"""
 
-    process.terminate()
+    if terminate:
+        process.terminate()
 
     if outfile is not None:
         text, err = process.communicate()
         outfile = outfile + datetime.today().strftime("%d_%m_%H_%M") + ".log"
-        with open(outfile, "w") as proc_out:
-            proc_out.write(text.decode("utf-8"))
-            proc_out.write("\n---------------------\n\n")
-            proc_out.write(err.decode("utf-8"))
-
-        os.chmod(outfile, 0o666)
-        print("Wrote logfile to: '{}'".format(outfile))
+        if overwrite:
+            with open(outfile, "w") as proc_out:
+                proc_out.write(text.decode("utf-8"))
+                proc_out.write("\n---------------------\n\n")
+                proc_out.write(err.decode("utf-8"))
+        else:
+            with open(outfile, "a") as proc_out:
+                proc_out.write(text.decode("utf-8"))
+                proc_out.write("\n---------------------\n\n")
+                proc_out.write(err.decode("utf-8"))
+            
+            os.chmod(outfile, 0o666)
+            print("Wrote logfile to: '{}'".format(outfile))
     
     if file_perm is not None:
         # Change the file access write
