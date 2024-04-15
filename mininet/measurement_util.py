@@ -168,3 +168,9 @@ def write_new_ice_cand_file(local_addr):
 
     with open("mininet/ice_addrs.txt", "w") as addr_file:
         addr_file.write(local_addr + "\n")
+        
+def wait(sleep=5):
+    """Pausing the executing thread for *time* seconds"""
+    
+    print(f"Waiting for {sleep}s...")
+    time.sleep(sleep)
