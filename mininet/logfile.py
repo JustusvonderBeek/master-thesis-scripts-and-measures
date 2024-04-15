@@ -7,7 +7,7 @@ import os
 
 def filter_logfile_positiv(file, contains, outfile=None):
     """Filtering the given file for lines that are contained
-    in the contains list of strings. The final file is written to *filtered*_file
+    in the contains list of strings (case-insensitive). The final file is written to *filtered*_file
     or if outfile is given to that path.
     """
     
@@ -22,7 +22,7 @@ def filter_logfile_positiv(file, contains, outfile=None):
                 # print(f"Line: {line}")
                 lower = line.lower()
                 for contain_filter in contains:
-                    if contain_filter not in lower:
+                    if contain_filter.lower() not in lower:
                         continue
                     wfile.write(line)
                     break
@@ -31,7 +31,7 @@ def filter_logfile_positiv(file, contains, outfile=None):
 
 def filter_logfile_negative(file, contains, outfile=None):
     """Filtering the given file for lines that are contained
-    in the contains list of strings. The final file is written to *filtered*_file
+    in the contains list of strings (case-insensitive). The final file is written to *filtered*_file
     or if outfile is given to that path.
     """
     
@@ -46,7 +46,7 @@ def filter_logfile_negative(file, contains, outfile=None):
                 # print(f"Line: {line}")
                 lower = line.lower()
                 for contain_filter in contains:
-                    if contain_filter in lower:
+                    if contain_filter.lower() in lower:
                         continue
                     wfile.write(line)
                     break
