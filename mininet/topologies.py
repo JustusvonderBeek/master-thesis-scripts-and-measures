@@ -278,21 +278,24 @@ class TwoConnectionWithInternet(Topo):
 class DirectAndInternet(Topo):
     """A topology where two hosts are directly connected 
     emulating a wireless network and have access to the internet via
-    a second interface (cellular).
-
+    a second interface (cellular). 
+    
     h1 ------ Internet ------- h2
      |----- Local Network -----|
 
     """
+    
     def build(self):
         """Creating the class topology"""
 
         s1 = self.addSwitch("s1") # Internet H1
         s2 = self.addSwitch("s2") # Internet H2
+        s3 = self.addSwitch("s3") # nat1 <-> nat2 + TURN
 
         # Adding our two hosts
         h1 = self.addHost("h1", ip="192.168.1.2/24")
         h2 = self.addHost("h2", ip="192.168.1.3/24")
+        turn = self.addHost("turn", ip="1.20.30.10/28")
 
         # Adding the link between the hosts
         self.addLink(h1, h2, intfName1="h1-wifi", intfName2="h2-wifi", delay="10ms")
@@ -327,14 +330,17 @@ class DirectAndInternet(Topo):
         internet = False
 
         # Adding the internet links
-        inetNATh1 = net.addNAT(name="natH1", ip="1.20.30.1/28", inetIntf="wlp2s0", localIntf="natH1-eth0")
+        inetNATh1 = net.addNAT(name="natH1", ip="1.20.30.1/28", inetIntf="enp5s0", localIntf="natH1-eth0")
         net.addLink("s1", inetNATh1, params2={"ip" : "1.20.30.1/28"})
+        net.addLink(inetNATh1, "s3", params1={"ip" : "1.20.50.10/24"})
 
-        inetNATh2 = net.addNAT(name="natH2", ip="2.40.60.1/28", inetIntf="wlp2s0", localIntf="natH2-eth0")
+        inetNATh2 = net.addNAT(name="natH2", ip="2.40.60.1/28", inetIntf="enp5s0", localIntf="natH2-eth0")
         net.addLink("s2", inetNATh2, params2={"ip" : "2.40.60.1/28"})
+        net.addLink(inetNATh2, "s3", params2={"ip" : "1.20.50.20/24"})
         # Connect the "internet"
+        net.addLink("turn", "s3", intfName1="turn-eth1", params1={"ip":"1.20.50.30/24"}, delay="1ms")
 
-        net.addLink(inetNATh1, inetNATh2, intfName="natH1-eth2", intfName2="natH2-eth2", params1={"ip":"1.20.50.10/24"}, params2={"ip":"1.20.50.20/24"}, delay="30ms")
+        # net.addLink(inetNATh1, inetNATh2, intfName="natH1-eth2", intfName2="natH2-eth2", params1={"ip":"1.20.50.10/24"}, params2={"ip":"1.20.50.20/24"}, delay="30ms")
 
         h1 = net.get("h1")
         h2 = net.get("h2")
@@ -342,11 +348,11 @@ class DirectAndInternet(Topo):
         h2.cmd("ip route add default via 2.40.60.1 dev h2-cellular")
         
         nath1 = net.get("natH1")
-        nath1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
+        nath1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("enp5s0"))
         nath1.cmd('sysctl net.ipv4.ip_forward=1')
 
         nath2 = net.get("natH2")
-        nath2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
+        nath2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("enp5s0"))
         nath2.cmd('sysctl net.ipv4.ip_forward=1')
 
         # Add some toggle to specify if we need internet or not
@@ -364,24 +370,49 @@ class DirectAndInternet(Topo):
 class DirectAndInternetAndTURN(Topo):
 
     def build(self):
-        """
-        Building the same topology as the DirectAndInternet but including a TURN server
+        """Building the same topology as the DirectAndInternet but including a TURN server
         at the internet location
+        
+        The internet path includes a TURN server
+
+                    TURN
+                      |
+        h1 ------ Internet ------- h2
+        |----- Local Network -----|
+        
         """
 
-        s1 = self.addSwitch("s1") # Internet H1
-        s2 = self.addSwitch("s2") # Internet H2
-
+        s1 = self.addSwitch("s1") # Directlink
+        s2 = self.addSwitch("s2") # H1 <-> Nat1
+        s3 = self.addSwitch("s3") # Nat1 <-> Nat2
+        s4 = self.addSwitch("s4") # Nat2 <-> H2
+        
         # Adding our two hosts
         h1 = self.addHost("h1", ip="192.168.1.2/24")
+        # h1 = self.addHost("h1", ip="1.20.30.2/28")
         h2 = self.addHost("h2", ip="192.168.1.3/24")
+        # h2 = self.addHost("h2", ip="2.40.60.3/28")
         turn = self.addHost("turn", ip="1.20.50.100/24")
-
+        nat1 = self.addHost("nat1", ip="1.20.30.1/28")
+        nat2 = self.addHost("nat2", ip="2.40.60.1/28")
+        
         # Adding the link between the hosts
-        self.addLink(h1, h2, intfName1="h1-wifi", intfName2="h2-wifi", delay="10ms")
+        self.addLink(h1, s1, intfName1="h1-wifi", intfName2="s1-wifi1", params1={"ip":"192.168.1.2/24"}, delay="2ms")
+        self.addLink(h2, s1, intfName1="h2-wifi", intfName2="s1-wifi2", params1={"ip":"192.168.1.3/24"}, delay="2ms")
+        
         # Adding the link into the internet
-        self.addLink(h1, s1, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"},  delay="20ms")
-        self.addLink(h2, s2, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="20ms")
+        self.addLink(h1, s2, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"},  delay="2ms")
+        self.addLink(h2, s4, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="2ms")
+        
+        # Connect the hosts with the nats
+        self.addLink(s2, nat1, intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay="3ms")
+        self.addLink(s4, nat2, intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay="3ms")
+
+        # Connect the internet / routes with each other        
+        self.addLink(nat1, s3, intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="3ms")
+        self.addLink(nat2, s3, intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="3ms")
+        # Connect the turn server with the "internet"
+        self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.30/24"}, delay="7ms")
 
     def add_internet(net):
         """
@@ -389,36 +420,57 @@ class DirectAndInternetAndTURN(Topo):
         and to each other.
         """
 
-        # Adding the internet links
-        inetNATh1 = net.addNAT(name="natH1", ip="1.20.30.1/28", inetIntf="wlp2s0", localIntf="natH1-eth0")
-        net.addLink("s1", inetNATh1, params2={"ip" : "1.20.30.1/28"})
+        # http://mininet.org/api/classmininet_1_1net_1_1Mininet.html#a91f71b8107312feffe76c4cd2369d1c4
+        # nat1 = net.addNAT("nat1", ip="1.20.30.1/28", connect=False, inNamespace=True, inetIntf="nat1-ext", localIntf="nat1-local") # The connect prevents a connection to s1
+        # nat2 = net.addNAT("nat2", ip="2.40.60.1/28", connect=False, inNamespace=True, inetIntf="nat1-ext", localIntf="nat2-local")
 
-        inetNATh2 = net.addNAT(name="natH2", ip="2.40.60.1/28", inetIntf="wlp2s0", localIntf="natH2-eth0")
-        net.addLink("s2", inetNATh2, params2={"ip" : "2.40.60.1/28"})
+        # net.addLink("s2", nat1, intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay="3ms")
+        # net.addLink("s4", nat2, intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay="3ms")
 
-        # Connect the "internet"
-        # net.addLink(inetNATh1, inetNATh2, intfName="natH1-eth2", intfName2="natH2-eth2", params1={"ip":"1.20.50.10/24"}, params2={"ip":"1.20.50.20/24"}, delay="30ms")
-        net.addLink(inetNATh1, "turn", intfName1="natH1-eth2", intfName2="turn-eth1", params1={"ip":"1.20.50.100/24"}, params2={"ip":"1.20.50.11/24"})
-        net.addLink(inetNATh2, "turn", intfName1="natH2-eth2", intfName2="turn-eth2", params1={"ip":"1.20.50.200/24"}, params2={"ip":"1.20.50.21/24"})
+        # net.addLink(nat1, "s3", intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="5ms")
+        # net.addLink(nat2, "s3", intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="5ms")
 
         h1 = net.get("h1")
         h2 = net.get("h2")
         h1.cmd("ip route add default via 1.20.30.1 dev h1-cellular")
         h2.cmd("ip route add default via 2.40.60.1 dev h2-cellular")
 
-        nath1 = net.get("natH1")
-        nath1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
-        nath1.cmd('sysctl net.ipv4.ip_forward=1')
+        nat1 = net.get("nat1")
+        nat1.cmd('sysctl net.ipv4.ip_forward=1')
+        # nat1.cmd('sysctl net.ipv6.ip_forward=1') # Not necessary for now
+        nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
 
-        nath2 = net.get("natH2")
-        nath2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("wlp2s0"))
-        nath2.cmd('sysctl net.ipv4.ip_forward=1')
+        nat2 = net.get("nat2")
+        nat2.cmd('sysctl net.ipv4.ip_forward=1')
+        nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
 
-        nath1.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
-        nath1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev natH1-eth2")
-        nath2.cmd("ip route add default via 131.159.196.38 dev wlp2s0")
-        nath2.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev natH2-eth2")
+        nat1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev nat1-ext")
+        # Should not be known to the nat at this time
+        # nat2.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev nat2-ext")
 
+    def enable_nat(net):
+        """
+        Disabling any NAT settings from before and only allow packets to flow from h2 -> internet -> h1 if
+        h1 has sent packets before.
+        """
+        
+        # For now, only enable such a strict nat for the host1
+        nat1 = net.get("nat1")
+        nat1.cmd("iptables -F")
+        nat1.cmd("iptables -t nat -F")
+        
+        # Now enable packet forwarding only after we have seen some outgoing packets before
+        nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
+        nat1.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
+        nat1.cmd("iptables -A FORWARD -j DROP")
+        
+        nat2 = net.get("nat2")
+        nat2.cmd("iptables -F")
+        nat2.cmd("iptables -t nat -F")
+        
+        nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
+        nat1.cmd("iptables -A FORWARD -j ACCEPT")
 
 class InternetTopo(Topo):
     "Single switch connected to n hosts."

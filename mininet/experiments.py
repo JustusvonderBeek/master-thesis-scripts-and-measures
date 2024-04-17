@@ -9,8 +9,9 @@
 
 
 from mininet.node import Node, Switch, OVSController
-from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo
-from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file, write_new_ice_cand_file, path_loss
+from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
+from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, if_down, if_up, write_new_if_file, write_new_ice_cand_file, path_loss, set_default_route, wait
+from logfile import filter_logfile_positiv
 from mininet.net import Mininet
 from mininet.cli import CLI
 from pathlib import Path
@@ -242,19 +243,40 @@ def quic_stun():
     
     exit(0)
 
+def start_turn_server(net, host):
+    """Starting the 'coturn' turn server on the given host in the network.
+    Returns the opened server process
+    """
+
+    h = net.get(host)
+    # The server is correctly configured, nothing needed to answer simple STUN requests
+    # And no login required
+    cmd = f"/home/justus/Documents/Code/coturn/bin/turnserver"
+    process = h.popen(cmd)
+    return process
+
 def quic_ice():
     test_duration=5
-    topo = DirectAndInternet()
+    enable_turn=True
+    debug_network=False
+    enable_pcap=True
+    topo = DirectAndInternetAndTURN()
     net = Mininet(topo=topo, controller = OVSController)
-    DirectAndInternet.add_internet(net)
+    DirectAndInternetAndTURN.add_internet(net)
+    DirectAndInternetAndTURN.enable_nat(net)
     net.start()
 
+    # if not debug_network and not enable_pcap:
     h1_pcap, h1_pcap_file = capture_pcap(net, "h1")
     h2_pcap, h2_pcap_file = capture_pcap(net, "h2")
+    turn_pcap, turn_pcap_file = capture_pcap(net, "turn")
 
     # Kill the second interface on the client
     # TODO: Fix the routes on these interfaces when setting down again
     # if_down(net, "h1", "h1-cellular")
+
+    if enable_turn:
+        turn = start_turn_server(net, "turn")
 
     time.sleep(0.5)
 
@@ -262,28 +284,42 @@ def quic_ice():
     h2 = net.get("h2")
 
     log_level = "info"
+    quic_duration = 100 # Otherwise the test stops after 10s
 
     os.environ["RUST_LOG"] = log_level
     # os.environ["RUST_BACKTRACE"] = "1"
+
+    # ip_storage = if_down(net, "h1", "h1-cellular")
     
+    if debug_network:
+        CLI(net)
+        terminate(h1_pcap, file_perm=h1_pcap_file)
+        terminate(h2_pcap, file_perm=h2_pcap_file)
+        net.stop()
+        exit(0)
+    
+    time.sleep(0.5)
     
     if log_level == "trace" or log_level == "debug":
         logfile_name = datetime.today().strftime("%d_%m_%H_%M") + ".log"
         server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000 &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/h2/{logfile_name}",shell=True)
-        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/h1/{logfile_name}", shell=True)
+        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration} &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/h1/{logfile_name}", shell=True)
     else:
         server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
-    print(f"Waiting {test_duration}s...")
-    time.sleep(test_duration)
+    wait()
+    
+    # ip_storage = if_down(net, "h1", "h1-cellular")
 
     # write_new_ice_cand_file("1.20.30.2:20000")
     # # # TODO: Add the functions to start the interface and probe on the new path
-    # if_up(net, "h1", "h1-cellular")
+    # ip_storage = if_up(net, "h1", "h1-cellular", ip_storage)
+    # set_default_route(net, "h1", "1.20.30.1", "h1-cellular")
     # time.sleep(0.5)
     # Everything else should happen automatically
-    # time.sleep(test_duration)
+    wait()
+    # wait(10)
 
     # # WiFi-Direct is 100ms - Internet is 70ms so should be faster
     # write_new_if_file("1.20.30.2:20000", "2.40.60.3:10000")
@@ -295,23 +331,29 @@ def quic_ice():
     # if_down(net, "h1", "h1-wifi")
     # stop_path(net, "h1", "h2")
     # path_loss(net, "h1", "h1-wifi")
-    # print(f"Waiting {test_duration}s...")
-    # time.sleep(test_duration)
+    # wait()
 
     # Open the CLI and allow user input
     CLI(net)
 
     terminate(h1_pcap, file_perm=h1_pcap_file)
     terminate(h2_pcap, file_perm=h2_pcap_file)
+    terminate(turn_pcap, file_perm=turn_pcap_file)
     # terminate(turn, "turn/")
     
     if log_level == "trace" or log_level == "debug":
         terminate(server)
         terminate(client)
         print(f"Stored logfile to: '{logfile_name}'")
+        filter_logfile_positiv(f"h1/{logfile_name}", ["webrtc", "restarting"])
+        filter_logfile_positiv(f"h2/{logfile_name}", ["webrtc", "restarting"])
     else:
         terminate(server, "h2/")
         terminate(client, "h1/")
+    
+    if enable_turn:
+        print("Stopping turn server, this takes a few seconds...")
+        terminate(turn, "turn/")
 
     net.stop()
     
@@ -399,7 +441,7 @@ topologies = { 'quicheperf': (lambda: quicheperf()), "quic-stun": (lambda: quic_
 if __name__ == "__main__":
     
     # Parsing the command line
-    # Only options are to disable pcap or log output
+    # Only options are to disable pcap or log output or debug network
     # TODO:
 
     # quicheperf()

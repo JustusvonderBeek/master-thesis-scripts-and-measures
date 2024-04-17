@@ -10,6 +10,7 @@ import mininet.net as net
 import subprocess, select
 import os
 import time
+import re
 
 
 def capture_ssl(net, host, outpath=None, outfile=None):
@@ -99,19 +100,57 @@ def path_loss(net, host, iface, loss=100):
     print("Executing: {}".format(cmd))
     h.cmd(cmd)
 
-def if_down(net, host, iface):
-    """Disabling the specified interface on the given host"""
+def parse_ip(cmd_output):
+    """Parsing the output of the 'ip a' command. Returns the first found IP."""
+
+    ipv4_addresses = re.findall(r'inet (\d+\.\d+\.\d+\.\d+/\d+)', cmd_output)
+    return ipv4_addresses
+
+def if_down(net, host, iface, ip_storage=None):
+    """Disabling the specified interface on the given host.
+    Also removes the IP from the interface and stores it in dictionary
+    """
 
     print(f"Disabling interface {iface} on {host}")
     h = net.get(host)
+    output = h.cmd(f"ip a s {iface}")
+    ips = parse_ip(output)
     h.cmd(f"ip link set dev {iface} down")
+    h.cmd(f"ip addr flush dev {iface}")
+    
+    if ip_storage is None:
+        ip_storage = {(host, iface): list()}
+        
+    for ip in ips:
+        ip_storage[(host,iface)].append(ip)
 
-def if_up(net, host, iface):
+    # print(ip_storage)
+    return ip_storage
+
+def if_up(net, host, iface, ip_storage=None):
     """Enabling the specified interface on the given host"""
 
     print(f"Enabling interface {iface} on {host}")
     h = net.get(host)
     h.cmd(f"ip link set dev {iface} up")
+    
+    if ip_storage is not None:
+        ips = ip_storage[(host, iface)]
+        for ip in ips:
+            # print(f"Executing: ip addr add {ip} dev {iface}")
+            h.cmd(f"ip addr add {ip} dev {iface}")
+
+        ip_storage[(host, iface)] = list()
+
+    return ip_storage
+
+def set_default_route(net, host, gateway, iface):
+    """Setting the default route of a host via a specific gateway."""
+
+    h = net.get(host)
+    cmd = f"ip route add default via {gateway} dev {iface}"
+    # print(f"Executing: {cmd}")
+    h.cmd(cmd)
 
 def write_new_if_file(local_addr, peer_addr):
     """Writing a new local and remote address into the file that is read by quiche.
@@ -129,3 +168,9 @@ def write_new_ice_cand_file(local_addr):
 
     with open("mininet/ice_addrs.txt", "w") as addr_file:
         addr_file.write(local_addr + "\n")
+        
+def wait(sleep=5):
+    """Pausing the executing thread for *time* seconds"""
+    
+    print(f"Waiting for {sleep}s...")
+    time.sleep(sleep)
