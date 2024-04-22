@@ -374,11 +374,12 @@ class DirectAndInternetAndTURN(Topo):
         at the internet location
         
         The internet path includes a TURN server
-
-                    TURN
-                      |
+        
+        R1-------------------------R2
+        |           TURN           | 
+        |              |           |
         h1 ------ Internet ------- h2
-        |----- Local Network -----|
+        |----- Local Network ------|
         
         """
 
@@ -386,6 +387,7 @@ class DirectAndInternetAndTURN(Topo):
         s2 = self.addSwitch("s2") # H1 <-> Nat1
         s3 = self.addSwitch("s3") # Nat1 <-> Nat2
         s4 = self.addSwitch("s4") # Nat2 <-> H2
+        # s5 = self.addSwitch("s5") # Nat1 <-> Nat2 without Firewall/NAT
         
         # Adding our two hosts
         h1 = self.addHost("h1", ip="192.168.1.2/24")
@@ -395,6 +397,7 @@ class DirectAndInternetAndTURN(Topo):
         turn = self.addHost("turn", ip="1.20.50.100/24")
         nat1 = self.addHost("nat1", ip="1.20.30.1/28")
         nat2 = self.addHost("nat2", ip="2.40.60.1/28")
+        nat3 = self.addNode("nat3", cls=LinuxRouter, ip="172.16.1.1/24")
         
         # Adding the link between the hosts
         self.addLink(h1, s1, intfName1="h1-wifi", intfName2="s1-wifi1", params1={"ip":"192.168.1.2/24"}, delay="2ms")
@@ -412,7 +415,10 @@ class DirectAndInternetAndTURN(Topo):
         self.addLink(nat1, s3, intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="3ms")
         self.addLink(nat2, s3, intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="3ms")
         # Connect the turn server with the "internet"
-        self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.30/24"}, delay="7ms")
+        self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="7ms")
+        
+        self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
+        self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
 
     def add_internet(net):
         """
@@ -433,7 +439,9 @@ class DirectAndInternetAndTURN(Topo):
         h1 = net.get("h1")
         h2 = net.get("h2")
         h1.cmd("ip route add default via 1.20.30.1 dev h1-cellular")
+        h1.cmd("ip route add 172.16.2.0/24 via 172.16.1.1 dev h1-eth")
         h2.cmd("ip route add default via 2.40.60.1 dev h2-cellular")
+        h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth")
 
         nat1 = net.get("nat1")
         nat1.cmd('sysctl net.ipv4.ip_forward=1')
@@ -444,9 +452,19 @@ class DirectAndInternetAndTURN(Topo):
         nat2.cmd('sysctl net.ipv4.ip_forward=1')
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
 
-        nat1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev nat1-ext")
+        # nat1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev nat1-ext")
         # Should not be known to the nat at this time
         # nat2.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev nat2-ext")
+
+        # turn = net.get("turn")
+        # turn.cmd("ip route add default via 1.20.50.10 dev turn-eth0")
+
+        nat3 = net.get("nat3")
+        nat3.cmd("sysctl net.ipv4.ip_forward=1")
+        nat3.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("nat3-ext"))
+        
+        # nat3.cmd("ip route add default via 172.16.2.1 dev nat3-ext")
+        # h2.cmd("ip route add 172.16.1.0/24 via 172.16.1.1 dev h2-eth")
 
     def enable_nat(net):
         """
@@ -470,8 +488,19 @@ class DirectAndInternetAndTURN(Topo):
         nat2.cmd("iptables -t nat -F")
         
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
-        nat1.cmd("iptables -A FORWARD -j ACCEPT")
+        nat2.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
+        nat2.cmd("iptables -A FORWARD -j DROP")
 
+        nat3 = net.get("nat3")
+        nat3.cmd("iptables -F")
+        nat3.cmd("iptables -t nat -F")
+        
+        nat3.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("nat3-ext"))
+        nat3.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat3.cmd("iptables -A FORWARD -i nat3-local -j ACCEPT")
+        nat3.cmd("iptables -A FORWARD -j DROP")
+        
 class InternetTopo(Topo):
     "Single switch connected to n hosts."
     # pylint: disable=arguments-differ
