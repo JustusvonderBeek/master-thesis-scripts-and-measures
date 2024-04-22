@@ -412,7 +412,7 @@ class DirectAndInternetAndTURN(Topo):
         self.addLink(nat1, s3, intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="3ms")
         self.addLink(nat2, s3, intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="3ms")
         # Connect the turn server with the "internet"
-        self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.30/24"}, delay="7ms")
+        self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="7ms")
 
     def add_internet(net):
         """
@@ -444,7 +444,7 @@ class DirectAndInternetAndTURN(Topo):
         nat2.cmd('sysctl net.ipv4.ip_forward=1')
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
 
-        nat1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev nat1-ext")
+        # nat1.cmd("ip route add 2.40.60.0/24 via 1.20.50.20 dev nat1-ext")
         # Should not be known to the nat at this time
         # nat2.cmd("ip route add 1.20.30.0/24 via 1.20.50.10 dev nat2-ext")
 
@@ -470,7 +470,9 @@ class DirectAndInternetAndTURN(Topo):
         nat2.cmd("iptables -t nat -F")
         
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
-        nat1.cmd("iptables -A FORWARD -j ACCEPT")
+        nat2.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
+        nat2.cmd("iptables -A FORWARD -j DROP")
 
 class InternetTopo(Topo):
     "Single switch connected to n hosts."
