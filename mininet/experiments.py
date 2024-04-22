@@ -216,8 +216,8 @@ def quic_stun():
     DirectAndInternet.add_internet(net)
     net.start()
 
-    h1_pcap = capture_pcap(net, "h1")
-    h2_pcap = capture_pcap(net, "h2")
+    h1_pcap = capture_pcap(net, "h1", ["h1-wifi", "h1-cellular"])
+    h2_pcap = capture_pcap(net, "h2", ["h2-wifi", "h2-cellular"])
 
     time.sleep(0.5)
 
@@ -251,7 +251,7 @@ def start_turn_server(net, host):
     h = net.get(host)
     # The server is correctly configured, nothing needed to answer simple STUN requests
     # And no login required
-    cmd = f"/home/justus/Documents/Code/coturn/bin/turnserver"
+    cmd = f"/home/justus/Documents/Code/coturn/bin/turnserver -z"
     process = h.popen(cmd)
     return process
 
@@ -267,9 +267,9 @@ def quic_ice():
     net.start()
 
     # if not debug_network and not enable_pcap:
-    h1_pcap, h1_pcap_file = capture_pcap(net, "h1")
-    h2_pcap, h2_pcap_file = capture_pcap(net, "h2")
-    turn_pcap, turn_pcap_file = capture_pcap(net, "turn")
+    h1_pcap, h1_pcap_file = capture_pcap(net, "h1", ["h1-wifi", "h1-cellular"])
+    h2_pcap, h2_pcap_file = capture_pcap(net, "h2", ["h2-wifi", "h2-cellular"])
+    turn_pcap, turn_pcap_file = capture_pcap(net, "turn", ["turn-eth0"])
 
     # Kill the second interface on the client
     # TODO: Fix the routes on these interfaces when setting down again
