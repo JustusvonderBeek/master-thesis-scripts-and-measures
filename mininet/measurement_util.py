@@ -30,8 +30,10 @@ def capture_ssl(net, host, outpath=None, outfile=None):
     outfile = Path(outpath).joinpath(outfile)
     os.environ["SSLKEYLOGFILE"] = f"{outfile}"
 
-def capture_pcap(net, host, outpath=None, outfile=None):
-    """Capturing packets on the specified host"""
+def capture_pcap(net, host, interfaces=None, outpath=None, outfile=None):
+    """Capturing packets on the specified host. 
+    Interfaces can be specified in a list of strings.: ["eth0", "eth1"]
+    """
 
     h = net.get(host)
     if h is None:
@@ -46,7 +48,16 @@ def capture_pcap(net, host, outpath=None, outfile=None):
         outfile = outfile + "_" + file_name
     outfile = Path(outpath).joinpath(outfile)
     # print(f"Outfile: {outfile}")
-    host_pcap = h.popen(f"tcpdump -i any -w {outfile}")
+    # host_pcap = h.popen(f"tcpdump -i any -w {outfile}")
+    listen_interfaces = "-i any"
+    if interfaces is not None:
+        listen_interfaces = ""
+        for iface in interfaces:
+            listen_interfaces += f"-i {iface} "
+    
+    cmd = f"tshark {listen_interfaces} -w {outfile}"
+    print(f"Capturing: {cmd}")
+    host_pcap = h.popen(f"tshark {listen_interfaces} -w {outfile} -n")
 
     return host_pcap, outfile
 
