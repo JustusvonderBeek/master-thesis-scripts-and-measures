@@ -1221,30 +1221,13 @@ dependencies = [
  "bytes",
  "log",
  "rand",
- "rtcp 0.10.0",
- "rtp 0.9.0",
+ "rtcp",
+ "rtp",
  "thiserror",
  "tokio",
  "waitgroup",
- "webrtc-srtp 0.11.0",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "interceptor"
-version = "0.11.0"
-dependencies = [
- "async-trait",
- "bytes",
- "log",
- "rand",
- "rtcp 0.10.1",
- "rtp 0.10.0",
- "thiserror",
- "tokio",
- "waitgroup",
- "webrtc-srtp 0.12.0",
- "webrtc-util 0.8.1",
+ "webrtc-srtp",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -1734,9 +1717,8 @@ dependencies = [
  "serde_with 1.14.0",
  "slab",
  "synchronized-writer",
- "tokio",
  "url 1.7.2",
- "webrtc 0.10.1",
+ "webrtc-util",
  "zstd",
 ]
 
@@ -1784,8 +1766,8 @@ dependencies = [
  "tokio",
  "tokio-util",
  "url 1.7.2",
- "webrtc 0.9.0",
- "webrtc-ice 0.10.0",
+ "webrtc",
+ "webrtc-ice",
  "zstd",
 ]
 
@@ -1917,16 +1899,7 @@ checksum = "3677908cadfbecb4cc1da9a56a32524fae4ebdfa7c2ea93886e1b1e846488cb9"
 dependencies = [
  "bytes",
  "thiserror",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "rtcp"
-version = "0.10.1"
-dependencies = [
- "bytes",
- "thiserror",
- "webrtc-util 0.8.1",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -1939,18 +1912,7 @@ dependencies = [
  "rand",
  "serde",
  "thiserror",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "rtp"
-version = "0.10.0"
-dependencies = [
- "bytes",
- "rand",
- "serde",
- "thiserror",
- "webrtc-util 0.8.1",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -2036,16 +1998,6 @@ name = "sdp"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4653054c30ebce63658762eb0d64e27673868a95564474811ae6c220cf767640"
-dependencies = [
- "rand",
- "substring",
- "thiserror",
- "url 2.5.0",
-]
-
-[[package]]
-name = "sdp"
-version = "0.6.1"
 dependencies = [
  "rand",
  "substring",
@@ -2296,24 +2248,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "url 2.5.0",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "stun"
-version = "0.5.1"
-dependencies = [
- "base64",
- "crc",
- "lazy_static",
- "md-5",
- "rand",
- "ring 0.17.7",
- "subtle",
- "thiserror",
- "tokio",
- "url 2.5.0",
- "webrtc-util 0.8.1",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -2540,28 +2475,10 @@ dependencies = [
  "md-5",
  "rand",
  "ring 0.16.20",
- "stun 0.5.0",
+ "stun",
  "thiserror",
  "tokio",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "turn"
-version = "0.7.1"
-dependencies = [
- "async-trait",
- "base64",
- "futures",
- "log",
- "md-5",
- "rand",
- "ring 0.17.7",
- "stun 0.5.1",
- "thiserror",
- "tokio",
- "tokio-util",
- "webrtc-util 0.8.1",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -2761,77 +2678,36 @@ dependencies = [
  "bytes",
  "cfg-if",
  "hex",
- "interceptor 0.10.0",
+ "interceptor",
  "lazy_static",
  "log",
  "rand",
  "rcgen",
  "regex",
  "ring 0.16.20",
- "rtcp 0.10.0",
- "rtp 0.9.0",
+ "rtcp",
+ "rtp",
  "rustls",
- "sdp 0.6.0",
+ "sdp",
  "serde",
  "serde_json",
  "sha2",
  "smol_str",
- "stun 0.5.0",
+ "stun",
  "thiserror",
  "time",
  "tokio",
- "turn 0.7.0",
+ "turn",
  "url 2.5.0",
  "waitgroup",
- "webrtc-data 0.8.0",
- "webrtc-dtls 0.8.0",
- "webrtc-ice 0.10.0",
- "webrtc-mdns 0.6.0",
- "webrtc-media 0.7.0",
- "webrtc-sctp 0.9.0",
- "webrtc-srtp 0.11.0",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "webrtc"
-version = "0.10.1"
-dependencies = [
- "arc-swap",
- "async-trait",
- "bytes",
- "cfg-if",
- "hex",
- "interceptor 0.11.0",
- "lazy_static",
- "log",
- "rand",
- "rcgen",
- "regex",
- "ring 0.17.7",
- "rtcp 0.10.1",
- "rtp 0.10.0",
- "rustls",
- "sdp 0.6.1",
- "serde",
- "serde_json",
- "sha2",
- "smol_str",
- "stun 0.5.1",
- "thiserror",
- "time",
- "tokio",
- "turn 0.7.1",
- "url 2.5.0",
- "waitgroup",
- "webrtc-data 0.8.1",
- "webrtc-dtls 0.9.0",
- "webrtc-ice 0.10.1",
- "webrtc-mdns 0.6.1",
- "webrtc-media 0.7.1",
- "webrtc-sctp 0.9.1",
- "webrtc-srtp 0.12.0",
- "webrtc-util 0.8.1",
+ "webrtc-data",
+ "webrtc-dtls",
+ "webrtc-ice",
+ "webrtc-mdns",
+ "webrtc-media",
+ "webrtc-sctp",
+ "webrtc-srtp",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -2844,20 +2720,8 @@ dependencies = [
  "log",
  "thiserror",
  "tokio",
- "webrtc-sctp 0.9.0",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "webrtc-data"
-version = "0.8.1"
-dependencies = [
- "bytes",
- "log",
- "thiserror",
- "tokio",
- "webrtc-sctp 0.9.1",
- "webrtc-util 0.8.1",
+ "webrtc-sctp",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -2891,41 +2755,7 @@ dependencies = [
  "subtle",
  "thiserror",
  "tokio",
- "webrtc-util 0.8.0",
- "x25519-dalek",
- "x509-parser",
-]
-
-[[package]]
-name = "webrtc-dtls"
-version = "0.9.0"
-dependencies = [
- "aes",
- "aes-gcm",
- "async-trait",
- "bincode",
- "byteorder",
- "cbc",
- "ccm",
- "der-parser",
- "hkdf",
- "hmac",
- "log",
- "p256",
- "p384",
- "rand",
- "rand_core",
- "rcgen",
- "ring 0.17.7",
- "rustls",
- "sec1",
- "serde",
- "sha1",
- "sha2",
- "subtle",
- "thiserror",
- "tokio",
- "webrtc-util 0.8.1",
+ "webrtc-util",
  "x25519-dalek",
  "x509-parser",
 ]
@@ -2943,37 +2773,15 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
- "stun 0.5.0",
+ "stun",
  "thiserror",
  "tokio",
- "turn 0.7.0",
+ "turn",
  "url 2.5.0",
  "uuid",
  "waitgroup",
- "webrtc-mdns 0.6.0",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "webrtc-ice"
-version = "0.10.1"
-dependencies = [
- "arc-swap",
- "async-trait",
- "crc",
- "log",
- "rand",
- "serde",
- "serde_json",
- "stun 0.5.1",
- "thiserror",
- "tokio",
- "turn 0.7.1",
- "url 2.5.0",
- "uuid",
- "waitgroup",
- "webrtc-mdns 0.6.1",
- "webrtc-util 0.8.1",
+ "webrtc-mdns",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -2986,18 +2794,7 @@ dependencies = [
  "socket2",
  "thiserror",
  "tokio",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "webrtc-mdns"
-version = "0.6.1"
-dependencies = [
- "log",
- "socket2",
- "thiserror",
- "tokio",
- "webrtc-util 0.8.1",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -3009,18 +2806,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "rand",
- "rtp 0.9.0",
- "thiserror",
-]
-
-[[package]]
-name = "webrtc-media"
-version = "0.7.1"
-dependencies = [
- "byteorder",
- "bytes",
- "rand",
- "rtp 0.10.0",
+ "rtp",
  "thiserror",
 ]
 
@@ -3038,22 +2824,7 @@ dependencies = [
  "rand",
  "thiserror",
  "tokio",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "webrtc-sctp"
-version = "0.9.1"
-dependencies = [
- "arc-swap",
- "async-trait",
- "bytes",
- "crc",
- "log",
- "rand",
- "thiserror",
- "tokio",
- "webrtc-util 0.8.1",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -3070,34 +2841,13 @@ dependencies = [
  "ctr",
  "hmac",
  "log",
- "rtcp 0.10.0",
- "rtp 0.9.0",
+ "rtcp",
+ "rtp",
  "sha1",
  "subtle",
  "thiserror",
  "tokio",
- "webrtc-util 0.8.0",
-]
-
-[[package]]
-name = "webrtc-srtp"
-version = "0.12.0"
-dependencies = [
- "aead",
- "aes",
- "aes-gcm",
- "byteorder",
- "bytes",
- "ctr",
- "hmac",
- "log",
- "rtcp 0.10.1",
- "rtp 0.10.0",
- "sha1",
- "subtle",
- "thiserror",
- "tokio",
- "webrtc-util 0.8.1",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -3110,24 +2860,6 @@ dependencies = [
  "bitflags 1.3.2",
  "bytes",
  "cc",
- "ipnet",
- "lazy_static",
- "libc",
- "log",
- "nix 0.26.4",
- "rand",
- "thiserror",
- "tokio",
- "winapi",
-]
-
-[[package]]
-name = "webrtc-util"
-version = "0.8.1"
-dependencies = [
- "async-trait",
- "bitflags 1.3.2",
- "bytes",
  "ipnet",
  "lazy_static",
  "libc",
