@@ -269,7 +269,6 @@ def quic_ice():
     # if not debug_network and not enable_pcap:
     h1_pcap, h1_pcap_file = capture_pcap(net, "h1", ["h1-wifi", "h1-cellular"])
     h2_pcap, h2_pcap_file = capture_pcap(net, "h2", ["h2-wifi", "h2-cellular"])
-    turn_pcap, turn_pcap_file = capture_pcap(net, "turn", ["turn-eth0"])
 
     # Kill the second interface on the client
     # TODO: Fix the routes on these interfaces when setting down again
@@ -277,6 +276,7 @@ def quic_ice():
 
     if enable_turn:
         turn = start_turn_server(net, "turn")
+        turn_pcap, turn_pcap_file = capture_pcap(net, "turn", ["turn-eth0"])
 
     time.sleep(0.5)
 
@@ -318,7 +318,7 @@ def quic_ice():
     # set_default_route(net, "h1", "1.20.30.1", "h1-cellular")
     # time.sleep(0.5)
     # Everything else should happen automatically
-    wait()
+    # wait()
     # wait(10)
 
     # # WiFi-Direct is 100ms - Internet is 70ms so should be faster
@@ -338,7 +338,6 @@ def quic_ice():
 
     terminate(h1_pcap, file_perm=h1_pcap_file)
     terminate(h2_pcap, file_perm=h2_pcap_file)
-    terminate(turn_pcap, file_perm=turn_pcap_file)
     # terminate(turn, "turn/")
     
     if log_level == "trace" or log_level == "debug":
@@ -352,6 +351,7 @@ def quic_ice():
         terminate(client, "h1/")
     
     if enable_turn:
+        terminate(turn_pcap, file_perm=turn_pcap_file)
         print("Stopping turn server, this takes a few seconds...")
         terminate(turn, "turn/")
 
