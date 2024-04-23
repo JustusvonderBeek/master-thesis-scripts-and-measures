@@ -404,7 +404,7 @@ class DirectAndInternetAndTURN(Topo):
         self.addLink(h2, s1, intfName1="h2-wifi", intfName2="s1-wifi2", params1={"ip":"192.168.1.3/24"}, delay="2ms")
         
         # Adding the link into the internet
-        self.addLink(h1, s2, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"},  delay="2ms")
+        self.addLink(h1, s2, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay="2ms")
         self.addLink(h2, s4, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="2ms")
         
         # Connect the hosts with the nats
@@ -417,8 +417,8 @@ class DirectAndInternetAndTURN(Topo):
         # Connect the turn server with the "internet"
         self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="7ms")
         
-        self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
-        self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
+        # self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
+        # self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
 
     def add_internet(net):
         """
@@ -439,9 +439,9 @@ class DirectAndInternetAndTURN(Topo):
         h1 = net.get("h1")
         h2 = net.get("h2")
         h1.cmd("ip route add default via 1.20.30.1 dev h1-cellular")
-        h1.cmd("ip route add 172.16.2.0/24 via 172.16.1.1 dev h1-eth")
+        # h1.cmd("ip route add 172.16.2.0/24 via 172.16.1.1 dev h1-eth")
         h2.cmd("ip route add default via 2.40.60.1 dev h2-cellular")
-        h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth")
+        # h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth")
 
         nat1 = net.get("nat1")
         nat1.cmd('sysctl net.ipv4.ip_forward=1')
@@ -480,6 +480,7 @@ class DirectAndInternetAndTURN(Topo):
         # Now enable packet forwarding only after we have seen some outgoing packets before
         nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
         nat1.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat1.cmd("iptables -A FORWARD -s 192.168.1.0-192.168.1.255 -j DROP")
         nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
         nat1.cmd("iptables -A FORWARD -j DROP")
         
@@ -489,6 +490,7 @@ class DirectAndInternetAndTURN(Topo):
         
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
         nat2.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat2.cmd("iptables -A FORWARD -s 192.168.1.0-192.168.1.255 -j DROP")
         nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
         nat2.cmd("iptables -A FORWARD -j DROP")
 
@@ -498,6 +500,7 @@ class DirectAndInternetAndTURN(Topo):
         
         nat3.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("nat3-ext"))
         nat3.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat3.cmd("iptables -A FORWARD -s 192.168.1.0-192.168.1.255 -j DROP")
         nat3.cmd("iptables -A FORWARD -i nat3-local -j ACCEPT")
         nat3.cmd("iptables -A FORWARD -j DROP")
         
