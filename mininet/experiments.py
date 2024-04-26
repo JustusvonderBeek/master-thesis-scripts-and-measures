@@ -258,17 +258,27 @@ def start_turn_server(net, host):
 def quic_ice():
     test_duration=5
     enable_turn=True
+    enable_third_path=False
     debug_network=False
     enable_pcap=True
-    topo = DirectAndInternetAndTURN()
+    topo = DirectAndInternetAndTURN(enable_third_path)
     net = Mininet(topo=topo, controller = OVSController)
     DirectAndInternetAndTURN.add_internet(net)
     DirectAndInternetAndTURN.enable_nat(net)
     net.start()
 
     # if not debug_network and not enable_pcap:
-    h1_pcap, h1_pcap_file = capture_pcap(net, "h1", ["h1-wifi", "h1-cellular"])
-    h2_pcap, h2_pcap_file = capture_pcap(net, "h2", ["h2-wifi", "h2-cellular"])
+    h1_interfaces = ["h1-wifi", "h1-cellular"]
+    h2_interfaces = ["h2-wifi", "h2-cellular"]
+    if enable_third_path:
+        h1_interfaces.append("h1-eth")
+        h2_interfaces.append("h2-eth")
+
+    h1_pcap, h1_pcap_file = capture_pcap(net, "h1", h1_interfaces)
+    h2_pcap, h2_pcap_file = capture_pcap(net, "h2", h2_interfaces)
+    s3_pcap, s3_pcap_file = capture_pcap(net, "s3", ["s3-eth1", "s3-eth2"])
+    nat1_pcap, nat1_pcap_file = capture_pcap(net, "nat1", ["nat1-local", "nat1-ext"])
+    nat2_pcap, nat2_pcap_file = capture_pcap(net, "nat2", ["nat2-local", "nat2-ext"])
 
     # Kill the second interface on the client
     # TODO: Fix the routes on these interfaces when setting down again
@@ -305,8 +315,16 @@ def quic_ice():
         server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000 &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/h2/{logfile_name}",shell=True)
         client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration} &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/h1/{logfile_name}", shell=True)
     else:
-        server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        # server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        # client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+
+        server_unmod = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -l 192.168.1.2", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        client_unmod = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -l 192.168.1.3 --controlling", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+
+        wait(1)
+
+        server_unmod.communicate(input=b"\n\r")
+        client_unmod.communicate(input=b"\n\r")
 
     wait()
     
@@ -338,6 +356,9 @@ def quic_ice():
 
     terminate(h1_pcap, file_perm=h1_pcap_file)
     terminate(h2_pcap, file_perm=h2_pcap_file)
+    terminate(s3_pcap, file_perm=s3_pcap_file)
+    terminate(nat1_pcap, file_perm=nat1_pcap_file)
+    terminate(nat2_pcap, file_perm=nat2_pcap_file)
     # terminate(turn, "turn/")
     
     if log_level == "trace" or log_level == "debug":
@@ -347,9 +368,12 @@ def quic_ice():
         filter_logfile_positiv(f"h1/{logfile_name}", ["webrtc", "restarting"])
         filter_logfile_positiv(f"h2/{logfile_name}", ["webrtc", "restarting"])
     else:
-        terminate(server, "h2/")
-        terminate(client, "h1/")
+        # terminate(server, "h2/")
+        # terminate(client, "h1/")
     
+        terminate(server_unmod, "h2/")
+        terminate(client_unmod, "h1/")
+
     if enable_turn:
         terminate(turn_pcap, file_perm=turn_pcap_file)
         print("Stopping turn server, this takes a few seconds...")
