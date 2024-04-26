@@ -13,6 +13,17 @@ import time
 import re
 
 
+def create_new_test_folder(path=None):
+    """Creating a testfolder where all logfiles and pcap are stored in."""
+
+    if path is None:
+        path = "mininet_measurements/"
+
+    folder_name = path + datetime.today().strftime("%d_%m_%H_%M")
+    Path(folder_name).mkdir(parents=True, exist_ok=True)
+    
+    return folder_name
+
 def capture_ssl(net, host, outpath=None, outfile=None):
     """Exporting the session SSL keys"""
 
@@ -41,7 +52,7 @@ def capture_pcap(net, host, interfaces=None, outpath=None, outfile=None):
     if outpath is None:
         outpath = f"{host}/"
     Path(outpath).mkdir(parents=True, exist_ok=True)
-    file_name = datetime.today().strftime("%d_%m_%H_%M") + ".pcap"
+    file_name = f"{host}.pcap"
     if outfile is None:
         outfile = file_name
     else:
@@ -69,7 +80,6 @@ def terminate(process, outfile=None, file_perm=None, terminate=True, overwrite=F
 
     if outfile is not None:
         text, err = process.communicate()
-        outfile = outfile + datetime.today().strftime("%d_%m_%H_%M") + ".log"
         if overwrite:
             with open(outfile, "w") as proc_out:
                 proc_out.write(text.decode("utf-8"))
@@ -185,3 +195,21 @@ def wait(sleep=5):
     
     print(f"Waiting for {sleep}s...")
     time.sleep(sleep)
+    
+def print_nat_table(net, host, outpath=None):
+    """Printing the current state of connection tracking"""
+    
+    h = net.get(host)
+    # Check where the output is going to?
+    if outpath is None:
+        outpath = "mininet_measurements/unknown/"
+        
+    outfile = f"{host}_nat.log"
+    outfile = Path(outpath).joinpath(outfile)
+    
+    output = h.cmd("conntrack -L")
+    # print(output)
+    with open(outfile, "w") as out:
+        out.write(output)
+        
+    print(f"Wrote NAT table state of host {host} to '{outfile}'")
