@@ -369,7 +369,7 @@ class DirectAndInternet(Topo):
 
 class DirectAndInternetAndTURN(Topo):
 
-    def build(self):
+    def build(self, third_path=True):
         """Building the same topology as the DirectAndInternet but including a TURN server
         at the internet location
         
@@ -417,8 +417,9 @@ class DirectAndInternetAndTURN(Topo):
         # Connect the turn server with the "internet"
         self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="7ms")
         
-        self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
-        self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
+        if third_path:
+            self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
+            self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
 
     def add_internet(net):
         """
