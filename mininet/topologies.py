@@ -417,8 +417,8 @@ class DirectAndInternetAndTURN(Topo):
         # Connect the turn server with the "internet"
         self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="7ms")
         
-        # self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
-        # self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
+        self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
+        self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
 
     def add_internet(net):
         """
@@ -439,9 +439,9 @@ class DirectAndInternetAndTURN(Topo):
         h1 = net.get("h1")
         h2 = net.get("h2")
         h1.cmd("ip route add default via 1.20.30.1 dev h1-cellular")
-        # h1.cmd("ip route add 172.16.2.0/24 via 172.16.1.1 dev h1-eth")
+        h1.cmd("ip route add 172.16.2.0/24 via 172.16.1.1 dev h1-eth")
         h2.cmd("ip route add default via 2.40.60.1 dev h2-cellular")
-        # h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth")
+        h2.cmd("ip route add 172.16.1.0/24 via 172.16.2.1 dev h2-eth")
 
         nat1 = net.get("nat1")
         nat1.cmd('sysctl net.ipv4.ip_forward=1')
