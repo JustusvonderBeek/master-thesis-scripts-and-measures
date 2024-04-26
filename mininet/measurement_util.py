@@ -24,6 +24,15 @@ def create_new_test_folder(path=None):
     
     return folder_name
 
+def change_rights_test_folder(path):
+    """Setting the rights of the test folder so that everyone can delete the folder."""
+    
+    if path is None:
+        return
+    
+    # Change the file access write
+    os.chmod(path, 0o777)
+
 def capture_ssl(net, host, outpath=None, outfile=None):
     """Exporting the session SSL keys"""
 

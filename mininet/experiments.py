@@ -10,7 +10,7 @@
 
 from mininet.node import Node, Switch, OVSController
 from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
-from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, wait, print_nat_table, create_new_test_folder
+from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
 from logfile import filter_logfile_positiv
 from mininet.net import Mininet
 from mininet.cli import CLI
@@ -384,6 +384,8 @@ def quic_ice():
         terminate(turn, f"{directory}/turn.log")
 
     net.stop()
+    
+    change_rights_test_folder(directory)
     
     exit(0)
 
