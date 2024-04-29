@@ -480,8 +480,7 @@ class DirectAndInternetAndTURN(Topo):
         
         # Now enable packet forwarding only after we have seen some outgoing packets before
         nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
-        nat1.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
-        nat1.cmd("iptables -A FORWARD -s 192.168.1.0-192.168.1.255 -j DROP")
+        nat1.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
         nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
         nat1.cmd("iptables -A FORWARD -j DROP")
         
@@ -490,8 +489,7 @@ class DirectAndInternetAndTURN(Topo):
         nat2.cmd("iptables -t nat -F")
         
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
-        nat2.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
-        nat2.cmd("iptables -A FORWARD -s 192.168.1.0-192.168.1.255 -j DROP")
+        nat2.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
         nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
         nat2.cmd("iptables -A FORWARD -j DROP")
 
@@ -500,7 +498,7 @@ class DirectAndInternetAndTURN(Topo):
         nat3.cmd("iptables -t nat -F")
         
         nat3.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("nat3-ext"))
-        nat3.cmd("iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+        nat3.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
         nat3.cmd("iptables -A FORWARD -s 192.168.1.0-192.168.1.255 -j DROP")
         nat3.cmd("iptables -A FORWARD -i nat3-local -j ACCEPT")
         nat3.cmd("iptables -A FORWARD -j DROP")
