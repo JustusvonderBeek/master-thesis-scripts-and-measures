@@ -10,7 +10,7 @@
 
 from mininet.node import Node, Switch, OVSController
 from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
-from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
+from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, if_down, if_up, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
 from logfile import filter_logfile_positiv
 from mininet.net import Mininet
 from mininet.cli import CLI
@@ -295,7 +295,7 @@ def quic_ice():
     h1 = net.get("h1")
     h2 = net.get("h2")
 
-    log_level = "trace"
+    log_level = "info"
     quic_duration = 100 # Otherwise the test stops after 10s
 
     os.environ["RUST_LOG"] = log_level
@@ -329,16 +329,17 @@ def quic_ice():
 
     wait()
     
-    # ip_storage = if_down(net, "h1", "h1-cellular")
+    # ip_storage = if_down(net, "h1", "h1-wifi")
 
     # write_new_ice_cand_file("1.20.30.2:20000")
     # # # TODO: Add the functions to start the interface and probe on the new path
-    # ip_storage = if_up(net, "h1", "h1-cellular", ip_storage)
     # set_default_route(net, "h1", "1.20.30.1", "h1-cellular")
     # time.sleep(0.5)
     # Everything else should happen automatically
-    # wait()
+    wait()
     # wait(10)
+
+    # ip_storage = if_up(net, "h1", "h1-wifi", ip_storage)
 
     # # WiFi-Direct is 100ms - Internet is 70ms so should be faster
     # write_new_if_file("1.20.30.2:20000", "2.40.60.3:10000")
