@@ -369,8 +369,7 @@ class DirectAndInternet(Topo):
 
 class DirectAndInternetAndTURN(Topo):
 
-    # TODO: Disable second path via the internet
-    def build(self, second_path=True, third_path=True):
+    def build(self, second_path, third_path, block_stun):
         """Building the same topology as the DirectAndInternet but including a TURN server
         at the internet location
         
@@ -383,6 +382,10 @@ class DirectAndInternetAndTURN(Topo):
         |----- Local Network ------|
         
         """
+
+        self.second_path = second_path
+        self.third_path = third_path
+        self.block_stun = block_stun
 
         s1 = self.addSwitch("s1") # Directlink
         s2 = self.addSwitch("s2") # H1 <-> Nat1
@@ -414,8 +417,8 @@ class DirectAndInternetAndTURN(Topo):
         self.addLink(s4, nat2, intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay="1ms")
 
         # Connect the internet / routes with each other        
-        self.addLink(nat1, s3, intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="15ms")
-        self.addLink(nat2, s3, intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="15ms")
+        self.addLink(nat1, s3, intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="30ms")
+        self.addLink(nat2, s3, intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="30ms")
         # Connect the turn server with the "internet"
         self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="1ms")
         
@@ -492,19 +495,21 @@ class DirectAndInternetAndTURN(Topo):
             h2 = net.get("h2")
             h1.cmd("iptables -F")
             h2.cmd("iptables -F")
-            h1.cmd("iptables -A OUTPUT -o h1-wifi -p udp -d 192.168.1.0/24 -j LOG --log-prefix='[mininet-fw] '")
+            h1.cmd('iptables -A OUTPUT -o h1-wifi -p udp -d 192.168.1.0/24 -j LOG --log-prefix="[mininet-fw] "')
             h1.cmd("iptables -A OUTPUT -o h1-wifi -p udp -d 192.168.1.0/24 -j DROP")
-            h2.cmd("iptables -A OUTPUT -o h2-wifi -p udp -d 192.168.1.0/24 -j LOG --log-prefix='[mininet-fw] '")
+            h2.cmd('iptables -A OUTPUT -o h2-wifi -p udp -d 192.168.1.0/24 -j LOG --log-prefix="[mininet-fw] "')
             h2.cmd("iptables -A OUTPUT -o h2-wifi -p udp -d 192.168.1.0/24 -j DROP")
         
         # Now enable packet forwarding only after we have seen some outgoing packets before
         # TODO: Maybe try out prerouting table? (does this help masquerading and fix the issue?)
         nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
+        nat1.cmd("iptables -A FORWARD -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j LOG --log-prefix='[mininet] '")
         nat1.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
         nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
         nat1.cmd("iptables -A FORWARD -j REJECT")
         
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
+        nat2.cmd("iptables -A FORWARD -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j LOG --log-prefix='[mininet] '")
         nat2.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
         nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
         nat2.cmd("iptables -A FORWARD -j REJECT")
