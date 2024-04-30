@@ -369,6 +369,7 @@ class DirectAndInternet(Topo):
 
 class DirectAndInternetAndTURN(Topo):
 
+    # TODO: Disable second path via the internet
     def build(self, second_path=True, third_path=True):
         """Building the same topology as the DirectAndInternet but including a TURN server
         at the internet location
@@ -404,10 +405,11 @@ class DirectAndInternetAndTURN(Topo):
         self.addLink(h2, s1, intfName1="h2-wifi", intfName2="s1-wifi2", params1={"ip":"192.168.1.3/24"}, delay="2ms")
         
         # Adding the link into the internet
-        self.addLink(h1, s2, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay="1ms")
-        self.addLink(h2, s4, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="1ms")
+        if second_path:
+            self.addLink(h1, s2, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay="1ms")
+            self.addLink(h2, s4, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="1ms")
         
-        # Connect the hosts with the nats
+        # Connect the hosts with the NATs
         self.addLink(s2, nat1, intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay="1ms")
         self.addLink(s4, nat2, intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay="1ms")
 
@@ -490,7 +492,9 @@ class DirectAndInternetAndTURN(Topo):
             h2 = net.get("h2")
             h1.cmd("iptables -F")
             h2.cmd("iptables -F")
+            h1.cmd("iptables -A OUTPUT -o h1-wifi -p udp -d 192.168.1.0/24 -j LOG --log-prefix='[mininet-fw] '")
             h1.cmd("iptables -A OUTPUT -o h1-wifi -p udp -d 192.168.1.0/24 -j DROP")
+            h2.cmd("iptables -A OUTPUT -o h2-wifi -p udp -d 192.168.1.0/24 -j LOG --log-prefix='[mininet-fw] '")
             h2.cmd("iptables -A OUTPUT -o h2-wifi -p udp -d 192.168.1.0/24 -j DROP")
         
         # Now enable packet forwarding only after we have seen some outgoing packets before
@@ -510,6 +514,8 @@ class DirectAndInternetAndTURN(Topo):
         nat3.cmd("iptables -t nat -F")
         
         nat3.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("nat3-ext"))
+        nat3.cmd("iptables -A FORWARD -m conntrack --ctstate NEW -j LOG --log-prefix='[mininet-fw] '")
+        nat3.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j LOG --log-prefix='[mininet-fw] '")
         nat3.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
         nat3.cmd("iptables -A FORWARD -i nat3-local -j ACCEPT")
         nat3.cmd("iptables -A FORWARD -j REJECT")
