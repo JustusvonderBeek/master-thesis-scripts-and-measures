@@ -369,7 +369,7 @@ class DirectAndInternet(Topo):
 
 class DirectAndInternetAndTURN(Topo):
 
-    def build(self, third_path=True):
+    def build(self, second_path=True, third_path=True):
         """Building the same topology as the DirectAndInternet but including a TURN server
         at the internet location
         
@@ -404,22 +404,22 @@ class DirectAndInternetAndTURN(Topo):
         self.addLink(h2, s1, intfName1="h2-wifi", intfName2="s1-wifi2", params1={"ip":"192.168.1.3/24"}, delay="2ms")
         
         # Adding the link into the internet
-        self.addLink(h1, s2, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay="2ms")
-        self.addLink(h2, s4, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="2ms")
+        self.addLink(h1, s2, intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay="1ms")
+        self.addLink(h2, s4, intfName1="h2-cellular", params1={"ip":"2.40.60.3/28"}, delay="1ms")
         
         # Connect the hosts with the nats
-        self.addLink(s2, nat1, intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay="3ms")
-        self.addLink(s4, nat2, intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay="3ms")
+        self.addLink(s2, nat1, intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay="1ms")
+        self.addLink(s4, nat2, intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay="1ms")
 
         # Connect the internet / routes with each other        
-        self.addLink(nat1, s3, intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="3ms")
-        self.addLink(nat2, s3, intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="3ms")
+        self.addLink(nat1, s3, intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay="15ms")
+        self.addLink(nat2, s3, intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay="15ms")
         # Connect the turn server with the "internet"
-        self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="7ms")
+        self.addLink(turn, s3, intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay="1ms")
         
         if third_path:
-            self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="8ms")
-            self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="8ms")
+            self.addLink(h1, nat3, intfName1="h1-eth", intfName2="nat3-local", params1={"ip":"172.16.1.10/24"}, params2={"ip":"172.16.1.1/24"}, delay="5ms")
+            self.addLink(h2, nat3, intfName1="h2-eth", intfName2="nat3-ext", params1={"ip":"172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay="5ms")
 
     def add_internet(net):
         """
@@ -467,7 +467,7 @@ class DirectAndInternetAndTURN(Topo):
         # nat3.cmd("ip route add default via 172.16.2.1 dev nat3-ext")
         # h2.cmd("ip route add 172.16.1.0/24 via 172.16.1.1 dev h2-eth")
 
-    def enable_nat(net):
+    def enable_nat(net, block_stun=False):
         """
         Disabling any NAT settings from before and only allow packets to flow from h2 -> internet -> h1 if
         h1 has sent packets before.
@@ -478,20 +478,32 @@ class DirectAndInternetAndTURN(Topo):
         nat1.cmd("iptables -F")
         nat1.cmd("iptables -t nat -F")
         
-        # Now enable packet forwarding only after we have seen some outgoing packets before
-        nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
-        nat1.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
-        nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
-        nat1.cmd("iptables -A FORWARD -j DROP")
-        
         nat2 = net.get("nat2")
         nat2.cmd("iptables -F")
         nat2.cmd("iptables -t nat -F")
         
+        if block_stun:
+            # Blocking all incoming STUN packets on the wifi interfaces to "simulate" this
+            # connection is not possible
+            # Seems the easiest method to filter these packets out
+            h1 = net.get("h1")
+            h2 = net.get("h2")
+            h1.cmd("iptables -F")
+            h2.cmd("iptables -F")
+            h1.cmd("iptables -A OUTPUT -o h1-wifi -p udp -d 192.168.1.0/24 -j DROP")
+            h2.cmd("iptables -A OUTPUT -o h2-wifi -p udp -d 192.168.1.0/24 -j DROP")
+        
+        # Now enable packet forwarding only after we have seen some outgoing packets before
+        # TODO: Maybe try out prerouting table? (does this help masquerading and fix the issue?)
+        nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
+        nat1.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
+        nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
+        nat1.cmd("iptables -A FORWARD -j REJECT")
+        
         nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
         nat2.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
         nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
-        nat2.cmd("iptables -A FORWARD -j DROP")
+        nat2.cmd("iptables -A FORWARD -j REJECT")
 
         nat3 = net.get("nat3")
         nat3.cmd("iptables -F")
@@ -499,9 +511,8 @@ class DirectAndInternetAndTURN(Topo):
         
         nat3.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("nat3-ext"))
         nat3.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
-        nat3.cmd("iptables -A FORWARD -s 192.168.1.0-192.168.1.255 -j DROP")
         nat3.cmd("iptables -A FORWARD -i nat3-local -j ACCEPT")
-        nat3.cmd("iptables -A FORWARD -j DROP")
+        nat3.cmd("iptables -A FORWARD -j REJECT")
         
 class InternetTopo(Topo):
     "Single switch connected to n hosts."
