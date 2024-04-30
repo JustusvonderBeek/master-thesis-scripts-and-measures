@@ -250,21 +250,22 @@ def start_turn_server(net, host):
 
     h = net.get(host)
     # The server is correctly configured, nothing needed to answer simple STUN requests
-    # And no login required
-    cmd = f"/home/justus/Documents/Code/coturn/bin/turnserver -z"
+    # And no login required; prevent creation of logfile under /var/log/turn_*
+    cmd = f"/home/justus/Documents/Code/coturn/bin/turnserver -z --log-file stdout"
     process = h.popen(cmd)
     return process
 
 def quic_ice():
     test_duration=5
     enable_turn=True
+    enable_second_path=True
     enable_third_path=True
     debug_network=False
     enable_pcap=True
-    topo = DirectAndInternetAndTURN(third_path=enable_third_path)
+    topo = DirectAndInternetAndTURN(second_path=enable_second_path, third_path=enable_third_path)
     net = Mininet(topo=topo, controller = OVSController)
     DirectAndInternetAndTURN.add_internet(net)
-    DirectAndInternetAndTURN.enable_nat(net, block_stun=True)
+    DirectAndInternetAndTURN.enable_nat(net, block_stun=False)
     net.start()
 
     directory = create_new_test_folder()
@@ -317,16 +318,11 @@ def quic_ice():
         server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/{directory}/h2.log", shell=True)
         client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration} &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/{directory}/h1.log", shell=True)
     else:
-        # server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        # client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
-        server = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.2 -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        client = h1.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.3 --controlling -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-
-        # wait(1)
-
-        # server_unmod.communicate(input=b"\n\r")
-        # client_unmod.communicate(input=b"\n\r")
+        # server = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.2 -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        # client = h1.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.3 --controlling -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
     wait()
     
@@ -368,6 +364,8 @@ def quic_ice():
     
     print_nat_table(net, "nat1", directory)
     print_nat_table(net, "nat2", directory)
+    if enable_third_path:
+        print_nat_table(net, "nat3", directory)
     
     if log_level == "trace" or log_level == "debug":
         terminate(server)
