@@ -258,13 +258,13 @@ def start_turn_server(net, host):
 def quic_ice():
     test_duration=5
     enable_turn=True
-    enable_third_path=False
+    enable_third_path=True
     debug_network=False
     enable_pcap=True
-    topo = DirectAndInternetAndTURN(enable_third_path)
+    topo = DirectAndInternetAndTURN(third_path=enable_third_path)
     net = Mininet(topo=topo, controller = OVSController)
     DirectAndInternetAndTURN.add_internet(net)
-    DirectAndInternetAndTURN.enable_nat(net)
+    DirectAndInternetAndTURN.enable_nat(net, block_stun=True)
     net.start()
 
     directory = create_new_test_folder()
@@ -281,7 +281,8 @@ def quic_ice():
     s3_pcap, s3_pcap_file = capture_pcap(net, "s3", ["s3-eth1", "s3-eth2"], directory)
     nat1_pcap, nat1_pcap_file = capture_pcap(net, "nat1", ["nat1-local", "nat1-ext"], directory)
     nat2_pcap, nat2_pcap_file = capture_pcap(net, "nat2", ["nat2-local", "nat2-ext"], directory)
-
+    if enable_third_path:
+        nat3_pcap, nat3_pcap_file = capture_pcap(net, "nat3", ["nat3-local", "nat3-ext"], directory)
     # Kill the second interface on the client
     # TODO: Fix the routes on these interfaces when setting down again
     # if_down(net, "h1", "h1-cellular")
@@ -316,11 +317,11 @@ def quic_ice():
         server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/{directory}/h2.log", shell=True)
         client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration} &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/{directory}/h1.log", shell=True)
     else:
-        server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        # server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        # client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
-        # server_unmod = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -l 192.168.1.2", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        # client_unmod = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -l 192.168.1.3 --controlling", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        server = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.2 -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        client = h1.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.3 --controlling -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
         # wait(1)
 
@@ -336,7 +337,7 @@ def quic_ice():
     # set_default_route(net, "h1", "1.20.30.1", "h1-cellular")
     # time.sleep(0.5)
     # Everything else should happen automatically
-    wait()
+    # wait()
     # wait(10)
 
     # ip_storage = if_up(net, "h1", "h1-wifi", ip_storage)
@@ -361,6 +362,8 @@ def quic_ice():
     terminate(s3_pcap, file_perm=s3_pcap_file)
     terminate(nat1_pcap, file_perm=nat1_pcap_file)
     terminate(nat2_pcap, file_perm=nat2_pcap_file)
+    if enable_third_path:
+        terminate(nat3_pcap, file_perm=nat3_pcap_file)
     # terminate(turn, "turn/")
     
     print_nat_table(net, "nat1", directory)
