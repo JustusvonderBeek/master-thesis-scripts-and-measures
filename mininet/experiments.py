@@ -5,9 +5,9 @@
 # 3. Runs the test
 # 4. Stores the result
 # 5. Cleans the mininet environment
-# 
+#
 
-
+from dataclasses import dataclass
 from mininet.node import Node, Switch, OVSController
 from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
 from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, if_down, if_up, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
@@ -46,7 +46,7 @@ def start_quicheperf_client(net):
     scheduler = "round-robin"
     print(f"Duration: {duration}s , Bitrate {bitrate}")
     client = h1.popen(f"../quicheperf/target/release/quicheperf client -c 10.0.1.10:443 -c 172.168.2.20:443 -l 192.168.1.10:0 -l 172.16.1.10:0 --mp true --scheduler {scheduler} --duration {duration} --bitrate {bitrate}", stdout=subprocess.PIPE)
-    
+
     return client
 
 def quicheperf():
@@ -112,7 +112,7 @@ def start_turn_server(net):
     Path("turn").mkdir(parents=True, exist_ok=True)
     turn = net.get("turn")
     Path("turn").mkdir(parents=True, exist_ok=True)
-    
+
     turnserver = turn.popen(f"../coturn/bin/turnserver", stdout=subprocess.PIPE)
     return turnserver
 
@@ -180,7 +180,7 @@ def quic_multiplex():
 
     h1 = net.get("h1")
     h2 = net.get("h2")
-    
+
     # turn = start_turn_server(net)
     # Cert dir depending on call dir, expecting: master-dir
     os.environ["RUST_LOG"] = "trace"
@@ -206,7 +206,7 @@ def quic_multiplex():
     terminate(client, "h1/")
 
     net.stop()
-    
+
     exit(0)
 
 def quic_stun():
@@ -240,7 +240,7 @@ def quic_stun():
     terminate(client, "h1/", terminate=True)
 
     net.stop()
-    
+
     exit(0)
 
 def start_turn_server(net, host):
@@ -255,17 +255,62 @@ def start_turn_server(net, host):
     process = h.popen(cmd)
     return process
 
+@dataclass
+class Configuration:
+    """
+    The default configuration for the mininet testing scenario.
+    Should allow for long enough testing and all different kinds
+    of scenarios for testing the ICE capabilities.
+    """
+
+    network_name: str = "Turn"
+    log_level: str = "info"
+    test_duration: int = 10
+    debug: bool = False
+    enable_pcap: bool = True
+    enable_turn: bool = True
+    enable_first_path: bool = True
+    enable_second_path: bool = True
+    enable_third_path: bool = True
+    block_stun_on_first_path: bool = False
+
+def create_network(conf):
+    """
+    Creating the network with the given name and configuration
+    """
+
+    network_name = conf.test_duration
+    topo = DirectAndInternetAndTURN(
+        second_path=conf.enable_second_path,
+        third_path=conf.enable_third_path,
+        block_stun=conf.block_stun_on_first_path,
+    )
+    network = Mininet(topo=topo, controller=OVSController)
+
+    return network
+
 def quic_ice():
-    test_duration=5
+
+    configuration = Configuration(
+        debug=False,
+        enable_second_path=False,
+        enable_third_path=True,
+    )
+
+    # Creating the network
+    # net = create_network(configuration)
+
     enable_turn=True
     enable_second_path=True
     enable_third_path=True
     debug_network=False
     enable_pcap=True
-    topo = DirectAndInternetAndTURN(second_path=enable_second_path, third_path=enable_third_path)
+    block_stun=False
+    topo = DirectAndInternetAndTURN(second_path=enable_second_path, third_path=enable_third_path, block_stun=block_stun)
     net = Mininet(topo=topo, controller = OVSController)
+    # net = create_network(configuration)
     DirectAndInternetAndTURN.add_internet(net)
-    DirectAndInternetAndTURN.enable_nat(net, block_stun=False)
+    DirectAndInternetAndTURN.enable_nat(net, block_stun=block_stun)
     net.start()
 
     directory = create_new_test_folder()
@@ -304,28 +349,28 @@ def quic_ice():
     # os.environ["RUST_BACKTRACE"] = "1"
 
     # ip_storage = if_down(net, "h1", "h1-cellular")
-    
-    if debug_network:
+
+    if configuration.debug:
         CLI(net)
         terminate(h1_pcap, file_perm=h1_pcap_file)
         terminate(h2_pcap, file_perm=h2_pcap_file)
         net.stop()
         exit(0)
-    
+
     time.sleep(0.5)
-    
+
     if log_level == "trace" or log_level == "debug":
         server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/{directory}/h2.log", shell=True)
         client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration} &> /home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/{directory}/h1.log", shell=True)
     else:
-        server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        server = h2.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/justus/Documents/Code/quicheperf-stun/src/cert.crt --key /home/justus/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 --mp true", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         client = h1.popen(f"/home/justus/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 -b 10MB --mp true -d {quic_duration}", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
         # server = h2.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.2 -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         # client = h1.popen(f"/home/justus/Documents/Code/webrtc_unmod/target/debug/examples/ping_pong -c 192.168.1.3 --controlling -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
     wait()
-    
+
     # ip_storage = if_down(net, "h1", "h1-wifi")
 
     # write_new_ice_cand_file("1.20.30.2:20000")
@@ -333,7 +378,7 @@ def quic_ice():
     # set_default_route(net, "h1", "1.20.30.1", "h1-cellular")
     # time.sleep(0.5)
     # Everything else should happen automatically
-    # wait()
+    wait()
     # wait(10)
 
     # ip_storage = if_up(net, "h1", "h1-wifi", ip_storage)
@@ -361,12 +406,12 @@ def quic_ice():
     if enable_third_path:
         terminate(nat3_pcap, file_perm=nat3_pcap_file)
     # terminate(turn, "turn/")
-    
+
     print_nat_table(net, "nat1", directory)
     print_nat_table(net, "nat2", directory)
     if enable_third_path:
         print_nat_table(net, "nat3", directory)
-    
+
     if log_level == "trace" or log_level == "debug":
         terminate(server)
         terminate(client)
@@ -376,7 +421,7 @@ def quic_ice():
     else:
         terminate(server, f"{directory}/h2.log")
         terminate(client, f"{directory}/h1.log")
-    
+
         # terminate(server_unmod, "h2/")
         # terminate(client_unmod, "h1/")
 
@@ -386,9 +431,9 @@ def quic_ice():
         terminate(turn, f"{directory}/turn.log")
 
     net.stop()
-    
+
     change_rights_test_folder(directory)
-    
+
     exit(0)
 
 def test_quic_multipath():
@@ -413,9 +458,9 @@ def test_quic_multipath():
     os.environ["RUST_LOG"] = "trace"
     # os.environ["RUST_BACKTRACE"] = "1"
     server = h2.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf server --cert /home/ifrit/Documents/Code/quicheperf-stun/src/cert.crt --key /home/ifrit/Documents/Code/quicheperf-stun/src/cert.key -l 192.168.1.3:10000 -l 2.40.60.3:10000", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    
+
     client_testfile = open("h1/test.log", "w+")
-    
+
     client = h1.popen(f"/home/ifrit/Documents/Code/quicheperf-stun/target/debug/quicheperf client -l 192.168.1.2:20000 -l 1.20.30.2:20000 -c 192.168.1.3:10000 -c 2.40.60.3:10000 -b 10MB --mp true &> /home/", stdout=client_testfile, stdin=client_testfile, bufsize=8192)
 
     # Polling from popen
@@ -462,7 +507,7 @@ def test_quic_multipath():
     client_testfile.close()
 
     net.stop()
-    
+
     exit(0)
 
 
@@ -471,7 +516,7 @@ def test_quic_multipath():
 topologies = { 'quicheperf': (lambda: quicheperf()), "quic-stun": (lambda: quic_stun()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: quic_multiplex()) }
 
 if __name__ == "__main__":
-    
+
     # Parsing the command line
     # Only options are to disable pcap or log output or debug network
     # TODO:
