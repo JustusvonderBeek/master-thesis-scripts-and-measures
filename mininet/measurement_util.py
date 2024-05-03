@@ -20,7 +20,17 @@ def create_new_test_folder(path=None):
         path = "mininet_measurements/"
 
     folder_name = path + datetime.today().strftime("%d_%m_%H_%M")
-    Path(folder_name).mkdir(parents=True, exist_ok=True)
+    iteration = 1
+    iteration_fn = folder_name
+    while True:
+        if Path(iteration_fn).exists():
+            iteration_fn = f"{folder_name}_({iteration})"
+            iteration += 1
+        else:
+            folder_name = iteration_fn
+            break
+
+    Path(folder_name).mkdir(parents=True, exist_ok=False)
     
     return folder_name
 
