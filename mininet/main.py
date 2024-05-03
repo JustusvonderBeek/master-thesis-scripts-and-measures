@@ -8,18 +8,20 @@
 #
 
 from dataclasses import dataclass
+
 from mininet.node import Node, Switch, OVSController
 # from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
 from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, if_down, if_up, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
 from topologies.topologies import create_test_scenario
-from config import Scenarios, Logging, Tests
+from config import Scenarios, Logging, Tests, TestConfiguration
 from logfile import filter_logfile_positiv
+from experiment import start_test
+
+
 from mininet.net import Mininet
 from mininet.cli import CLI
 from pathlib import Path
-from datetime import datetime
 
-import mininet.net as net
 import time
 import os
 import subprocess
@@ -257,50 +259,7 @@ def start_turn_server(net, host):
     process = h.popen(cmd)
     return process
 
-@dataclass
-class Configuration:
-    """
-    The default configuration for the mininet testing scenario.
-    Should allow for long enough testing and all different kinds
-    of scenarios for testing the ICE capabilities.
-    """
-
-    network_name: str = "Turn"
-    log_level: str = "info"
-    test_duration: int = 10
-    debug: bool = False
-    enable_pcap: bool = True
-    enable_turn: bool = True
-    enable_first_path: bool = True
-    enable_second_path: bool = True
-    enable_third_path: bool = True
-    block_stun_on_first_path: bool = False
-
-def create_network(conf):
-    """
-    Creating the network with the given name and configuration
-    """
-
-    network_name = conf.test_duration
-    topo = DirectAndInternetAndTURN(
-        second_path=conf.enable_second_path,
-        third_path=conf.enable_third_path,
-        block_stun=conf.block_stun_on_first_path,
-    )
-    network = Mininet(topo=topo, controller=OVSController)
-
-    return network
-
 def quic_ice():
-
-    configuration = Configuration(
-        debug=False,
-        enable_second_path=False,
-        enable_third_path=True,
-    )
-
-    # Creating the network
-    # net = create_network(configuration)
 
     enable_turn=True
     enable_second_path=True
@@ -514,11 +473,6 @@ def test_quic_multipath():
     exit(0)
 
 
-# TODO: Repeat the experiment with our own implementation
-
-
-
-
 def main():
     """
     Starting the main function, parsing the command line and starting the relevant tests
@@ -529,67 +483,24 @@ def main():
     parser = argparse.ArgumentParser(description="Creating measurement environment for the master thesis and executing tests")
     parser.add_argument('-s', '--setup', type=str, default="default")
     parser.add_argument('-t', '--test', type=str, default="quicheperf")
+    parser.add_argument('-l', '--duration', type=int, default=100)
     parser.add_argument('--disable-pcap', action='store_true', default=False)
     parser.add_argument('-d', '--debug', action='store_true', default=False)
+    parser.add_argument('-c', '--cli', action='store_true', default=False)
+    parser.add_argument('-p', '--permissions', action='store_true', default=True)
+    parser.add_argument('--disable-turn', action='store_true', default=False)
     parser.add_argument('--logging', type=int, default=3)
+    parser.add_argument('--build-target', type=str, default="debug")
+    parser.add_argument('--throughput', type=str, default="10MB")
     args = parser.parse_args()
 
-    match args.logging:
-        case 1:
-            print("Logging level 'error'")
-            logging = Logging.ERROR
-        case 2:
-            print("Logging level 'warn'")
-            logging = Logging.WARN
-        case 3:
-            print("Logging level 'info'")
-            logging = Logging.INFO
-        case 4:
-            print("Logging level 'debug'")
-            logging = Logging.DEBUG
-        case _:
-            print("Logging level 'trace'")
-            logging = Logging.TRACE
+    test_conf = TestConfiguration(args)
 
-    match args.setup:
-        case "default":
-            print(f"Starting the '{args.setup}' test scenario")
-            scenario = Scenarios.FULL_NETWORK
-        case "single":
-            print(f"Starting the '{args.setup}' test scenario")
-            scenario = Scenarios.SINGLE_PATH
-        case "single+internet":
-            print(f"Starting the '{args.setup}' test scenario")
-            scenario = Scenarios.SINGLE_PATH_WITH_INTERNET
-        case "single+local":
-            print(f"Starting the '{args.setup}' test scenario")
-            scenario = Scenarios.SINGLE_PATH_WITH_LOCAL
-        case _:
-            print(f"No exact scenario given, choosing 'default'")
-            scenario = Scenarios.FULL_NETWORK
-
-    # Implement setting up the network
-    net = create_test_scenario(scenario, logging)
-    net.start()
-    CLI(net)
-
-    match args.test:
-        case "quicheperf":
-            print(f"Starting the '{args.test}' scenario")
-            test = Tests.QUICHEPERF
-        case "webrtc_example":
-            print(f"Starting the '{args.test}' scenario")
-            test = Tests.PING_PONG
-        case _:
-            print(f"No test given, starting the 'quicheperf' scenario")
-            test = Tests.QUICHEPERF
-
-    # TODO: Adding some sort of failure logic in case something goes wrong but so that
-    # we still kill the network
-    # starting_test(net, test, args.debug, args.disable_pcap, logging)
+    net = create_test_scenario(test_conf)
+    start_test(net, test_conf)
 
     # Try to avoid halve closed networks or other problems
-    # net.stop()
+    net.stop()
 
     print("All tests completed...")
 
