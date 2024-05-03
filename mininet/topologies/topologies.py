@@ -15,10 +15,11 @@
 # Every path can be enabled or disabled resulting in the required
 # final network configuration
 
-from config import Scenarios
+from config import Scenarios, Tests, TestConfiguration
 from dataclasses import dataclass
+from .old_topologies import DirectAndInternetAndTURN
 
-from mininet.topo import Topo
+from mininet.topo import Topo, MinimalTopo
 from mininet.node import OVSController
 from mininet.net import Mininet
 
@@ -52,15 +53,15 @@ class NetworkConfiguration:
     internet_path_turn_delay: int = 1
 
 
-def create_test_scenario(scenario, logging):
+def create_test_scenario(test_conf: TestConfiguration):
     """
     Creating the mininet setup given.
     Returns the ready but not unstarted network
     """
 
-    print(f"Creating the {scenario} network scenario")
+    print(f"Creating the {test_conf.scenario} network scenario")
 
-    match scenario:
+    match test_conf.scenario:
         case Scenarios.SINGLE_PATH:
             configuration = NetworkConfiguration(
                 enable_local_network_path=False,
@@ -82,10 +83,23 @@ def create_test_scenario(scenario, logging):
         case Scenarios.FULL_NETWORK:
             configuration = NetworkConfiguration()
         case _:
-            print(f"'{scenario}' is no valid scenario name!")
+            print(f"'{test_conf.scenario}' is no valid scenario name!")
             return ValueError
 
+    if test_conf.enable_turn_server:
+        configuration.enable_turn_host = False
+
+    if test_conf.test == Tests.PING_PONG:
+        # If STUN not blocked this won't work since we will always
+        # find a path via the first connection
+        configuration.block_stun_on_first_path = True
+
     network = create_network(configuration)
+
+    # topo = DirectAndInternetAndTURN(second_path=True, third_path=True, save_delay=True, block_stun=False)
+    # network = Mininet(topo=topo, controller= OVSController)
+    # DirectAndInternetAndTURN.add_internet(network)
+    # DirectAndInternetAndTURN.enable_nat(network)
     return network
 
 def create_network(configuration):
@@ -94,7 +108,7 @@ def create_network(configuration):
     """
 
     default_topo = DefaultNetwork()
-    net = Mininet(default_topo, controller= OVSController)
+    net = Mininet(default_topo, controller=OVSController, autoSetMacs=True)
     # Now, expand the default configuration to the desired size and configuration
     WiFiPath.build(net, configuration)
     Ethernet.build(net, configuration)
@@ -115,7 +129,9 @@ class DefaultNetwork(Topo):
         No links between the hosts are made
         """
 
-        self.addHost("h1")
-        self.addHost("h2")
+        self.addHost("h1", ip="192.168.1.2/24")
+        self.addHost("h2", ip="192.168.1.2/24")
+        # self.addSwitch("s1")
         
-        self.addSwitch("s1")
+        # self.addLink(node1="h1", node2="s1", intfName1="h1-wifi", intfName2="s1-wifi1", params1={"ip": "192.168.1.2/24"}, delay=f"{5}ms")
+        # self.addLink(node1="h2", node2="s1", intfName1="h2-wifi", intfName2="s1-wifi2", params1={"ip": "192.168.1.3/24"}, delay=f"{5}ms")
