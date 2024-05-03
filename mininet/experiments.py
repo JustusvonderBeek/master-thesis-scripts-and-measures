@@ -303,10 +303,11 @@ def quic_ice():
     enable_turn=True
     enable_second_path=True
     enable_third_path=True
+    save_delay=True
     debug_network=False
     enable_pcap=True
     block_stun=False
-    topo = DirectAndInternetAndTURN(second_path=enable_second_path, third_path=enable_third_path, block_stun=block_stun)
+    topo = DirectAndInternetAndTURN(second_path=enable_second_path, third_path=enable_third_path, save_delay=save_delay, block_stun=block_stun)
     net = Mininet(topo=topo, controller = OVSController)
     # net = create_network(configuration)
     DirectAndInternetAndTURN.add_internet(net)
