@@ -23,6 +23,9 @@ class WiFiPath:
         if not configuration.enable_wifi_direct_path:
             return
 
+        # Creating the additional switch
+        WiFiPath._create_hosts(net, configuration)
+
         # Creating the links
         WiFiPath._create_links(net, configuration)
 
@@ -30,12 +33,13 @@ class WiFiPath:
         WiFiPath._setup_routing_table(net, configuration)
 
     @staticmethod
-    def _create_hosts(net, configuration):
+    def _create_hosts(net: Mininet, configuration):
         """
         Adding the required hosts to the network
         """
 
-        pass
+        net.addSwitch("s1")
+        # pass
 
     @staticmethod
     def _create_links(net, configuration):
@@ -46,6 +50,7 @@ class WiFiPath:
         net.addLink(node1="h1", node2="s1", intfName1="h1-wifi", intfName2="s1-wifi1", params1={"ip": "192.168.1.2/24"}, delay=f"{configuration.wifi_direct_path_delay}ms")
         net.addLink(node1="h2", node2="s1", intfName1="h2-wifi", intfName2="s1-wifi2", params1={"ip": "192.168.1.3/24"}, delay=f"{configuration.wifi_direct_path_delay}ms")
 
+        # pass
 
     @staticmethod
     def _setup_routing_table(net, configuration):
