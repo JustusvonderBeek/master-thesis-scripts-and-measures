@@ -9,8 +9,10 @@
 
 from dataclasses import dataclass
 from mininet.node import Node, Switch, OVSController
-from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
+# from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
 from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, if_down, if_up, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
+from topologies.topologies import create_test_scenario
+from config import Scenarios, Logging, Tests
 from logfile import filter_logfile_positiv
 from mininet.net import Mininet
 from mininet.cli import CLI
@@ -21,7 +23,7 @@ import mininet.net as net
 import time
 import os
 import subprocess
-import threading
+import argparse
 
 def start_quicheperf_server(net):
     """Starting the quicheperf server"""
@@ -514,17 +516,83 @@ def test_quic_multipath():
 
 # TODO: Repeat the experiment with our own implementation
 
-topologies = { 'quicheperf': (lambda: quicheperf()), "quic-stun": (lambda: quic_stun()), "p2p": (lambda: p2p_webrtc()), 'inet-wifi': (lambda: quic_multiplex()) }
 
-if __name__ == "__main__":
+
+
+def main():
+    """
+    Starting the main function, parsing the command line and starting the relevant tests
+    """
 
     # Parsing the command line
     # Only options are to disable pcap or log output or debug network
-    # TODO:
+    parser = argparse.ArgumentParser(description="Creating measurement environment for the master thesis and executing tests")
+    parser.add_argument('-s', '--setup', type=str, default="default")
+    parser.add_argument('-t', '--test', type=str, default="quicheperf")
+    parser.add_argument('--disable-pcap', action='store_true', default=False)
+    parser.add_argument('-d', '--debug', action='store_true', default=False)
+    parser.add_argument('--logging', type=int, default=3)
+    args = parser.parse_args()
 
-    # quicheperf()
-    # p2p_webrtc()
-    # quic_multiplex()
-    # quic_stun()
-    quic_ice()
-    # test_quic_multipath()
+    match args.logging:
+        case 1:
+            print("Logging level 'error'")
+            logging = Logging.ERROR
+        case 2:
+            print("Logging level 'warn'")
+            logging = Logging.WARN
+        case 3:
+            print("Logging level 'info'")
+            logging = Logging.INFO
+        case 4:
+            print("Logging level 'debug'")
+            logging = Logging.DEBUG
+        case _:
+            print("Logging level 'trace'")
+            logging = Logging.TRACE
+
+    match args.setup:
+        case "default":
+            print(f"Starting the '{args.setup}' test scenario")
+            scenario = Scenarios.FULL_NETWORK
+        case "single":
+            print(f"Starting the '{args.setup}' test scenario")
+            scenario = Scenarios.SINGLE_PATH
+        case "single+internet":
+            print(f"Starting the '{args.setup}' test scenario")
+            scenario = Scenarios.SINGLE_PATH_WITH_INTERNET
+        case "single+local":
+            print(f"Starting the '{args.setup}' test scenario")
+            scenario = Scenarios.SINGLE_PATH_WITH_LOCAL
+        case _:
+            print(f"No exact scenario given, choosing 'default'")
+            scenario = Scenarios.FULL_NETWORK
+
+    # Implement setting up the network
+    net = create_test_scenario(scenario, logging)
+    net.start()
+    CLI(net)
+
+    match args.test:
+        case "quicheperf":
+            print(f"Starting the '{args.test}' scenario")
+            test = Tests.QUICHEPERF
+        case "webrtc_example":
+            print(f"Starting the '{args.test}' scenario")
+            test = Tests.PING_PONG
+        case _:
+            print(f"No test given, starting the 'quicheperf' scenario")
+            test = Tests.QUICHEPERF
+
+    # TODO: Adding some sort of failure logic in case something goes wrong but so that
+    # we still kill the network
+    # starting_test(net, test, args.debug, args.disable_pcap, logging)
+
+    # Try to avoid halve closed networks or other problems
+    # net.stop()
+
+    print("All tests completed...")
+
+
+if __name__ == "__main__":
+    main()
