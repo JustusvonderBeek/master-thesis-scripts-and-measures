@@ -27,7 +27,7 @@ class TestConfiguration:
     duration: int = 100
 
     enable_pcap: bool = True
-    enable_turn_server: bool = False
+    enable_turn_server: bool = True
     enable_cli_after_test: bool = False
 
     change_file_permissions: bool = False

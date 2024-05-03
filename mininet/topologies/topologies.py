@@ -42,7 +42,7 @@ class NetworkConfiguration:
     enable_internet_path: bool = True
     
     # Features
-    enable_turn_host: bool = True
+    enable_turn_host: bool = False
     block_stun_on_first_path: bool = False
 
     # Path delays
@@ -66,27 +66,30 @@ def create_test_scenario(test_conf: TestConfiguration):
             configuration = NetworkConfiguration(
                 enable_local_network_path=False,
                 enable_internet_path=False,
-                enable_turn_host=False,
                 block_stun_on_first_path=False
             )
         case Scenarios.SINGLE_PATH_WITH_LOCAL:
             configuration = NetworkConfiguration(
                 enable_internet_path=False,
-                enable_turn_host=False,
                 block_stun_on_first_path=False
             )
         case Scenarios.SINGLE_PATH_WITH_INTERNET:
             configuration = NetworkConfiguration(
                 enable_local_network_path=False,
+                enable_turn_host=True,
                 block_stun_on_first_path=False
             )
         case Scenarios.FULL_NETWORK:
-            configuration = NetworkConfiguration()
+            configuration = NetworkConfiguration(
+                enable_turn_host=True,
+            )
         case _:
             print(f"'{test_conf.scenario}' is no valid scenario name!")
             return ValueError
 
     if test_conf.enable_turn_server:
+        configuration.enable_turn_host = True
+    else:
         configuration.enable_turn_host = False
 
     if test_conf.test == Tests.PING_PONG:

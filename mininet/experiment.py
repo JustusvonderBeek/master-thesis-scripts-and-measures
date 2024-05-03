@@ -37,6 +37,25 @@ def start_test(net, conf: TestConfiguration):
         
     _test_wrapper(net, test_function, conf)
 
+def _start_turn_server(net, host):
+    """
+    Starting the TURN server at the dedicated host.
+    Using the 'coturn' implementation.
+    Current configuration:
+    - no logfile
+    - no authentication required
+    """
+
+    h = net.get(host)
+
+    # The server is correctly configured, nothing needed to answer simple STUN requests
+    # And no login required; prevent creation of logfile under /var/log/turn_*
+    cmd = f"/home/justus/Documents/Code/coturn/bin/turnserver -z --log-file stdout"
+    process = h.popen(cmd)
+
+    return [(process, None)]
+
+
 def _start_pcap_capture(net, directory, additional_ifs=None):
     """
     Starting capturing network traffic in pcap files
@@ -89,6 +108,9 @@ def _stop_pcap_capture(captures, modify_file_perm=False):
 
     for process, outfile in captures:
         process.terminate()
+        
+        if outfile is None:
+            return
         
         if modify_file_perm and Path(outfile).exists():
             os.chmod(outfile, 0o666)
@@ -158,8 +180,12 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
     test_dir = create_new_test_folder()
     _set_log_level(conf.log_level)
 
+    if conf.enable_turn_server:
+        turn_server = _start_turn_server(net, "turn")
+
     if conf.enable_pcap:
         pcap_captures = _start_pcap_capture(net, test_dir)
+
 
     # Allows to capture the earliest packets, otherwise some might miss
     time.sleep(1)
@@ -175,6 +201,9 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
     # Stopping all the captures
     if conf.enable_pcap:
         _stop_pcap_capture(pcap_captures, conf.change_file_permissions)
+
+    if conf.enable_turn_server:
+        _stop_pcap_capture(turn_server)
 
     _print_all_nat_tables(net, test_dir)
 
@@ -199,7 +228,7 @@ def _start_quicheperf(net, directory, conf):
     tp = conf.throughput
     output_processes = []
 
-    print("Executing: {}".format(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true"))
+    # print("Executing: {}".format(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true"))
                                  
     if conf.log_level.value > Logging.INFO.value:
         server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
@@ -223,7 +252,7 @@ def _start_quicheperf(net, directory, conf):
     # Configure waiting etc. here
 
     wait()
-    # wait()
+    wait()
     # Setting the interface down, etc.
 
     # Finished testing
