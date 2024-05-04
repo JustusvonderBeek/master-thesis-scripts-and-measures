@@ -227,8 +227,31 @@ def print_nat_table(net, host, outpath=None):
     outfile = Path(outpath).joinpath(outfile)
     
     output = h.cmd("conntrack -L")
+    nat_output = h.cmd("conntrack -L -j")
+    
     # print(output)
     with open(outfile, "w") as out:
         out.write(output)
+        out.write("------------\n")
+        out.write(nat_output)
+        
         
     print(f"Wrote NAT table state of host {host} to '{outfile}'")
+    
+def delete_ext_conntrack_entry(net, host, ext, itn, repetition=0.1):
+    """
+    Executing a task in a loop which scans and deletes all external
+    NAT table entries to enable connections on the internet path.
+    """
+    
+    h = net.get(host)
+    
+    while True:
+        # This might help, but we still have the problem that then internal connection
+        # is mapped to the incorrect external port and will eventually fail, therefore
+        # this mapping must be deleted as well
+        h.cmd(f"conntrack --delete --orig-src {ext} --proto udp --status UNREPLIED")
+        # This will also delete correct connection that are trying to build
+        # so we need a more clever method here
+        h.cmd(f"conntrack --delete --orig-src {itn} --proto udp --status UNREPLIED")
+        time.sleep(repetition)
