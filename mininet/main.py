@@ -479,9 +479,20 @@ def test_failure_nat_webrtc_example(args):
     be shown
     """
 
-    args.scenario
+    args.scenario = "single+internet"
+    args.test = "ice_ping"
+    args.logging = 3
+    args.debug = False
+    args.disable_turn = False
+    args.cli = False
+    args.disable_pcap = False
 
-    return args
+    config = TestConfiguration(args)
+    # This should create enough delay to show the wrong NAT behavior
+    config.internet_path_ext_delay = 5
+    config.internet_path_local_delay = 50
+
+    return config
 
 def main():
     """
@@ -504,6 +515,7 @@ def main():
     parser.add_argument('--throughput', type=str, default="10MB")
     args = parser.parse_args()
 
+    # test_conf = test_failure_nat_webrtc_example(args)
     test_conf = TestConfiguration(args)
 
     net = create_test_scenario(test_conf)
