@@ -3,6 +3,7 @@
 
 from config import Tests, Scenarios, Logging, TestConfiguration
 from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, wait, terminate
+from testing import quicheperf
 from mininet.cli import CLI
 from pathlib import Path
 
@@ -26,7 +27,7 @@ def start_test(net, conf: TestConfiguration):
 
     match conf.test:
         case Tests.QUICHEPERF:
-            test_function = _start_quicheperf
+            test_function = quicheperf
         case Tests.PING_PONG:
             test_function = _start_ping_pong
         case Tests.DEBUG:
@@ -50,7 +51,7 @@ def _start_turn_server(net, host):
 
     # The server is correctly configured, nothing needed to answer simple STUN requests
     # And no login required; prevent creation of logfile under /var/log/turn_*
-    cmd = f"/home/justus/Documents/Code/coturn/bin/turnserver -z --log-file stdout"
+    cmd = f"{code_dir}/coturn/bin/turnserver -z --log-file stdout"
     process = h.popen(cmd)
 
     return [(process, None)]
@@ -208,57 +209,6 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
     _print_all_nat_tables(net, test_dir)
 
     change_rights_test_folder(test_dir)
-
-
-def _start_quicheperf(net, directory, conf):
-    """
-    Starting the actual application we want to test.
-    Responsible for starting the application and logging.
-    Must return a list of tuple holding (process, logfile)
-    which will be terminated by the wrapper. If the logfile
-    is 'None' then we expect the application to directly write
-    into the logfile and therefore no output is processed by
-    the wrapper.
-    """
-
-    h1 = net.get("h1")
-    h2 = net.get("h2")
-
-    target = conf.build_target
-    tp = conf.throughput
-    output_processes = []
-
-    # print("Executing: {}".format(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true"))
-                                 
-    if conf.log_level.value > Logging.INFO.value:
-        server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
-
-        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp} &> {testing_dir}/{directory}/h1.log", shell=True)
-
-        server_capture = (server, None)
-        client_capture = (client, None)
-        output_processes.append(server_capture)
-        output_processes.append(client_capture)
-    else:
-        server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-
-        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-    
-        server_capture = (server, f"{directory}/h2.log")
-        client_capture = (client, f"{directory}/h1.log")
-        output_processes.append(server_capture)
-        output_processes.append(client_capture)
-
-    # Configure waiting etc. here
-
-    wait()
-    wait()
-    # Setting the interface down, etc.
-
-    # Finished testing
-
-    return output_processes
-
 
 def _start_ping_pong(net, directory, conf):
     """
