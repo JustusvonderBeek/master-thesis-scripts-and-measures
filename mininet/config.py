@@ -22,12 +22,21 @@ class Logging(Enum):
 
 @dataclass
 class TestConfiguration:
+    # General
     scenario: Scenarios
     test: Tests
-    duration: int = 100
 
+    # Path delays
+    wifi_direct_path_delay: int = 3
+    local_network_path_delay: int = 5
+    internet_path_local_delay: int = 1
+    internet_path_ext_delay: int = 100
+    internet_path_turn_delay: int = 1
+
+    # Features
     enable_pcap: bool = True
     enable_turn_server: bool = True
+    block_stun_on_first_path: bool = False
     enable_cli_after_test: bool = False
 
     change_file_permissions: bool = False
@@ -35,6 +44,7 @@ class TestConfiguration:
     log_level: Logging = Logging.INFO
     build_target: str = "debug"
     throughput: str = "10MB"
+    duration: int = 100
 
     def __init__(self, args):
         """
@@ -62,7 +72,7 @@ class TestConfiguration:
                 self.log_level = Logging.INFO
 
         match args.setup:
-            case "default":
+            case "full":
                 print(f"Starting the '{args.setup}' test scenario")
                 self.scenario = Scenarios.FULL_NETWORK
             case "single":
