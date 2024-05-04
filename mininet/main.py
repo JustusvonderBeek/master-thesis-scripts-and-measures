@@ -473,6 +473,16 @@ def test_quic_multipath():
     exit(0)
 
 
+def test_failure_nat_webrtc_example(args):
+    """
+    Creating the configuration so that the strange NAT behavior can
+    be shown
+    """
+
+    args.scenario
+
+    return args
+
 def main():
     """
     Starting the main function, parsing the command line and starting the relevant tests
