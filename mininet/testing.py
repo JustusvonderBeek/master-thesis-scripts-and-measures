@@ -9,7 +9,7 @@
 # by the wrapper function
 
 from config import Logging
-from measurement_util import wait, path_loss
+from measurement_util import wait, path_loss, iface_down, iface_up
 
 import subprocess
 
@@ -39,7 +39,9 @@ def quicheperf(net, directory, conf):
     output_processes = []
 
     # print("Executing: {}".format(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true"))
-                                 
+
+    ip_storage = iface_down(net, "h1", "h1-eth")
+
     if conf.log_level.value > Logging.INFO.value:
         server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
 
@@ -62,10 +64,11 @@ def quicheperf(net, directory, conf):
     # Configure waiting etc. here
 
     wait()
-    path_loss(net, "h1", "h1-wifi")
+    # path_loss(net, "h1", "h1-wifi")
+    ip_storage = iface_up(net, "h1", "h1-eth", ip_storage)
     wait()
-    path_loss(net, "h1", "h1-wifi", loss=0)
-    wait()
+    # path_loss(net, "h1", "h1-wifi", loss=0)
+    # wait()
     # Setting the interface down, etc.
 
     # Finished testing
