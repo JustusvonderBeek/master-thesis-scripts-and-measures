@@ -146,7 +146,7 @@ def parse_ip(cmd_output):
     ipv4_addresses = re.findall(r'inet (\d+\.\d+\.\d+\.\d+/\d+)', cmd_output)
     return ipv4_addresses
 
-def if_down(net, host, iface, ip_storage=None):
+def iface_down(net, host, iface, ip_storage=None):
     """Disabling the specified interface on the given host.
     Also removes the IP from the interface and stores it in dictionary
     """
@@ -167,7 +167,7 @@ def if_down(net, host, iface, ip_storage=None):
     # print(ip_storage)
     return ip_storage
 
-def if_up(net, host, iface, ip_storage=None):
+def iface_up(net, host, iface, ip_storage=None):
     """Enabling the specified interface on the given host"""
 
     print(f"Enabling interface {iface} on {host}")

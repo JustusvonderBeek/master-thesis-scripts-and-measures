@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from mininet.node import Node, Switch, OVSController
 # from topologies import TwoConnections, TwoConnectionWithInternet, DirectAndInternet, InternetTopo, DirectAndInternetAndTURN
-from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, set_default_route, if_down, if_up, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
+from measurement_util import capture_pcap, capture_ssl, terminate, stop_path, start_path, path_loss, wait, print_nat_table, create_new_test_folder, change_rights_test_folder
 from topologies.topologies import create_test_scenario
 from config import Scenarios, Logging, Tests, TestConfiguration
 from logfile import filter_logfile_positiv
