@@ -19,15 +19,19 @@ def create_new_test_folder(path=None):
     if path is None:
         path = "mininet_measurements/"
 
-    folder_name = path + datetime.today().strftime("%d_%m_%H_%M")
+    day_name = path + datetime.today().strftime("%d_%m")
+    time_name = datetime.today().strftime("%H_%M")
+
     iteration = 1
-    iteration_fn = folder_name
+    folder_name = Path(day_name).joinpath(time_name)
     while True:
-        if Path(iteration_fn).exists():
-            iteration_fn = f"{folder_name}_({iteration})"
+        if Path(folder_name).exists():
+            time_folder_name = Path(folder_name).stem
+            time_folder_name_iter = f"{time_folder_name}_({iteration})"
+            time_folder_name_iter = Path(day_name).joinpath(time_folder_name_iter)
+            folder_name = time_folder_name_iter
             iteration += 1
         else:
-            folder_name = iteration_fn
             break
 
     Path(folder_name).mkdir(parents=True, exist_ok=False)
