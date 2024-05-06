@@ -40,7 +40,7 @@ def quicheperf(net, directory, conf):
 
     # print("Executing: {}".format(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true"))
 
-    ip_storage = iface_down(net, "h1", "h1-eth")
+    ip_storage = iface_down(net, "h1", "h1-eth", directory)
 
     if conf.log_level.value > Logging.INFO.value:
         server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
@@ -65,8 +65,8 @@ def quicheperf(net, directory, conf):
 
     wait()
     # path_loss(net, "h1", "h1-wifi")
-    ip_storage = iface_up(net, "h1", "h1-eth", ip_storage)
-    wait()
+    ip_storage = iface_up(net, "h1", "h1-eth", directory, ip_storage)
+    wait(30)
     # path_loss(net, "h1", "h1-wifi", loss=0)
     # wait()
     # Setting the interface down, etc.

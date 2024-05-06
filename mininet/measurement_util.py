@@ -150,12 +150,37 @@ def parse_ip(cmd_output):
     ipv4_addresses = re.findall(r'inet (\d+\.\d+\.\d+\.\d+/\d+)', cmd_output)
     return ipv4_addresses
 
-def iface_down(net, host, iface, ip_storage=None):
+def store_routes_for_interface(net, host, dir):
+    """
+    Storing all routes for a given interface which might get lost during the
+    interface being set down.
+    """
+
+    print(f"Storing routes for host '{host}'")
+    h = net.get(host)
+    h.cmd(f"ip route save > {dir}/{host}-ip-routes.log")
+
+def restore_routes_for_interface(net, host, dir):
+    """
+    Expecting a dictionary of (host,iface):routes()
+    Restoring the given routes on the given interface.
+    """
+
+    print(f"Restoring routes for host '{host}'")
+    h = net.get(host)
+    h.cmd(f"ip route restore > {dir}/{host}-ip-routes.log")
+    router_storage = Path(dir).joinpath(f"{host}-ip-routes.log")
+    if router_storage.exists():
+        os.remove(router_storage)
+
+
+def iface_down(net, host, iface, directory, ip_storage=None):
     """Disabling the specified interface on the given host.
     Also removes the IP from the interface and stores it in dictionary
     """
 
     print(f"Disabling interface {iface} on {host}")
+    store_routes_for_interface(net, host, directory)
     h = net.get(host)
     output = h.cmd(f"ip a s {iface}")
     ips = parse_ip(output)
@@ -171,7 +196,7 @@ def iface_down(net, host, iface, ip_storage=None):
     # print(ip_storage)
     return ip_storage
 
-def iface_up(net, host, iface, ip_storage=None):
+def iface_up(net, host, iface, directory, ip_storage=None):
     """Enabling the specified interface on the given host"""
 
     print(f"Enabling interface {iface} on {host}")
@@ -185,6 +210,8 @@ def iface_up(net, host, iface, ip_storage=None):
             h.cmd(f"ip addr add {ip} dev {iface}")
 
         ip_storage[(host, iface)] = list()
+
+    restore_routes_for_interface(net, host, directory)
 
     return ip_storage
 
