@@ -1,16 +1,48 @@
 import os
+import re
+import shutil
 
 from pathlib import Path
 
 def create_measurement_folder(filename, exist_ok=False):
     """Creating the folder for the current measurement"""
 
-    measurement_dir = "mininet_measurements"
+    measurement_dir = "old_mn_measurements"
     pure_filename = Path(filename).stem
     measurement_path = Path(measurement_dir).joinpath(filename)
     measurement_path.mkdir(parents=False, exist_ok=exist_ok)
     
     return measurement_path
+
+def create_stacked_mm_folder(foldername, exists_ok=False):
+    """
+    Creating a single folder per day containing all measurements of the day
+    in subfolders showing only the time of measurement.
+    """
+
+    measurement_dir = "mininet_measurements"
+    old_folder = Path(foldername).stem
+    measurement_day_path = re.match("^([0-9]+_[0-9]+)_([0-9]+_[0-9]+)", f"{old_folder}")
+    if measurement_day_path is None:
+        return
+    day_folder = measurement_day_path.group(1)
+    time_folder = measurement_day_path.group(2)
+    new_mm_dir = Path(measurement_dir).joinpath(day_folder).joinpath(time_folder)
+    Path(new_mm_dir).mkdir(parents=True, exist_ok=True)
+
+    # Now moving all data from the old dir into the new dir
+    input_dir = Path(measurement_dir).joinpath(foldername)
+    move_folder(input_dir, new_mm_dir)
+    delete_old_folder(input_dir)
+
+def move_folder(input_dir, output_dir):
+    """
+    Moving all files in the given input_dir to output_dir.
+    """
+
+    print(f"Moving folder {input_dir} to {output_dir}")
+    for file_to_move in os.listdir(input_dir):
+        shutil.move(Path(input_dir).joinpath(file_to_move), output_dir)
 
 def move_file(input_dir, file_pattern, output_dir):
     """Moving all files with the given name (exclude extension) from the input dir to the given output directory"""
@@ -21,6 +53,14 @@ def move_file(input_dir, file_pattern, output_dir):
             suffix = Path(file_to_move).suffix
             output_filename = Path(output_dir).joinpath(input_dir+suffix)
             os.replace(input_filename, output_filename)
+
+def delete_old_folder(folder):
+    """
+    Removing the old folder
+    """
+
+    if Path(folder).exists():
+        os.rmdir(folder)
 
 def list_pcap_files(folder):
     """Listing all pcap file names that can be found."""
@@ -38,7 +78,20 @@ def list_pcap_files(folder):
     
     print(f"Found {len(logfiles)} logfiles")
     return logfiles
-        
+
+def list_all_folders(directory):
+    """
+    Listing all folders in the given directory
+    """
+
+    folders = []
+    for folder in os.listdir(directory):
+        if Path(folder).is_dir:
+            folder_name = Path(folder).stem
+            folders.append(folder_name)
+
+    return folders
+
 def move_all_measurement_files():
     """
     Moving all pcap, log and other files into the measurement folder given.
@@ -64,6 +117,19 @@ def move_all_measurement_files():
         move_file(s3_dir, file_to_move, new_folder)
         move_file(turn_dir, file_to_move, new_folder)
         
-        
+def reorganize_into_day_time_subfolders():
+    """
+    Moving all current tests into a single folder per day, holding subfolders
+    with the time per measurement.
+    """
+
+    directory_to_modify = "mininet_measurements"
+
+    for folder in list_all_folders(directory_to_modify):
+        create_stacked_mm_folder(folder)
+
+        # break
+
 if __name__ == "__main__":
-    move_all_measurement_files()
+    # move_all_measurement_files()
+    reorganize_into_day_time_subfolders()
