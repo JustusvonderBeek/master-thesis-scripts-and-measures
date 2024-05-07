@@ -2,7 +2,7 @@
 # tests to measure the performance of the current implementation
 
 from config import Tests, Scenarios, Logging, TestConfiguration
-from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, wait, terminate
+from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate
 from testing import quicheperf
 from mininet.cli import CLI
 from pathlib import Path
@@ -207,6 +207,7 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
         _stop_pcap_capture(turn_server)
 
     _print_all_nat_tables(net, test_dir)
+    print_routing_table(net, test_dir)
 
     change_rights_test_folder(test_dir)
 

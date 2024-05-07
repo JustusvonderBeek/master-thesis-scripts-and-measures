@@ -168,7 +168,7 @@ def restore_routes_for_interface(net, host, dir):
 
     print(f"Restoring routes for host '{host}'")
     h = net.get(host)
-    h.cmd(f"ip route restore > {dir}/{host}-ip-routes.log")
+    h.cmd(f"ip route restore < {dir}/{host}-ip-routes.log")
     router_storage = Path(dir).joinpath(f"{host}-ip-routes.log")
     if router_storage.exists():
         os.remove(router_storage)
@@ -269,6 +269,21 @@ def print_nat_table(net, host, outpath=None):
         
     print(f"Wrote NAT table state of host {host} to '{outfile}'")
     
+def print_routing_table(net, directory):
+    """
+    Printing the routing current routing table of all hosts in the network.
+    """
+    
+    with open(f"{directory}/routing-tables.log", "w") as logfile:
+        for host in net.values():
+            found = re.search("^(s|c)[0-9]+", f"{host}")
+            if found is None:
+                output = host.cmd("route")
+                logfile.write(f"Host: {host}\n")
+                logfile.write(output)
+                logfile.write("------------------\n")
+
+
 def delete_ext_conntrack_entry(net, host, ext, itn, repetition=0.1):
     """
     Executing a task in a loop which scans and deletes all external
