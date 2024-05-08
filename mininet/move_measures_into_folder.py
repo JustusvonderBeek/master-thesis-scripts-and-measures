@@ -14,6 +14,26 @@ def create_measurement_folder(filename, exist_ok=False):
     
     return measurement_path
 
+def resolve_pos_filtered(foldername):
+    """
+    Getting a foldername, checking if it is a pos_filtered one
+    and moving the files in these folders into the matching folder.
+    """
+    
+    measurement_dir = "mininet_measurements"
+    # Check if it is one of the pos_filtered folders
+    found = re.match("^pos_filtered_(\d+_\d+)_(\d+_\d+)", f"{foldername}")
+    if found is None:
+        return
+    day_match = found.group(1)
+    time_match = found.group(2)
+    
+    new_path = Path(measurement_dir).joinpath(day_match).joinpath(time_match)
+    new_path.mkdir(parents=True, exist_ok=True)
+    shutil.move(Path(measurement_dir).joinpath(foldername).joinpath("h1.log"), new_path.joinpath("pos_filtered_h1.log"))
+    shutil.move(Path(measurement_dir).joinpath(foldername).joinpath("h2.log"), new_path.joinpath("pos_filtered_h2.log"))
+    os.remove(Path(measurement_dir).joinpath(foldername))
+
 def create_stacked_mm_folder(foldername, exists_ok=False):
     """
     Creating a single folder per day containing all measurements of the day
@@ -126,7 +146,8 @@ def reorganize_into_day_time_subfolders():
     directory_to_modify = "mininet_measurements"
 
     for folder in list_all_folders(directory_to_modify):
-        create_stacked_mm_folder(folder)
+        # create_stacked_mm_folder(folder)
+        resolve_pos_filtered(folder)
 
         # break
 
