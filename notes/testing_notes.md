@@ -81,6 +81,7 @@ Die folgende Tabelle beinhaltet alle Beobachtungen über NearbyShare die wir bis
 | Transfer dauert lange | Normaler Transfer zwischen zwei Handys. Beide sind im WiFi | Die Handys unterstützen keine zwei Verbindungen auf dem selben WiFi Interface. Daher wird wahrscheinlich Bluetooth oder noch langsamere Verbindung gewählt |
 | Transfer zwischen mehreren Geräten gleichzeitig möglich | In der Auswahl auf alle verfügbaren Geräte klicken | Verwendet auch TCP. Overlay Struktur wahrscheinlich in Software |
 | Verbindung bricht ab + Fehlermeldung | Keine Migration, auch nicht manuell. Sobald die Verbindung abbricht, wird kein Transfer mehr abgeschlossen | Nach einem Timeout erscheint immer ein Fehler. Auch nicht manuell über TCP und/oder Google Relay |
+| Transfer auf dem Direktlink ist nicht verschlüsselt | Normaler Transfer | Kann die PDF aus dem Transfer auslesen und in eine funktionierende PDF verwandeln |
 
 ## Google Meet Verhalten
 
