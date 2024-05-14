@@ -65,15 +65,15 @@ class Cellular:
         Adding the required links between the hosts in the network
         """
 
-        net.addLink(node1="h1", node2="s2", intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay=f"{configuration.internet_path_local_delay}ms")
-        net.addLink(node1="h2", node2="s4", intfName1="h2-cellular",  params1={"ip":"2.40.60.3/28"}, delay=f"{configuration.internet_path_local_delay}ms")
+        net.addLink(node1="h1", node2="s2", intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
+        net.addLink(node1="h2", node2="s4", intfName1="h2-cellular",  params1={"ip":"2.40.60.3/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
 
-        net.addLink("s2", "nat1", intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay=f"{configuration.internet_path_local_delay}ms")
-        net.addLink("s4", "nat2", intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay=f"{configuration.internet_path_local_delay}ms")
+        net.addLink("s2", "nat1", intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
+        net.addLink("s4", "nat2", intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
 
-        net.addLink("nat1", "s3", intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay=f"{configuration.internet_path_ext_delay}ms")
-        net.addLink("nat2", "s3", intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay=f"{configuration.internet_path_ext_delay}ms")
-        net.addLink("turn", "s3", intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay=f"{configuration.internet_path_turn_delay}ms")
+        net.addLink("nat1", "s3", intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay=f"{configuration.internet_path_ext_delay}ms", use_htb=True)
+        net.addLink("nat2", "s3", intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay=f"{configuration.internet_path_ext_delay}ms", use_htb=True)
+        net.addLink("turn", "s3", intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay=f"{configuration.internet_path_turn_delay}ms", use_htb=True)
 
 
     @staticmethod
@@ -94,19 +94,29 @@ class Cellular:
         nat1.cmd("iptables -F")
         nat1.cmd("iptables -t nat -F")
 
-        nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
-        # nat1.cmd("iptables -A FORWARD -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j LOG --log-prefix='[mininet] '")
-        nat1.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
-        nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
-        nat1.cmd("iptables -A FORWARD -j REJECT")
+        if configuration.snat:
+            nat1.cmd('iptables -t nat -A POSTROUTING -o {} -s 1.20.30.2 -j SNAT --to-source 1.20.50.10'.format("nat1-ext"))
+            nat1.cmd('iptables -t nat -A PREROUTING -i {} -d 1.20.50.10 -j DNAT --to-destination 1.20.30.2'.format("nat1-ext"))
+            # nat1.cmd('iptables -t nat -A PREROUTING -i {} -m conntrack --ctstate NEW -j REJECT'.format("nat1-ext"))
+            # nat1.cmd('iptables -A FORWARD -i {} -m conntrack --ctstate SNAT -j ACCEPT'.format("nat1-ext"))
+        else:
+            nat1.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat1-ext"))
+            nat1.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
+            # nat1.cmd("iptables -A FORWARD -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j LOG --log-prefix='[mininet] '")
+            nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
+            nat1.cmd("iptables -A FORWARD -j REJECT")
         
 
         nat2.cmd('sysctl net.ipv4.ip_forward=1')
         nat2.cmd("iptables -F")
         nat2.cmd("iptables -t nat -F")
 
-        nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
-        # nat2.cmd("iptables -A FORWARD -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j LOG --log-prefix='[mininet] '")
-        nat2.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
-        nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
-        nat2.cmd("iptables -A FORWARD -j REJECT")
+        if configuration.snat:
+            nat2.cmd('iptables -t nat -A POSTROUTING -o {} -s 2.40.60.3 -j SNAT --to-source 1.20.50.20'.format("nat2-ext"))
+            nat2.cmd('iptables -t nat -A PREROUTING -i {} -d 1.20.50.20 -j DNAT --to-destination 2.40.60.3'.format("nat2-ext"))
+        else:
+            nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
+            nat2.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
+            # nat2.cmd("iptables -A FORWARD -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j LOG --log-prefix='[mininet] '")
+            nat2.cmd("iptables -A FORWARD -i nat2-local -j ACCEPT")
+            nat2.cmd("iptables -A FORWARD -j REJECT")
