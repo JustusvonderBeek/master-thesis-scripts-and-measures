@@ -66,7 +66,7 @@ def quicheperf(net, directory, conf):
     wait()
     # path_loss(net, "h1", "h1-wifi")
     ip_storage = iface_up(net, "h1", "h1-eth", directory, ip_storage)
-    wait(60)
+    wait(20)
     # path_loss(net, "h1", "h1-wifi", loss=0)
     # wait()
     # Setting the interface down, etc.
