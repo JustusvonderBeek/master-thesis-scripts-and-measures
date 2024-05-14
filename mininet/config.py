@@ -30,7 +30,7 @@ class TestConfiguration:
     wifi_direct_path_delay: int = 3
     local_network_path_delay: int = 5
     internet_path_local_delay: int = 1
-    internet_path_ext_delay: int = 150
+    internet_path_ext_delay: int = 50
     internet_path_turn_delay: int = 1
 
     # Features
@@ -38,6 +38,7 @@ class TestConfiguration:
     enable_turn_server: bool = True
     block_stun_on_first_path: bool = False
     enable_cli_after_test: bool = False
+    enable_snat : bool = False
 
     change_file_permissions: bool = False
 
@@ -102,6 +103,7 @@ class TestConfiguration:
         self.build_target = args.build_target
         self.duration = args.duration
         self.throughput = args.throughput
+        self.enable_snat = args.snat
 
         if args.debug:
             # Irrelevant what scenario was given, debug the network

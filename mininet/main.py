@@ -510,6 +510,7 @@ def main():
     parser.add_argument('-c', '--cli', action='store_true', default=False)
     parser.add_argument('-p', '--permissions', action='store_true', default=True)
     parser.add_argument('--disable-turn', action='store_true', default=False)
+    parser.add_argument('-n', '--snat', action='store_true', default=False)
     parser.add_argument('--logging', type=int, default=3)
     parser.add_argument('--build-target', type=str, default="debug")
     parser.add_argument('--throughput', type=str, default="10MB")

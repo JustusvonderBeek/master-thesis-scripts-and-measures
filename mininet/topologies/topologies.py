@@ -44,6 +44,7 @@ class NetworkConfiguration:
     # Features
     enable_turn_host: bool = False
     block_stun_on_first_path: bool = False
+    snat = False
 
     # Path delays
     wifi_direct_path_delay: int = 3
@@ -97,6 +98,8 @@ def create_test_scenario(test_conf: TestConfiguration):
     configuration.local_network_path_delay = test_conf.local_network_path_delay
     configuration.internet_path_local_delay = test_conf.internet_path_local_delay
     configuration.internet_path_ext_delay = test_conf.internet_path_ext_delay
+
+    configuration.snat = test_conf.enable_snat
 
     if test_conf.test == Tests.PING_PONG:
         # If STUN not blocked this won't work since we will always
