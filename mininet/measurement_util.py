@@ -11,7 +11,8 @@ import subprocess, select
 import os
 import time
 import re
-
+import pwd
+import grp
 
 def create_new_test_folder(path=None):
     """Creating a testfolder where all logfiles and pcap are stored in."""
@@ -22,8 +23,15 @@ def create_new_test_folder(path=None):
     day_name = path + datetime.today().strftime("%d_%m")
     time_name = datetime.today().strftime("%H_%M")
 
+    username = "justus"
+    uid = pwd.getpwnam(username).pw_uid
+    gid = grp.getgrnam(username).gr_gid
+
     iteration = 1
-    folder_name = Path(day_name).joinpath(time_name)
+    base_folder = Path(day_name)
+    base_folder.mkdir(parents=True, exist_ok=True)
+    os.chown(base_folder, uid, gid)
+    folder_name = Path(base_folder).joinpath(time_name)
     while True:
         if Path(folder_name).exists():
             time_folder_name = Path(folder_name).stem
