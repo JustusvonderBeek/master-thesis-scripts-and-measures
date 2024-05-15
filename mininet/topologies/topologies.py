@@ -22,6 +22,7 @@ from .old_topologies import DirectAndInternetAndTURN
 from mininet.topo import Topo, MinimalTopo
 from mininet.node import OVSController
 from mininet.net import Mininet
+from mininet.link import TCLink
 
 from .wifi_direct import WiFiPath
 from .ethernet_network import Ethernet
@@ -50,7 +51,7 @@ class NetworkConfiguration:
     wifi_direct_path_delay: int = 3
     local_network_path_delay: int = 5
     internet_path_local_delay: int = 1
-    internet_path_ext_delay: int = 100
+    internet_path_ext_delay: int = 20
     internet_path_turn_delay: int = 1
 
 
@@ -120,7 +121,8 @@ def create_network(configuration):
     """
 
     default_topo = DefaultNetwork()
-    net = Mininet(default_topo, controller=OVSController, autoSetMacs=True)
+    # Requires TCLink to enable delays
+    net = Mininet(default_topo, controller=OVSController, link=TCLink, autoSetMacs=True)
     # Now, expand the default configuration to the desired size and configuration
     WiFiPath.build(net, configuration)
     Ethernet.build(net, configuration)
