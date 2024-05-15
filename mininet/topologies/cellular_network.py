@@ -95,8 +95,8 @@ class Cellular:
         nat1.cmd("iptables -t nat -F")
 
         if configuration.snat:
-            nat1.cmd('iptables -t nat -A POSTROUTING -o {} -s 1.20.30.2 -j SNAT --to-source 1.20.50.10'.format("nat1-ext"))
-            nat1.cmd('iptables -t nat -A PREROUTING -i {} -d 1.20.50.10 -j DNAT --to-destination 1.20.30.2'.format("nat1-ext"))
+            nat1.cmd('iptables -t nat -A POSTROUTING -o {} -s 1.20.30.2 -d 1.20.50.0/24 -j SNAT --to-source 1.20.50.10'.format("nat1-ext"))
+            nat1.cmd('iptables -t nat -A PREROUTING -i {} -d 1.20.50.10 -s 1.20.50.0/24 -j DNAT --to-destination 1.20.30.2'.format("nat1-ext"))
             # nat1.cmd('iptables -t nat -A PREROUTING -i {} -m conntrack --ctstate NEW -j REJECT'.format("nat1-ext"))
             # nat1.cmd('iptables -A FORWARD -i {} -m conntrack --ctstate SNAT -j ACCEPT'.format("nat1-ext"))
         else:
@@ -105,15 +105,14 @@ class Cellular:
             # nat1.cmd("iptables -A FORWARD -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j LOG --log-prefix='[mininet] '")
             nat1.cmd("iptables -A FORWARD -i nat1-local -j ACCEPT")
             nat1.cmd("iptables -A FORWARD -j REJECT")
-        
 
         nat2.cmd('sysctl net.ipv4.ip_forward=1')
         nat2.cmd("iptables -F")
         nat2.cmd("iptables -t nat -F")
 
         if configuration.snat:
-            nat2.cmd('iptables -t nat -A POSTROUTING -o {} -s 2.40.60.3 -j SNAT --to-source 1.20.50.20'.format("nat2-ext"))
-            nat2.cmd('iptables -t nat -A PREROUTING -i {} -d 1.20.50.20 -j DNAT --to-destination 2.40.60.3'.format("nat2-ext"))
+            nat2.cmd('iptables -t nat -A POSTROUTING -o {} -s 2.40.60.3 -d 1.20.50.0/24 -j SNAT --to-source 1.20.50.20'.format("nat2-ext"))
+            nat2.cmd('iptables -t nat -A PREROUTING -i {} -d 1.20.50.20 -s 1.20.50.0/24 -j DNAT --to-destination 2.40.60.3'.format("nat2-ext"))
         else:
             nat2.cmd('iptables -t nat -A POSTROUTING -o {} -j MASQUERADE'.format("nat2-ext"))
             nat2.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
