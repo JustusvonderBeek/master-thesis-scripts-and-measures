@@ -50,8 +50,10 @@ class NetworkConfiguration:
     # Path delays
     wifi_direct_path_delay: int = 3
     local_network_path_delay: int = 5
-    internet_path_local_delay: int = 1
-    internet_path_ext_delay: int = 20
+    internet_path_local_delay: int = 2
+    internet_path_local_2_delay: int = 2
+    internet_path_ext_delay: int = 12
+    internet_path_ext_2_delay: int = 12
     internet_path_turn_delay: int = 1
 
 
@@ -98,7 +100,9 @@ def create_test_scenario(test_conf: TestConfiguration):
     configuration.wifi_direct_path_delay = test_conf.wifi_direct_path_delay
     configuration.local_network_path_delay = test_conf.local_network_path_delay
     configuration.internet_path_local_delay = test_conf.internet_path_local_delay
+    configuration.internet_path_local_2_delay = test_conf.internet_path_local_2_delay
     configuration.internet_path_ext_delay = test_conf.internet_path_ext_delay
+    configuration.internet_path_ext_2_delay = test_conf.internet_path_ext_2_delay
 
     configuration.snat = test_conf.enable_snat
 
