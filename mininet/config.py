@@ -11,6 +11,8 @@ class Tests(Enum):
     QUICHEPERF = 1
     PING_PONG = 2
     DEBUG = 3
+    QUICHEPERF_IF = 4
+    QUICHEPERF_LOSS = 5
 
 class Logging(Enum):
     NONE = 0
@@ -27,10 +29,12 @@ class TestConfiguration:
     test: Tests
 
     # Path delays
-    wifi_direct_path_delay: int = 3
+    wifi_direct_path_delay: int = 6
     local_network_path_delay: int = 5
-    internet_path_local_delay: int = 1
-    internet_path_ext_delay: int = 10
+    internet_path_local_delay: int = 2
+    internet_path_local_2_delay: int = 2
+    internet_path_ext_delay: int = 12
+    internet_path_ext_2_delay: int = 12
     internet_path_turn_delay: int = 1
 
     # Features
@@ -96,6 +100,12 @@ class TestConfiguration:
             case "ice_ping":
                 print(f"Starting the '{args.test}' scenario")
                 self.test = Tests.PING_PONG
+            case "quicheperf_if":
+                print(f"Starting the '{args.test}' scenario")
+                self.test = Tests.QUICHEPERF_IF
+            case "quicheperf_loss":
+                print(f"Starting the '{args.test}' scenario")
+                self.test = Tests.QUICHEPERF_LOSS
             case _:
                 print(f"No test given, starting the 'debugging' scenario")
                 self.test = Tests.DEBUG
