@@ -147,10 +147,22 @@ def start_path(net, host, switch):
 def path_loss(net, host, iface, loss=100):
     """Applying the given loss rate to the given interface on the host specified"""
 
-    h = net.get(host)
-    cmd = "tc qdisc add dev {} root netem loss {}%".format(iface, loss)
-    print("Executing: {}".format(cmd))
-    h.cmd(cmd)
+    # Get all links in the network
+    links = net.links
+    # Filter the correct link
+    for link in links:
+        # Every link has two interfaces, intf1 and intf2
+        if iface in f"{link.intf1}" or iface in f"{link.intf2}":
+            # print("Found link: {}: {}".format(link, link.intf1))
+            # Doesn't make a difference if we apply loss to the
+            # first or second interface
+            link.intf1.config(loss=loss)
+            print("Set loss of link {} to {}%".format(link, loss))
+
+    # h = net.get(host)
+    # cmd = "tc qdisc add dev {} root netem loss {}%".format(iface, loss)
+    # print("Executing: {}% loss on link {}<->{}".format(loss, host, iface))
+    # h.cmd(cmd)
 
 def parse_ip(cmd_output):
     """Parsing the output of the 'ip a' command. Returns the first found IP."""
