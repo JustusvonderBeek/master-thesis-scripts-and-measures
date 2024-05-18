@@ -3,7 +3,7 @@
 
 from config import Tests, Scenarios, Logging, TestConfiguration
 from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate
-from testing import quicheperf
+from testing import quicheperf, quicheperf_if_test, quicheperf_path_loss_test
 from mininet.cli import CLI
 from pathlib import Path
 
@@ -32,6 +32,10 @@ def start_test(net, conf: TestConfiguration):
             test_function = _start_ping_pong
         case Tests.DEBUG:
             test_function = _start_debug
+        case Tests.QUICHEPERF_IF:
+            test_function = quicheperf_if_test
+        case Tests.QUICHEPERF_LOSS:
+            test_function = quicheperf_path_loss_test
         case _:
             print("No correct test given, exiting...")
             return
@@ -153,6 +157,24 @@ def _print_all_nat_tables(net, directory):
         if found is not None:
             print_nat_table(net, f"{host}", directory)
 
+def _print_success(directory):
+    """
+    Checking the given logfile and printing if the testing was successful or not
+    """
+
+    logfile_path = Path(directory).joinpath("h1.log")
+    if not Path(logfile_path).exists:
+        print("Logfile to check success not found")
+        return
+    with open(logfile_path, "r") as logfile:
+        content = logfile.readlines()
+        findings = re.findall("NominatedPair:", content)
+        print(findings)
+        # TODO: Introduce more checks depending on the test and allow for
+        # custom success scenarios
+        if len(findings) > 2:
+            print("Test was successful")
+
 
 def _terminate_processes(captures):
     """
@@ -210,6 +232,8 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
     print_routing_table(net, test_dir)
 
     change_rights_test_folder(test_dir)
+
+    # _print_success(test_dir)
 
 def _start_ping_pong(net, directory, conf):
     """
