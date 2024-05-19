@@ -147,11 +147,17 @@ def quicheperf_path_loss_test(net, directory, conf):
 
     # Waiting long enough so that at least one path has been found
     wait(5)
-    path_loss(net, "h1", "h1-eth")
+    # Now lose all packets at the NAT
+    path_loss(net, "nat3", "nat3-local")
+    path_loss(net, "nat3", "nat3-ext")
     # Wait for all bindings to timeout
+    # See: https://unix.stackexchange.com/questions/524295/how-long-does-conntrack-remember-a-connection
+    # Modified to 30s for this test with
+    # sudo sysctl -w net.netfilter.nf_conntrack_udp_timeout_stream=30
     wait(35)
     # Restore the path and allow for packets to flow
-    path_loss(net, "h1", "h1-eth", loss=0)
+    path_loss(net, "nat3", "nat3-local", loss=0)
+    path_loss(net, "nat3", "nat3-ext", loss=0)
     # Give enough time to restart and find the path
     wait(15)
 
