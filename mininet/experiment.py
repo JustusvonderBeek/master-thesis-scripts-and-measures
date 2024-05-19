@@ -2,7 +2,7 @@
 # tests to measure the performance of the current implementation
 
 from config import Tests, Scenarios, Logging, TestConfiguration
-from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate
+from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate, path_loss
 from testing import quicheperf, quicheperf_if_test, quicheperf_path_loss_test
 from mininet.cli import CLI
 from pathlib import Path
@@ -259,6 +259,9 @@ def _start_debug(net, directory, conf):
     Starting the debug session with the CLI enabled to allow
     for manual input.
     """
+
+    path_loss(net, "h1", "h1-eth", loss=100)
+    path_loss(net, "h1", "h1-eth", loss=0)
 
     CLI(net)
 
