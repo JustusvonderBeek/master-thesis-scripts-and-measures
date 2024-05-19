@@ -152,11 +152,23 @@ def path_loss(net, host, iface, loss=100):
     # Filter the correct link
     for link in links:
         # Every link has two interfaces, intf1 and intf2
-        if iface in f"{link.intf1}" or iface in f"{link.intf2}":
+        if iface in f"{link.intf1}":
             # print("Found link: {}: {}".format(link, link.intf1))
             # Doesn't make a difference if we apply loss to the
             # first or second interface
-            link.intf1.config(loss=loss)
+            if loss > 0:
+                link.intf1.config(loss=loss)
+            else:
+                h = net.get(host)
+                h.cmd("tc qdisc change dev {} root netem loss {}%".format(iface, loss))
+            print("Set loss of link {} to {}%".format(link, loss))
+        elif iface in f"{link.intf2}":
+            if loss > 0:
+                link.intf2.config(loss=loss)
+            else:
+                h = net.get(host)
+                h.cmd("tc qdisc change dev {} root netem loss {}%".format(iface, loss))
+
             print("Set loss of link {} to {}%".format(link, loss))
 
     # h = net.get(host)
