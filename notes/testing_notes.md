@@ -62,10 +62,10 @@ Die folgende Tabelle fasst die wichtigsten Verhaltensmuster von AirDrop zusammen
 | Verhalten | Test | Bemerkungen | Problem |
 | --- | --- | --- | --- |
 | Verwendet QUIC | Senden direkt an die andere ID | --- | --- |
+| Verwendet IPv6 | Unabhängig vom Test, es sei denn IPv6 funktioniert im Netzwerk nicht (Annahme) | Auf dem lokalen Link zwischen zwei Geräten funktioniert IPv6 natürlich immer, daher dort immer IPv6 | --- |
 | Verwendet TCP | Senden an ein anderes Gerät, nicht die Apple ID | Kann auch passieren wenn beide Geräte nicht im selben WiFi sind (warum?) | Sobald TCP verwendet wird bricht der Transfer bei Verbindungsproblemen ab |
 | Sucht Verbindungspartner mit MDNS | Auf Teilen per AirDrop klicken | Gilt sowohl per AWDL als auch WiFi (funktioniert nur wenn im selben Netzwerk) | Limitiert auf lokale Netzwerke |
-| Verwendet IPv6 | Unabhängig vom Test, es sei denn IPv6 funktioniert im Netzwerk nicht (Annahme) | --- | --- |
-| Migriert von AWDL auf WiFi | Beide Geräte sind im selben WiFi Netzwerk. Funktioniert ohne neuen Handshake, echte Migration. | --- | --- |
+| Migriert von AWDL auf WiFi | Beide Geräte sind im selben WiFi Netzwerk. Funktioniert ohne neuen Handshake, echte Migration. | Migration zurück nie gesehen | Es scheint, sobald der Partner das AWDL verlassen hat, wird für den ganzen Transfer keine neue Verbindung mit dem WiFi-Direct/AWDL Netzwerk aufgebaut. Daher nicht Protokoll sondern darunter liegendes Problem |
 | Migriert **nicht** von AWDL auf WiFi in anderem Netzwerk | Beide Geräte in unterschiedlichen Netzwerken. Nimmt Hilfe von Apple Relay/Tunnel, 17.188... zur Hand, Sender baut Verbindung mit neuem Handshake auf. Wahrscheinlich sowas wie Out-Of-Band Information. | Transfer/Informationsquelle hat im Test nie funktioniert | Obwohl beide Geräte sich mit dem Relay verbinden scheint kein Transfer Zustande zu kommen. Außerdem senden die Geräte in diesem Test teilweise TCP |
 | Migriert von AWDL auf Cellular | Kein WiFi wurde verwendet (deaktiviert). Neuer Handshake, keine echte Migration. | Zeigt in UI an dass mobile Daten verwendet werden | Migriert nicht mehr zurück. Verbraucht Datenvolumen obwohl das nicht notwendig ist |
 | Migriert nicht mehr zurück | Nach Migration wird nicht mehr zurück gewechselt, auch wenn wieder Kontakt besteht | Betrifft AWDL -> WiFi & AWDL -> Cellular. Beides migriert nicht zurück. Austausch über AWDL per TCP kann beobachtet werden, aber kein Datentransfer. | Dadurch dass die Migration nur in eine Richtung funktioniert ist der Transfer langsamer als nötig |
@@ -119,6 +119,15 @@ Die Erkenntnisse aus den Tests
 | Gerät ohne Abbruch verbindet sich zu Apple | TLS | 17.57.146.174 | Wahrscheinlich Wiederaufnahme der Verbindung |
 | Verbindung an Apple | QUIC | lokal <-> (Apple) 17.252.29.4 | Transportverbindung. Beide stellen Verbindung an den selben Server her. Initial Handshakes |
 | Wiederherstellung der direkten Verbindung | QUIC + RTP | lokal -> iPad | Wenn die Verbindung lange genug weiterläuft, sucht und findet FaceTime auch wieder die lokale Verbindung und benutzt diese statt dem Apple Relay |
+
+---
+## Nachtests zum Verhalten von FaceTime mit Rücksicht auf unsere Ergebnisse
+Die Tabelle enthält informationen zum Test der durchgeführt wurde
+
+| Dateiname | Test | Richtung | Beobachtungen |
+| --- | --- | --- | --- |
+| facetime_ipad_desktop_migration_cellular_ap | FaceTime Anruf 1:1, Beide im selben WiFi, HHG, dann Migration auf Cellular AP auf dem Handy für das iPad, dann switch zurück ins HHG | iPad erstellt Link -> Desktop tritt per Chrome (Firefox nicht kompatibel) bei, keine Migration auf Desktopseite | Ich habe aber tatsächlich nie eine direkte Verbindung sowohl beim Cellular AP als auch nach dem switch zurück gesehen. Immer über iCloud bzw. Apple Relays |
+| ft_cellular_migration_wohnheim | FaceTime Anruf vom Handy an iPad, Messung auf iPhone. AP auf dem Laptop mit Internet hinter meinem eigenen NAT. Dann AP aus, iPhone cellular enabled. Migration auf Cellular. Migration zurück auf WiFi. Dann wiederholt AP aus, migration und wieder AP an, zurück | iPhone -> iPad nativ | Öffnet alle Interface Pfade, Maintain alle 1s mit STUN binding request die WiFi Pfade, cellular aber nicht?, switch auf IPv6 Cellular innerhalb von ~100ms und direkter Pfad zwischen Cellular iPhone<->IPv6 iPad (stottert trotzdem in der Anwendung, habe nur 1 Seite gemessen),   |
 
 ## WhatsApp Verhalten
 Die Tests auf die Dateinamen gemapped.
