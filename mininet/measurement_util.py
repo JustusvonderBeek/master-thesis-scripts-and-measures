@@ -176,6 +176,25 @@ def path_loss(net, host, iface, loss=100):
     # print("Executing: {}% loss on link {}<->{}".format(loss, host, iface))
     # h.cmd(cmd)
 
+def set_conntrack_timeout(net, host, timeout):
+    """
+    Allowing to set the timeout in seconds after which connections will be forgotten and
+    a new connection has to be build.
+    """
+
+    h = net.get(host)
+    # sudo sysctl -w net.netfilter.nf_conntrack_udp_timeout_stream=30
+    # Defaults to 120 for stream (established), 30s not established
+    h.cmd("sysctl -w net.netfilter.nf_conntrack_udp_timeout_stream={}".format(timeout))
+
+def remove_conntrack_entry(net, host, filter):
+    """
+    Removing conntrack entries that match the given filter
+    """
+
+    h = net.get(host)
+    h.cmd("conntrack -D {}".format(filter))
+
 def parse_ip(cmd_output):
     """Parsing the output of the 'ip a' command. Returns the first found IP."""
 
@@ -278,7 +297,7 @@ def wait(sleep=5):
     print(f"Waiting for {sleep}s...")
     time.sleep(sleep)
     
-def print_nat_table(net, host, outpath=None):
+def print_nat_table(net, host, outpath=None, outfile=None):
     """Printing the current state of connection tracking"""
     
     h = net.get(host)
@@ -286,7 +305,8 @@ def print_nat_table(net, host, outpath=None):
     if outpath is None:
         outpath = "mininet_measurements/unknown/"
         
-    outfile = f"{host}_nat.log"
+    if outfile is None:
+        outfile = f"{host}_nat.log"
     outfile = Path(outpath).joinpath(outfile)
     
     output = h.cmd("conntrack -L")
