@@ -66,13 +66,13 @@ class Cellular:
         """
 
         net.addLink(node1="h1", node2="s2", intfName1="h1-cellular", params1={"ip":"1.20.30.2/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
-        net.addLink(node1="h2", node2="s4", intfName1="h2-cellular",  params1={"ip":"2.40.60.3/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
+        net.addLink(node1="h2", node2="s4", intfName1="h2-cellular",  params1={"ip":"2.40.60.3/28"}, delay=f"{configuration.internet_path_local_2_delay}ms", use_htb=True)
 
         net.addLink("s2", "nat1", intfName2="nat1-local", params2={"ip":"1.20.30.1/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
-        net.addLink("s4", "nat2", intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay=f"{configuration.internet_path_local_delay}ms", use_htb=True)
+        net.addLink("s4", "nat2", intfName2="nat2-local", params2={"ip":"2.40.60.1/28"}, delay=f"{configuration.internet_path_local_2_delay}ms", use_htb=True)
 
         net.addLink("nat1", "s3", intfName1="nat1-ext", params1={"ip":"1.20.50.10/24"}, delay=f"{configuration.internet_path_ext_delay}ms", use_htb=True)
-        net.addLink("nat2", "s3", intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay=f"{configuration.internet_path_ext_delay}ms", use_htb=True)
+        net.addLink("nat2", "s3", intfName1="nat2-ext", params1={"ip":"1.20.50.20/24"}, delay=f"{configuration.internet_path_ext_2_delay}ms", use_htb=True)
         net.addLink("turn", "s3", intfName1="turn-eth0", params1={"ip":"1.20.50.100/24"}, delay=f"{configuration.internet_path_turn_delay}ms", use_htb=True)
 
 

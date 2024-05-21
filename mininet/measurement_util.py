@@ -32,9 +32,10 @@ def create_new_test_folder(path=None):
     base_folder.mkdir(parents=True, exist_ok=True)
     os.chown(base_folder, uid, gid)
     folder_name = Path(base_folder).joinpath(time_name)
+    base_folder_name = folder_name
     while True:
         if Path(folder_name).exists():
-            time_folder_name = Path(folder_name).stem
+            time_folder_name = Path(base_folder_name).stem
             time_folder_name_iter = f"{time_folder_name}_({iteration})"
             time_folder_name_iter = Path(day_name).joinpath(time_folder_name_iter)
             folder_name = time_folder_name_iter

@@ -479,8 +479,63 @@ def test_failure_nat_webrtc_example(args):
     be shown
     """
 
-    args.scenario = "single+internet"
+    args.setup = "single+internet"
+    # Use the default ping to show that it's not our implementation but rather the NAT itself
     args.test = "ice_ping"
+    args.logging = 3
+    args.debug = False
+    args.disable_turn = False
+    args.cli = False
+    args.disable_pcap = False
+    args.snat = False
+
+    config = TestConfiguration(args)
+    # This should create enough delay to show the wrong NAT behavior
+    config.internet_path_ext_delay = 10
+    config.internet_path_ext_2_delay = 10
+    # If the one path is >= than the entire other path towards the host it breaks
+    # Here 1:1 in comparison should be enough (here > 20)
+    config.internet_path_local_delay = 25
+    config.internet_path_local_2_delay = 10
+    config.internet_path_turn_delay = 10
+    config.wifi_direct_path_delay = 3
+
+    return config
+
+def test_correct_nat_delay(args):
+    """
+    Creating a configuration so that the cellular path barely makes
+    it from a timing standpoint
+    """
+    
+    args.setup = "full"
+    args.test = "quicheperf"
+    args.logging = 3
+    args.debug = False
+    args.disable_turn = False
+    args.cli = False
+    args.disable_pcap = False
+
+    config = TestConfiguration(args)
+    # If the internet path is > local and the wifi is < Host->NAT we should not see errors
+    # Roughly 2:1 makes no problems
+    config.internet_path_ext_delay = 15
+    config.internet_path_ext_2_delay = 15
+    config.internet_path_local_delay = 3
+    config.internet_path_local_2_delay = 3
+    config.internet_path_turn_delay = 1
+    config.wifi_direct_path_delay = 5
+    
+    return config
+
+def test_wifi_path_delay_ratio(args):
+    """
+    Creating a configuration to test the ratio at which the NAT
+    traversal fails due to timing issues
+    """
+    
+    args.setup = "single+internet"
+    args.test = "quicheperf"
     args.logging = 3
     args.debug = False
     args.disable_turn = False
@@ -489,9 +544,15 @@ def test_failure_nat_webrtc_example(args):
 
     config = TestConfiguration(args)
     # This should create enough delay to show the wrong NAT behavior
-    config.internet_path_ext_delay = 5
-    config.internet_path_local_delay = 50
-
+    config.internet_path_ext_delay = 10
+    config.internet_path_ext_2_delay = 10
+    config.internet_path_local_delay = 5
+    config.internet_path_local_2_delay = 5
+    config.internet_path_turn_delay = 1
+    # If the synchronization path is >= than the path Host->NAT it breaks
+    # Roughly >2:3 in length but more important for faster paths
+    config.wifi_direct_path_delay = 20
+    
     return config
 
 def main():
@@ -514,11 +575,23 @@ def main():
     parser.add_argument('--logging', type=int, default=3)
     parser.add_argument('--build-target', type=str, default="debug")
     parser.add_argument('--throughput', type=str, default="10MB")
+    parser.add_argument('--scenario', type=str)
     args = parser.parse_args()
 
-    # test_conf = test_failure_nat_webrtc_example(args)
-    test_conf = TestConfiguration(args)
-
+    if args.scenario is None:
+        test_conf = TestConfiguration(args)
+    else:
+        match args.scenario:
+            case "nat_fail":
+                test_conf = test_failure_nat_webrtc_example(args)
+            case "default":
+                test_conf = test_correct_nat_delay(args)
+            case "delay_wifi":
+                test_conf = test_wifi_path_delay_ratio(args)
+            case _:
+                print(f"Incorrect scenario '{args.scenario}' given")
+                exit(1)
+                                
     net = create_test_scenario(test_conf)
     start_test(net, test_conf)
 

@@ -10,6 +10,7 @@
 
 from config import Logging
 from measurement_util import wait, path_loss, iface_down, iface_up
+from mininet.net import CLI
 
 import subprocess
 
@@ -40,7 +41,7 @@ def quicheperf(net, directory, conf):
 
     # print("Executing: {}".format(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true"))
 
-    ip_storage = iface_down(net, "h1", "h1-eth", directory)
+    # ip_storage = iface_down(net, "h1", "h1-eth", directory)
 
     if conf.log_level.value > Logging.INFO.value:
         server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
@@ -63,10 +64,10 @@ def quicheperf(net, directory, conf):
 
     # Configure waiting etc. here
 
-    wait()
-    # path_loss(net, "h1", "h1-wifi")
-    ip_storage = iface_up(net, "h1", "h1-eth", directory, ip_storage)
     wait(10)
+    # path_loss(net, "h1", "h1-wifi")
+    # ip_storage = iface_up(net, "h1", "h1-eth", directory, ip_storage)
+    # wait(10)
     # path_loss(net, "h1", "h1-wifi", loss=0)
     # wait()
     # Setting the interface down, etc.
@@ -74,3 +75,34 @@ def quicheperf(net, directory, conf):
     # Finished testing
 
     return output_processes
+
+def start_ping_pong(net, directory, conf):
+    """
+    Starting the WebRTC Ping Pong example which acts as a baseline
+    to debug and check what features are missing.
+    """
+
+    h1 = net.get("h1")
+    h2 = net.get("h2")
+
+    target = conf.build_target
+
+    server = h2.popen(f"{code_dir}/webrtc_unmod/target/{target}/examples/ping_pong -c 192.168.1.2 -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    client = h1.popen(f"{code_dir}/webrtc_unmod/target/{target}/examples/ping_pong -c 192.168.1.3 --controlling -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+
+    wait(20)
+
+    server_capture = (server, f"{directory}/h2.log")
+    client_capture = (client, f"{directory}/h1.log")
+    captures = [server_capture, client_capture]
+    return captures
+
+def start_debug(net, directory, conf):
+    """
+    Starting the debug session with the CLI enabled to allow
+    for manual input.
+    """
+
+    CLI(net)
+
+    return []

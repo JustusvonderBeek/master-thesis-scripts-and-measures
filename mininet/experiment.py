@@ -3,7 +3,7 @@
 
 from config import Tests, Scenarios, Logging, TestConfiguration
 from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate
-from testing import quicheperf
+from testing import quicheperf, start_ping_pong, start_debug
 from mininet.cli import CLI
 from pathlib import Path
 
@@ -29,9 +29,9 @@ def start_test(net, conf: TestConfiguration):
         case Tests.QUICHEPERF:
             test_function = quicheperf
         case Tests.PING_PONG:
-            test_function = _start_ping_pong
+            test_function = start_ping_pong
         case Tests.DEBUG:
-            test_function = _start_debug
+            test_function = start_debug
         case _:
             print("No correct test given, exiting...")
             return
@@ -210,32 +210,3 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
     print_routing_table(net, test_dir)
 
     change_rights_test_folder(test_dir)
-
-def _start_ping_pong(net, directory, conf):
-    """
-    Starting the WebRTC Ping Pong example which acts as a baseline
-    to debug and check what features are missing.
-    """
-
-    h1 = net.get("h1")
-    h2 = net.get("h2")
-
-    target = conf.build_target
-
-    server = h2.popen(f"{code_dir}/webrtc_unmod/target/{target}/examples/ping_pong -c 192.168.1.2 -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    client = h1.popen(f"{code_dir}/webrtc_unmod/target/{target}/examples/ping_pong -c 192.168.1.3 --controlling -p", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-
-    server_capture = (server, f"{directory}/h2.log")
-    client_capture = (client, f"{directory}/h1.log")
-    captures = [server_capture, client_capture]
-    return captures
-
-def _start_debug(net, directory, conf):
-    """
-    Starting the debug session with the CLI enabled to allow
-    for manual input.
-    """
-
-    CLI(net)
-
-    return []
