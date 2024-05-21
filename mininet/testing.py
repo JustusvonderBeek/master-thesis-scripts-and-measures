@@ -9,7 +9,7 @@
 # by the wrapper function
 
 from config import Logging
-from measurement_util import wait, path_loss, iface_down, iface_up
+from measurement_util import wait, path_loss, iface_down, iface_up, set_conntrack_timeout, print_nat_table, remove_conntrack_entry
 from mininet.net import CLI
 
 import subprocess
@@ -127,6 +127,8 @@ def quicheperf_path_loss_test(net, directory, conf):
     tp = conf.throughput
     output_processes = []
 
+    set_conntrack_timeout(net, "nat3", timeout=25)
+
     if conf.log_level.value > Logging.INFO.value:
         server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
 
@@ -149,18 +151,21 @@ def quicheperf_path_loss_test(net, directory, conf):
     # Waiting long enough so that at least one path has been found
     wait(5)
     # Now lose all packets at the NAT
-    path_loss(net, "nat3", "nat3-local")
-    path_loss(net, "nat3", "nat3-ext")
+    path_loss(net, "nat3", "nat3-local", loss=100)
+    path_loss(net, "nat3", "nat3-ext", loss=100)
     # Wait for all bindings to timeout
     # See: https://unix.stackexchange.com/questions/524295/how-long-does-conntrack-remember-a-connection
-    # Modified to 30s for this test with
-    # sudo sysctl -w net.netfilter.nf_conntrack_udp_timeout_stream=30
+    # Modified to 25s for this test with (TODO: Doesn't work at the moment)
     wait(35)
+    # Helping the timeout and remove the established path (in case any was established)
+    remove_conntrack_entry(net, "nat3", "-u ASSURED")
+    print_nat_table(net, "nat3", outpath=directory, outfile="nat3_temp_nat.log")
     # Restore the path and allow for packets to flow
     path_loss(net, "nat3", "nat3-local", loss=0)
     path_loss(net, "nat3", "nat3-ext", loss=0)
     # Give enough time to restart and find the path
     wait(15)
+    set_conntrack_timeout(net, "nat3", timeout=120)
 
     # Finished testing
     return output_processes
