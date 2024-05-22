@@ -30,7 +30,8 @@ class TestConfiguration:
 
     # Path delays
     wifi_direct_path_delay: int = 6
-    local_network_path_delay: int = 5
+    local_network_path_delay: int = 3
+    local_network_path_ext_delay: int = 6
     internet_path_local_delay: int = 2
     # For the right path (h2 <-> nat2)
     internet_path_local_2_delay: int = 2

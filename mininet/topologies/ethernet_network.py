@@ -53,7 +53,7 @@ class Ethernet:
         """
 
         net.addLink(node1="h1", node2="nat3", intfName1="h1-eth", intfName2="nat3-local", params1={"ip": "172.16.1.10/24"},  params2={"ip":"172.16.1.1/24"}, delay=f"{configuration.local_network_path_delay}ms")
-        net.addLink(node1="h2", node2="nat3", intfName1="h2-eth", intfName2="nat3-ext", params1={"ip": "172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay=f"{configuration.local_network_path_delay}ms")
+        net.addLink(node1="h2", node2="nat3", intfName1="h2-eth", intfName2="nat3-ext", params1={"ip": "172.16.2.20/24"}, params2={"ip":"172.16.2.1/24"}, delay=f"{configuration.local_network_path_ext_delay}ms")
 
 
     @staticmethod
