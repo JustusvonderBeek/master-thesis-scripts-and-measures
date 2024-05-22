@@ -1,0 +1,14 @@
+{
+    "server": {
+        "listen_addr" : "192.168.1.10:10000",
+        "certificate" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.crt",
+        "key" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.key",
+        "flags" : "--mp true"
+    },
+    "client": {
+        "listen_addr" : "192.168.1.20:20000",
+        "duration" : 100,
+        "bandwidth": "10MB",
+        "flags" : "--mp true"
+    }
+}
