@@ -13,8 +13,9 @@ listen_addr=$(echo $server_conf | jq -r '.listen_addr')
 certificate=$(echo $server_conf | jq -r '.certificate')
 key=$(echo $server_conf | jq -r '.key')
 flags=$(echo $server_conf | jq -r '.flags')
+stun=$(echo $server_conf | jq -r '.stun-url')
 
-cmd="${quicheperf_dir}quicheperf server --cert ${certificate} --key ${key} -l ${listen_addr} ${flags}"
+cmd="${quicheperf_dir}quicheperf server --cert ${certificate} --key ${key} -l ${listen_addr} ${flags} --stun-url ${stun}"
 
 $cmd
 
