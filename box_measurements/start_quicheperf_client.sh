@@ -15,9 +15,9 @@ listen_addr=$(echo $client_conf | jq -r '.listen_addr')
 duration=$(echo $client_conf | jq -r '.duration')
 bandwidth=$(echo $client_conf | jq -r '.bandwidth')
 flags=$(echo $client_conf | jq -r '.flags')
-stun=$(echo $client_conf | jq -r '.stun-url')
+stun=$(echo $client_conf | jq -r '.stun_url')
 
-cmd="${quicheperf_dir}quicheperf client -l ${listen_addr} -c ${connect_addr} ${flags} -d ${duration} -b ${bandwidth} --stun-url ${stun}"
+cmd="${quicheperf_dir}quicheperf client -l ${listen_addr} -c ${connect_addr} ${flags} -d ${duration} -b ${bandwidth} --stun-urls ${stun}"
 
 echo "Would execute: $cmd"
 $cmd
