@@ -155,7 +155,7 @@ def quicheperf_path_loss_test(net, directory, conf):
     path_loss(net, "nat3", "nat3-ext", loss=100)
     # Wait for all bindings to timeout
     # See: https://unix.stackexchange.com/questions/524295/how-long-does-conntrack-remember-a-connection
-    # Modified to 25s for this test with (TODO: Doesn't work at the moment)
+    # Modified to 25s for this test with (TODO: Doesn't work at the moment, remove manual)
     wait(35)
     # Helping the timeout and remove the established path (in case any was established)
     remove_conntrack_entry(net, "nat3", "-u ASSURED")
@@ -164,11 +164,12 @@ def quicheperf_path_loss_test(net, directory, conf):
     path_loss(net, "nat3", "nat3-local", loss=0)
     path_loss(net, "nat3", "nat3-ext", loss=0)
     # Give enough time to restart and find the path
-    wait(15)
+    wait(20)
     set_conntrack_timeout(net, "nat3", timeout=120)
 
     # Finished testing
     return output_processes
+
 def start_ping_pong(net, directory, conf):
     """
     Starting the WebRTC Ping Pong example which acts as a baseline
