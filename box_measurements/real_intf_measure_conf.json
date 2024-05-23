@@ -4,13 +4,23 @@
         "certificate" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.crt",
         "key" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.key",
         "flags" : "--mp true",
-        "stun_url": "stun:stun.l.google.com:19302"
+        "stun_url": "stun:stun.l.google.com:19302",
+        "interfaces": [
+            "enx00e04c19aee4",
+            "wlp5s0"
+        ],
+        "log_level": "info"
     },
     "client": {
         "listen_addr" : "192.168.12.73:20000",
         "duration" : 100,
         "bandwidth": "10MB",
         "flags" : "--mp true",
-        "stun_url": "stun:stun.l.google.com:19302"
+        "stun_url": "stun:stun.l.google.com:19302",
+        "interfaces": [
+            "wlp0s20f3",
+            "enxaa8594406531"
+        ],
+        "log_level": "info"
     }
 }
