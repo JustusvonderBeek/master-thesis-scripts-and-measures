@@ -20,7 +20,7 @@ bandwidth=$(echo $client_conf | jq -r '.bandwidth')
 flags=$(echo $client_conf | jq -r '.flags')
 stun=$(echo $client_conf | jq -r '.stun_url')
 log_level=$(echo $client_conf | jq -r '.log_level')
-interfaces=$(echo $server_conf | jq -r '.interfaces[]')
+interfaces=$(echo $client_conf | jq -r '.interfaces[]')
 
 cmd="${quicheperf_dir}quicheperf client -l ${listen_addr} -c ${connect_addr} ${flags} -d ${duration} -b ${bandwidth} --stun-urls ${stun}"
 
@@ -40,7 +40,7 @@ done
 tshark_cmd="tshark $iface_string -w ${test_dir}/client.pcap"
 
 echo "Executing: $cmd"
-$(trap 'kill 0' SIGINT; export RUST_LOG="${log_level}"; $tshark_cmd & $cmd 2> "${test_dir}/client.log")
+$(trap 'kill 0' SIGINT; export RUST_LOG="${log_level}"; $tshark_cmd & $cmd > "${test_dir}/client_perf.log" 2> "${test_dir}/client.log")
 
 echo "Quicheperf server done"
 echo "Wrote logfiles and pcaps to '$test_dir'"
