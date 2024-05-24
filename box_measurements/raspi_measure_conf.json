@@ -11,14 +11,14 @@
         "log_level": "info"
     },
     "client": {
-        "listen_addr" : "10.183.107.146:20000",
+        "listen_addr" : "192.168.2.10:20000",
         "duration" : 100,
-        "bandwidth": "10MB",
+        "bandwidth": "1MB",
         "flags" : "--mp true",
         "stun_url": "stun:stun.l.google.com:19302",
         "interfaces": [
-            "wlp0s20f3",
-            "enx1a9ea8195491"
+            "wlp5s0",
+            "enx00e04c19aee4"
         ],
         "log_level": "info"
     }

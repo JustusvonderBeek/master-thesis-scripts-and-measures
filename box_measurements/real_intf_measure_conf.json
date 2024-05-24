@@ -14,7 +14,7 @@
     "client": {
         "listen_addr" : "192.168.12.73:20000",
         "duration" : 100,
-        "bandwidth": "10MB",
+        "bandwidth": "1MB",
         "flags" : "--mp true",
         "stun_url": "stun:stun.l.google.com:19302",
         "interfaces": [
