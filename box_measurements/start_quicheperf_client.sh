@@ -7,7 +7,8 @@ quicheperf_dir="/home/justus/Documents/Code/quicheperf-stun/target/debug/"
 output_dir="./measurements/RealLifeQuicheperf"
 # Read in configuration
 config_dir="./"
-config_file="real_intf_measure_conf.json"
+# config_file="real_intf_measure_conf.json"
+config_file="raspi_measure_conf.json"
 
 mkdir -p "$output_dir"
 
@@ -40,7 +41,7 @@ done
 tshark_cmd="tshark $iface_string -w ${test_dir}/client.pcap"
 
 echo "Executing: $cmd"
-$(trap 'kill 0' SIGINT; export RUST_LOG="${log_level}"; $tshark_cmd & $cmd > "${test_dir}/client_perf.log" 2> "${test_dir}/client.log")
+$(trap 'kill 0' SIGINT; export RUST_LOG="${log_level}"; $tshark_cmd & (sleep 1; $cmd > "${test_dir}/client_perf.log" 2> "${test_dir}/client.log"))
 
 echo "Quicheperf server done"
 echo "Wrote logfiles and pcaps to '$test_dir'"
