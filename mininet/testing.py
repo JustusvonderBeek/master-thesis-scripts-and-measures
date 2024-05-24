@@ -151,21 +151,22 @@ def quicheperf_path_loss_test(net, directory, conf):
     # Waiting long enough so that at least one path has been found
     wait(5)
     # Now lose all packets at the NAT
-    path_loss(net, "nat3", "nat3-local", loss=100)
-    path_loss(net, "nat3", "nat3-ext", loss=100)
+    nat_to_lose_packets="nat1"
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-local", loss=100)
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-ext", loss=100)
     # Wait for all bindings to timeout
     # See: https://unix.stackexchange.com/questions/524295/how-long-does-conntrack-remember-a-connection
     # Modified to 25s for this test with (TODO: Doesn't work at the moment, remove manual)
     wait(35)
     # Helping the timeout and remove the established path (in case any was established)
-    remove_conntrack_entry(net, "nat3", "-u ASSURED")
-    print_nat_table(net, "nat3", outpath=directory, outfile="nat3_temp_nat.log")
+    remove_conntrack_entry(net, f"{nat_to_lose_packets}", "-u ASSURED")
+    print_nat_table(net, f"{nat_to_lose_packets}", outpath=directory, outfile=f"{nat_to_lose_packets}_temp_nat.log")
     # Restore the path and allow for packets to flow
-    path_loss(net, "nat3", "nat3-local", loss=0)
-    path_loss(net, "nat3", "nat3-ext", loss=0)
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-local", loss=0)
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-ext", loss=0)
     # Give enough time to restart and find the path
     wait(20)
-    set_conntrack_timeout(net, "nat3", timeout=120)
+    set_conntrack_timeout(net, f"{nat_to_lose_packets}", timeout=120)
 
     # Finished testing
     return output_processes
