@@ -1,6 +1,6 @@
 {
     "server": {
-        "listen_addr" : "178.1.207.7:10000",
+        "listen_addr" : "172.16.1.10:10000",
         "certificate" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.crt",
         "key" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.key",
         "flags" : "--mp true",
@@ -13,7 +13,7 @@
     "client": {
         "listen_addr" : "10.183.107.146:20000",
         "duration" : 100,
-        "bandwidth": "10MB",
+        "bandwidth": "1MB",
         "flags" : "--mp true",
         "stun_url": "stun:stun.l.google.com:19302",
         "interfaces": [
