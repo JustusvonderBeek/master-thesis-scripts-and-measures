@@ -80,6 +80,55 @@ def quicheperf_if_test(net, directory, conf):
     tp = conf.throughput
     output_processes = []
 
+    # ip_storage = iface_down(net, "h1", "h1-eth", directory)
+    # Ensure interface is down
+    # wait(0.5)
+
+    if conf.log_level.value > Logging.INFO.value:
+        server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
+
+        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp} &> {testing_dir}/{directory}/h1.log", shell=True)
+
+        server_capture = (server, None)
+        client_capture = (client, None)
+        output_processes.append(server_capture)
+        output_processes.append(client_capture)
+    else:
+        server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+
+        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+        server_capture = (server, f"{directory}/h2.log")
+        client_capture = (client, f"{directory}/h1.log")
+        output_processes.append(server_capture)
+        output_processes.append(client_capture)
+
+    # Waiting long enough so that we establish some connection on both paths
+    wait(7)
+    # IFace down
+    ip_storage = iface_down(net, "h1", "h1-cellular", directory)
+    # Wait more than a single iteration before interface has connection again
+    wait(20)
+    
+    # Restore interface and IP, waiting for ICE to notice
+    ip_storage = iface_up(net, "h1", "h1-cellular", directory, ip_storage)
+    wait(20)
+
+    # Finished testing
+    return output_processes
+
+def quicheperf_if_init_test(net, directory, conf):
+    """
+    Testing the behavior of the implementation in case an interface goes up or down.
+    """
+
+    h1 = net.get("h1")
+    h2 = net.get("h2")
+
+    target = conf.build_target
+    tp = conf.throughput
+    output_processes = []
+
     ip_storage = iface_down(net, "h1", "h1-eth", directory)
     # Ensure interface is down
     wait(0.5)
@@ -104,13 +153,14 @@ def quicheperf_if_test(net, directory, conf):
         output_processes.append(client_capture)
 
     # Waiting long enough so that we don't match the re-gathering exactly
-    wait(12)
+    wait(15)
     # Restore interface and IP, waiting for ICE to notice
     ip_storage = iface_up(net, "h1", "h1-eth", directory, ip_storage)
-    wait(15)
+    wait(20)
 
     # Finished testing
     return output_processes
+
 
 def quicheperf_path_loss_test(net, directory, conf):
     """
