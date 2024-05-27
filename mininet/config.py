@@ -13,6 +13,7 @@ class Tests(Enum):
     DEBUG = 3
     QUICHEPERF_IF = 4
     QUICHEPERF_LOSS = 5
+    QUICHEPERF_IF_INIT = 6
 
 class Logging(Enum):
     NONE = 0
@@ -103,12 +104,15 @@ class TestConfiguration:
             case "ice_ping":
                 print(f"Starting the '{args.test}' scenario")
                 self.test = Tests.PING_PONG
-            case "quicheperf_if":
+            case "quicheperf_if_init":
                 print(f"Starting the '{args.test}' scenario")
-                self.test = Tests.QUICHEPERF_IF
+                self.test = Tests.QUICHEPERF_IF_INIT
             case "quicheperf_loss":
                 print(f"Starting the '{args.test}' scenario")
                 self.test = Tests.QUICHEPERF_LOSS
+            case "quicheperf_if":
+                print(f"Starting the '{args.test}' scenario")
+                self.test = Tests.QUICHEPERF_IF
             case _:
                 print(f"No test given, starting the 'debugging' scenario")
                 self.test = Tests.DEBUG

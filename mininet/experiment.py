@@ -3,7 +3,7 @@
 
 from config import Tests, Scenarios, Logging, TestConfiguration
 from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate, path_loss
-from testing import quicheperf, quicheperf_if_test, quicheperf_path_loss_test, start_ping_pong, start_debug
+from testing import quicheperf, quicheperf_if_test, quicheperf_if_init_test, quicheperf_path_loss_test, start_ping_pong, start_debug
 from mininet.cli import CLI
 from pathlib import Path
 
@@ -31,7 +31,9 @@ def start_test(net, conf: TestConfiguration):
         case Tests.PING_PONG:
             test_function = start_ping_pong
         case Tests.DEBUG:
-            test_function = _start_debug
+            test_function = start_debug
+        case Tests.QUICHEPERF_IF_INIT:
+            test_function = quicheperf_if_init_test
         case Tests.QUICHEPERF_IF:
             test_function = quicheperf_if_test
         case Tests.QUICHEPERF_LOSS:
