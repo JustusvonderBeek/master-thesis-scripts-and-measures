@@ -1,0 +1,18 @@
+{
+    "desktop": {
+        "ssh": "desktop",
+        "working_dir": "/home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/box_measurements/measurements/RealLifeQuicheperf"
+    },
+    "laptop": {
+        "ssh": "laptop",
+        "working_dir": "/home/justus/Documents/Code/2024-justus-von-der-beek-supplementary-material/box_measurements/measurements/RealLifeQuicheperf"
+    },
+    "aws": {
+        "ssh": "aws-master",
+        "working_dir": "/home/ubuntu/masterthesis-working-dir/box_measurements/measurements/RealLifeQuicheperf"
+    },
+    "raspberry": {
+        "ssh": "raspberry",
+        "working_dir": "/home/justusDocuments/Code/2024-justus-von-der-beek-supplementary-material/box_measurements/measurements/RealLifeQuicheperf"
+    }
+}
