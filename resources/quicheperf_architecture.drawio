@@ -1,0 +1,159 @@
+<mxfile host="app.diagrams.net" modified="2024-05-28T15:53:06.959Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0" etag="uVInc-uKodeTF34J75xr" version="24.4.8" type="device">
+  <diagram name="Page-1" id="0gJbcg0XPNFQ-sTSEnto">
+    <mxGraphModel dx="1689" dy="444" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-13" value="&lt;div&gt;Incoming&lt;/div&gt;&lt;div&gt;Packets&lt;br&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;fontStyle=1;fontSize=12;verticalAlign=bottom;endArrow=none;endFill=0;labelPosition=center;verticalLabelPosition=top;align=center;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-4">
+          <mxGeometry x="0.4867" relative="1" as="geometry">
+            <mxPoint x="414" y="190.5" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-64" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-4" target="5U8ytU4bZrLR5_oLVIPA-47">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="300" />
+              <mxPoint x="340" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-4" value="Handle&lt;br&gt;&lt;div&gt;Interface(s)&lt;/div&gt;&lt;div&gt;(read, write)&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="240" y="160.5" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-20" value="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="310" y="126.5" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-21" value="QUICHEPERF" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#666666;fillColor=#f5f5f5;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="5" y="80" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-26" value="STUN" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;verticalAlign=middle;horizontal=1;fontSize=12;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-38" target="5U8ytU4bZrLR5_oLVIPA-24">
+          <mxGeometry x="0.322" relative="1" as="geometry">
+            <mxPoint x="89.99999999999977" y="207" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="65" y="260" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-29" value="QUIC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-38" target="5U8ytU4bZrLR5_oLVIPA-28">
+          <mxGeometry x="-0.1993" relative="1" as="geometry">
+            <mxPoint x="-30" y="200" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="10" y="190" />
+              <mxPoint x="10" y="190" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-22" value="&lt;div&gt;De-multiplex&lt;/div&gt;&lt;div&gt;ingress packets&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="120" y="160.5" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-23" value="2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="205" y="126.5" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-24" value="Response to ICE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="230" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-28" value="Response to QUIC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#A9C4EB;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="160.5" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-31" value="Response from QUIC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#A9C4EB;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="323" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-33" value="6" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry y="380" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-39" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-22" target="5U8ytU4bZrLR5_oLVIPA-38">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="190.5" as="sourcePoint" />
+            <mxPoint x="120" y="456.5" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-38" value="Type" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="164" width="50" height="53" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-60" value="Manage sockets" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;verticalAlign=bottom;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-41" target="5U8ytU4bZrLR5_oLVIPA-51">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-41" value="Binding from ICE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-44" value="Schedule to send" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;verticalAlign=bottom;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-42" target="5U8ytU4bZrLR5_oLVIPA-4">
+          <mxGeometry x="-0.3632" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="413" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-42" value="&lt;div&gt;Relay STUN&lt;/div&gt;&lt;div&gt;&amp;nbsp;from ICE&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="383" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-43" target="5U8ytU4bZrLR5_oLVIPA-46">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-43" value="&lt;div&gt;NominatedPair&lt;/div&gt;&lt;div&gt;from ICE&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" vertex="1" parent="1">
+          <mxGeometry x="-130" y="530" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-36" value="&lt;div style=&quot;font-size: 12px;&quot;&gt;Schedule to send&lt;br style=&quot;font-size: 12px;&quot;&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelPosition=center;verticalLabelPosition=middle;align=center;verticalAlign=bottom;fontSize=12;horizontal=1;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-31" target="5U8ytU4bZrLR5_oLVIPA-4">
+          <mxGeometry x="-0.2719" relative="1" as="geometry">
+            <mxPoint x="220" y="364" as="sourcePoint" />
+            <mxPoint x="300" y="314" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="260" y="350" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-46" value="&lt;div&gt;Add new path&lt;/div&gt;&lt;div&gt;to QUIC&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="150" y="530" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-47" value="&lt;div&gt;Remove path&lt;/div&gt;&lt;div&gt;from QUIC&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="280" y="530" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-51" target="5U8ytU4bZrLR5_oLVIPA-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="340" />
+              <mxPoint x="300" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-51" value="&lt;div&gt;Add new&lt;/div&gt;&lt;div&gt;socket&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="200" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-55" value="4" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="70" y="230" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-56" value="8" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry y="520" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-57" value="3" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="20" y="150" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-58" value="9" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="260" y="420" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-59" value="5" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry y="310" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-61" value="7" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry y="450" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-62" value="QUIC" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#666666;fillColor=#A9C4EB;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="125" y="80" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-63" value="ICE AGENT" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#314354;fillColor=#647687;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="190" y="80" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5U8ytU4bZrLR5_oLVIPA-65" value="10" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="350" y="230" width="30" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
