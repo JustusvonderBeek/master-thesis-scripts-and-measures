@@ -1,0 +1,30 @@
+STUN related:
+- Why is de-multiplexing necessary
+- Because we receive more than only a single protocol on one socket
+- How do we de-multiplex
+- Currently on the second-highest bit in the first byte
+- Reason why we decided against multiplexing on STUN magic cookie
+- Why don't we use the STUN inside of QUIC
+- Currently only a draft, already changed quit significantly during the thesis
+- Additional security through 0RTT minimized, otherwise add. RTT
+- Observer can also observe infos by looking at packeet
+- Not supported in public STUN/TURN servers
+ICE related:
+- Cannot start a completely new connection
+- External signalling channel is missing, only minor drawback
+- We did not change the number of probes sent, decrease restart on failure
+- Keep it general purpose
+- How do we resolve the roles in ICE
+- Automatically assigned by the roles of our connection
+- 
+QUIC related:
+- We need to communicate excluding existing paths, otherwise probed twice
+- How to manage the ICE implementation?
+- Restarting after pre-defined time or error
+- Forward the ICE TURN packets
+- Relay received TURN packets to ICE
+- Talk about alternative, implementation directly in QUIC
+- Added synchronization, better results when not synchronized, implementation issue because ICE agent doesn't support restart
+- When and what does the ICE agent tell us?
+- What do we tell the ICE agent?
+- What timeouts did we add? How did we choose them?
