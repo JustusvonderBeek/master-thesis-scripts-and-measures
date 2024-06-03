@@ -1,0 +1,11 @@
+# Binding packet
+Binding (0xBB):8,Src. IP:32,Src. Port:16
+
+# The binding confirm packet
+Confirm (0xBC):8
+
+# The send relay
+Relay (0xAA):8,Src. IP:32,Src. Port:16,Dst. IP:32,Dst. Port:16,PDU (STUN):24
+
+# The send relay response
+Relay (0xCC):8,Src. IP:32,Src. Port:16,Dst. IP:32,Dst. Port:16,PDU (STUN):24
