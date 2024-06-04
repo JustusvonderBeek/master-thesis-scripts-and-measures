@@ -15,7 +15,26 @@ nmcli -m 0 connection wwan0 up "Drillisch"
 ## Test Overview
 The following section contains information regarding the devices, interfaces & configurations used for testing.
 
-| Test | Devices | Direction | Description | Notes | 
-| --- | --- | --- | --- | --- |
-| 24.05 18:32 | RaspberryPi, Computer | PC -> Pi | 20000:10000 initial communication, allowed through FW, everything else normal | Failed with FW answer ICMP admin. filtered |
-| TODO | TODO | TODO | TODO | TODO |
+| Application Tested | When | Devices | Software | Accounts | Tests |
+| --- | --- | --- | --- | --- | --- |
+| WhatsApp | 04.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Different Access Technologies (WiFi, WiFi & Cellular, Cellular); Path Migration; Path Finding |
+| --- | --- | --- | --- | --- | --- |
+
+
+| Test | Devices | Direction | Connectivity | Description | Duration | Notes | 
+| --- | --- | --- | --- | --- | --- | --- |
+| 24.05 18:32 | RaspberryPi, Computer | PC -> Pi | PC: WiFi + LAN, Pi: LAN | 20000:10000 initial communication, allowed through FW, everything else normal | --- | Failed with FW answer ICMP admin. filtered |
+| --- | --- | --- | --- | --- | --- | --- |
+| 04.06 11:12 | I11CM0093 & I11CM0095 | Test Acc. -> Personal Acc. | Both: WiFi (Adapter with Internet) + Cellular | Video Call, Path building: start call next to each other, wait for connection, accept, idle, end call. | 30s after call accept | Should check for path building, idle pings, if both paths can be found |
+| 04.06 11:14 | I11CM0093 & I11CM0095 | Test Acc. -> Personal Acc. | Both: WiFi (Adapter with Internet) + Cellular | Audio Call, Path building: start call next to each other, wait for connection, accept, idle, end call. | 30s after call accept | Should check for path building, idle pings, if both paths can be found |
+| 04.06 11:17 | I11CM0093 & I11CM0095 | Test Acc. -> Personal Acc. | Both: WiFi (Adapter with Internet) + Cellular | Video Call, Path building: start call next to each other, wait for connection, accept, idle, end call. | 30s after call accept | Should check for path building, idle pings, if both paths can be found |
+| 04.06 11:19 | I11CM0093 & I11CM0095 | Test Acc. -> Personal Acc. | Both: WiFi (Adapter with Internet) + Cellular | Video Call, Path building: start call next to each other, wait for connection, accept, idle, end call. | 30s after call accept | Should check for path building, idle pings, if both paths can be found |
+
+## Analysis
+This section contains the conclusions and analysis of our testing for the different apps.
+
+| Application | Tests Considered | Behavior | Conclusion |
+| --- | --- | --- | --- |
+| WhatsApp | 24.05 11:12-11:19 | Path Probing | Is performed? |
+
+| --- | --- | --- | --- |
