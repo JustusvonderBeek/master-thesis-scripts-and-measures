@@ -33,8 +33,55 @@ The following section contains information regarding the devices, interfaces & c
 ## Analysis
 This section contains the conclusions and analysis of our testing for the different apps.
 
-| Application | Tests Considered | Behavior | Conclusion |
-| --- | --- | --- | --- |
-| WhatsApp | 24.05 11:12-11:19 | Path Probing | Is performed? |
+| Application | Tests Considered | Behavior | Conclusion | Special Attributes |
+| --- | --- | --- | --- | --- |
+| WhatsApp | 24.05 11:12-11:19 | WiFi Path Probing | Performed for Local WiFi (direct path + TURN server) | TURN server unknown **attributes** (allocation, probably mapping WA call), Local WiFi plain STUN request (0x0001; 0x0101) without ANY **attributes** besides integrity
+| WhatsApp | 24.05 11:12-11:19 | Cellular Path Probing | Not probed, no path build | --- |
+| WhatsApp | 24.05 11:12-11:19 | Path Building Time | TURN server path | Build for initial exchange: <100ms |
+| WhatsApp | 24.05 11:12-11:19 | Path Building Time | Local WiFi path | ~400ms after call started  | --- |
+| WhatsApp | 24.05 11:12-11:19 | Idle Path Maintenance | Actively probed with STUN every ~1s (TURN server path) | **Message type** 0x0801 (unknown) from client, **message type** 0x0802 (unknown) from server |
+| WhatsApp | 24.05 11:12-11:19 | Active Path Maintenance | Half as frequently probed. First probe after 15.4s, then every 2s | Callee makes binding request **message type** (0x0001), Priority **attribute** set to 1, caller replies binding success (0x0101) and same priority |
+| --- | --- | --- | --- | --- |
 
-| --- | --- | --- | --- |
+### General Flow
+The default flow of WhatsApp Video Calls.
+
+Both in the same local WiFi AP
+
+Caller:
+1. TCP connection to WhatsApp (XMPP ports)
+2. Probably SIP or other protocol to exchange call information via TCP
+3. Reserve resources on Facebook TURN servers
+4. Success responses from the TURN servers
+5. First data is transferred via TURN servers
+6. Accept and return STUN Binding request (Binding Success, Binding request)
+7. Exchange data via local WiFi AP
+8. Sometimes exchange with Facebook TURN via TCP
+9. Ending call
+10. ICMP unreachable received
+11. De-allocate STUN bindings on servers
+
+Callee:
+1. TCP Connection to WhatsApp (XMPP ports)
+2. Receive call information via TCP
+3. Reserve resources on Facebook TURN servers
+4. Success responses from the TURN servers
+5. First data is transferred via TURN servers
+6. Send Local STUN Binding request
+7. Exchange data via local WiFi AP
+8. Sometimes exchange with Facebook TURN via TCP
+9. Ending call
+10. ICMP unreachable received
+11. De-allocate STUN bindings on servers
+
+
+### Notes
+During the analysis the following interesting information were found:
+
+- WhatsApp uses an unknown STUN attribute 0x4000. This attribute is in the range of non-optional attributes, but must not be registered by the IETF, rather by expert review (aka. should not be assigned by others). The purpose of this attribute is unclear
+- 0x4000 is send at the beginning and end of the call, probably free the allocations, including a 150 byte identifier?
+- Further attributes 0x4002, 0x4004, 0x4007 are observed but unclear what they mean
+- 0x4002 is 8 bytes and corresponds with the TURN server address, for the same server it is the same in the response
+- 0x4004 is padding of 452 bytes 0?
+- 0x4007 is 2 bytes and in our case **always** 01f4 == 500
+
