@@ -20,7 +20,7 @@ fi
 
 echo "Pulling pcap to $outputPath"
 
-adb -s $device pull ${pcapFolder}${filename} "$outputPath/${device}_${filename}"
+adb -s $device pull ${pcapFolder}${filename} "$outputPath/${filename}"
 
 # Remove file after pulling successful
 if [[ -f "$outputPath/${device}_${filename}" ]]; then
