@@ -28,6 +28,9 @@ test_kill() {
     adb -s $insideBox shell ip a > "$localPcapFilePath/${insideBoxHumanRead}_ips.txt"
     adb -s $outsideBox shell ip a > "$localPcapFilePath/${outsideBoxHumanRead}_ips.txt"
 
+    ./filter_pcap.sh "${localPcapFilePath}/$in_filename"
+    ./filter_pcap.sh "${localPcapFilePath}/$out_filename"
+
     echo "Android nearby share test ended"
 }
 
