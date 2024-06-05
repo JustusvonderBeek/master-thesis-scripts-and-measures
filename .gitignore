@@ -10,3 +10,10 @@
 # Ignore testing code
 # r2m2p2/
 r2m2p2_go/
+
+# Ignore whatsapp interface printouts
+*_ips.txt
+
+# Ignore fcc unlock executable
+
+*fcc_unlock
