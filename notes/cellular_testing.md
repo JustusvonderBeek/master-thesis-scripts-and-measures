@@ -19,14 +19,53 @@ The following section contains information regarding the devices, interfaces & c
 | --- | --- | --- | --- | --- | --- | --- |
 | WhatsApp | 04.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Different Access Technologies (WiFi, WiFi & Cellular, Cellular); Path Building; Path Migration; Path Finding |
 | WhatsApp | 05.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | WiFi & Cellular: Path Migration |
-| NearbyShare | 05.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | QuickShare ?; Play Store: 41.2.21-29 & 41.2.21-29 Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Default Behavior (With WiFi, Without WiFi) |
-| NearbyShare | 06.06.2024 | Motorola G54 5G; 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | QuickShare ?; Files: ; Play Store: 41.2.21-31 & 41.2.21-29 & 41.2.21-29; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & My Google Account & MT Google Account | Sharing small files, sharing between own devices (only single device captured) |
+| QuickShare | 05.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | QuickShare ?; Play Store: 41.2.21-29 & 41.2.21-29 Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Default Behavior (With WiFi, Without WiFi) |
+| QuickShare | 06.06.2024 | Motorola G54 5G; 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | QuickShare ?; Files: ; Play Store: 41.2.21-31 & 41.2.21-29 & 41.2.21-29; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & My Google Account & MT Google Account | Sharing small files, sharing between own devices (only single device captured) |
+| ICE Prototype | 06.06.2024 | Laptop & Desktop | Laptop: sim.de (carrier was o2) & Desktop: Telekom (via Tethering from Pixel 2 Test Account) | quicheperf commit 9084207d | Laptop: Client & Desktop: Server | Testing connection building, local path via LAN is initial one, cellular should be build |
 | --- | --- | --- | --- | --- | --- |
+
+# ICE Prototype
+Test Notes:
+
+| Time | Test | Devices | Direction | Connectivity | Data Size | Status | Test Description | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 06.06 11:30 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Start on local path, search for path on cellular | Ethernet Path prio is too high, all probes are sent on the ethernet path |
+| 06.06 11:46 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Start on local path, search for path on cellular | STUN now observed outgoing on both cellular paths, but never observed incoming on cellular paths |
+| 06.06 11:59 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Start on local path, search for path on cellular | Same problem with metric as before |
+| 06.06 12:05 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Start on local path, search for path on cellular |  |
+| 06.06 12:09 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Start on local path, search for path on cellular | Again not found |
+| 06.06 12:12 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + WiFi (HHG) (tethered) | Duration max. 100s | Failure | Start on local path, search for path on cellular | Again not found |
+| 06.06 14:07 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm before | Both Cellular STUN probes do not reach the other endpoint |
+| 06.06 14:15 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + WiFi (HHG) (tethered) | Duration max. 100s | Failure | Confirm o2 blocking STUN | Using Ethernet route instead of handy, might block incoming STUN |
+| 06.06 14:21 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + WiFi (HHG) (tethered) | Duration max. 100s | Failure | Confirm o2 blocking STUN | Confirmed before with correct routes |
+| 06.06 14:27 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + WiFi (HHG) & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm Telekom blocking STUN | --- |
+| 06.06 14:30 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + WiFi (HHG) & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm Telekom blocking STUN | Confirmed before |
+| 06.06 14:45 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses, problems with route again |
+| 06.06 14:50 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses |
+| 06.06 14:58 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses, overwrite 2 bytes of magic cookie |
+| 06.06 15:19 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular & Desktop: Ethernet LAN + WiFi (HHG) (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses, overwrite 2 bytes of magic cookie |
+| 06.06 15:32 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + WiFi (HHG) & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Default STUN behavior, blocked |
+| 06.06 15:43 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + WiFi (HHG) & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses, overwrite 2 bytes of magic cookie to confirm STUN blocked |
+| 06.06 15:52 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular (HHG) & Desktop: Ethernet LAN + WiFi (HHG) (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses, overwrite 2 bytes of magic cookie to confirm STUN blocked |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+## Analysis
+The analysis for the ICE prototype.
+
+| Tests Considered | Status | Characteristics Analyzed | Findings | Notes |
+| --- | --- | --- | --- | --- |
+| 06.06 11:30 | Failure | Path Probing | Ethernet Priority is too high, all STUN probings are sent on the ethernet path with Cellular never found | For next tests reduce ethernet path prio below cellular prio |
+| 06.06 11:46-14:07 | Failure | Path Probing | STUN probes sent on cellular path but never received on cellular path | Carriers might block STUN IPv4? |
+| 06.06 14:15-14:21 | Failure | Path Probing | Confirmed o2 STUN not arriving | Carriers blocks STUN IPv4? |
+| 06.06 14:27-14:30 | Failure | Path Probing | Confirmed Telekom STUN not arriving | Carriers blocks STUN IPv4? |
+| 06.06 14:45-15:52 | Failure | Confirm STUN blocked | With STUN or random UDP still blocked, even if only a single side is behind carrier | Carrier blocks IPv4 P2P |
+| --- | --- | --- | --- | --- |
+
 
 # QuickShare
 Test Notes:
 - Location enabled on all devices in every test
-- 
+- Configuration options regarding Cellular are removed
 
 | Time | Test | Devices | Direction | Connectivity | Data Size | Status | Test Description | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
