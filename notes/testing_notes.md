@@ -26,9 +26,9 @@ This file contains a mapping of file name to test
 | gerät_18_01_11_46 | Verbindungsabbruch nach ~3s, Versuche über AWDL, 8s Migration, not seamless | IPhone > IPad |
 | gerät_18_01_11_48 | Verbindungsabbruch nach ~3s | IPhone > IPad |
 | gerät_18_01_11_52 | Verbindungsabbruch nach ~3s | IPhone > IPad |
-| gerät_18_01_11_54 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, Beispiel für keine Migration zurück, TCP fliegt auf AWDL nachdem die Türe aufgeht | IPhone > IPad |
-| gerät_18_01_11_57 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s | IPhone > IPad |
-| gerät_18_01_12_00 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s | IPhone > IPad |
+| gerät_18_01_11_54 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, Beispiel für keine Migration zurück, TCP fliegt auf AWDL nachdem die Türe aufgeht, es wird nach dem Start kein zweiter (neuer) Pfad gebaut solange die Verbindung stabil ist | IPhone > IPad |
+| gerät_18_01_11_57 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, QUIC auf AWDL überlebt die 20s sogar, aber wird trotzdem nicht mehr genutzt und abgebaut | IPhone > IPad |
+| gerät_18_01_12_00 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, garkeine Verbindung auf AWDL gebaut wahrscheinlich die Tür also zu früh zu | IPhone > IPad |
 | gerät_18_01_12_02 | Verbindungsabbruch nach ~3s, Tür offen nach ~30s (weil davor kein traffic) | IPhone > IPad |
 | gerät_18_01_12_12 | Normal, Kein Internet | IPhone > IPad |
 | gerät_18_01_12_13 | Normal, Kein Internet | IPhone > IPad |
@@ -54,7 +54,7 @@ This file contains a mapping of file name to test
 | Nochmal iOS | IPad im Bayern WLAN | iPhone > iPad |
 | gerät_18_01_15_16 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN) | iPhone > iPad |
 | gerät_18_01_15_25 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. | iPad > iPhone |
-| gerät_18_01_15_28 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. | iPad > iPhone |
+| gerät_18_01_15_28 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. Wirklich abbruch? einziger test mit QUIC und unterschiedlichem WLAN | iPad > iPhone |
 | ipad_iphone_cellular_close_far_close | Verbindungsabbruch nach 20s (30s im capture), iPhone hat Cellular, Telefonica, iPad im WiFi; ABER: war das iPhone im Wifi? Müsste man testen... | iPad > iPhone |
 
 ## AirDrop Verhalten
@@ -94,7 +94,7 @@ Die folgende Tabelle beinhaltet alle Beobachtungen über NearbyShare die wir bis
 | QUIC | Ebenfalls nur via Google | Austausch von Audio? |
 | RTCP | ... | ... |
 
-## Apple FaiceTime Verhalten
+## Apple FaceTime Verhalten
 Beide Geräte waren im selben WiFi Hotspot. Das iPad hat einen Anruf an das iPhone gestartet. Offiziell verwendet FaceTime eigentlich auch WebRTC, denn die rechtlichen Informationen auf der Website beinhalten diese Informationen: https://www.apple.com/de/legal/privacy/data/de/face-time/
 
 | Dateiname | Test | Richtung |
