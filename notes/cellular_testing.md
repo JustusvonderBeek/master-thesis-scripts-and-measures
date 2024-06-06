@@ -17,8 +17,89 @@ The following section contains information regarding the devices, interfaces & c
 
 | Application Tested | When | Devices | SIM Card | Software | Accounts | Tests |
 | --- | --- | --- | --- | --- | --- | --- |
-| WhatsApp | 04.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Different Access Technologies (WiFi, WiFi & Cellular, Cellular); Path Migration; Path Finding |
+| WhatsApp | 04.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Different Access Technologies (WiFi, WiFi & Cellular, Cellular); Path Building; Path Migration; Path Finding |
+| WhatsApp | 05.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | WiFi & Cellular: Path Migration |
+| NearbyShare | 05.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | QuickShare ?; Play Store: 41.2.21-29 & 41.2.21-29 Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Default Behavior (With WiFi, Without WiFi) |
+| NearbyShare | 06.06.2024 | Motorola G54 5G; 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | QuickShare ?; Files: ; Play Store: 41.2.21-31 & 41.2.21-29 & 41.2.21-29; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & My Google Account & MT Google Account | Sharing small files, sharing between own devices (only single device captured) |
 | --- | --- | --- | --- | --- | --- |
+
+# QuickShare
+Test Notes:
+- Location enabled on all devices in every test
+- 
+
+| Time | Test | Devices | Direction | Connectivity | Data Size | Status | Test Description | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 05.06 10:35 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Both WiFi (HHG) + Bluetooth + Cellular | 35MB | Failed | Enabled Bluetooth, **Visibility contacts**, Start Transfer, Timeout, Failed but TCP was gracefully finished? | Devices are directly next to each other and no changes to the network were done |
+| 05.06 10:46 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Both WiFi (Local AP \w Internet) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer | Devices are directly next to each other and no changes to the network were done |
+| 05.06 12:10 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Both WiFi (Local AP \w Internet) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer | Devices are directly next to each other and no changes to the network were done |
+| 05.06 15:16 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Both WiFi (Local AP \w Internet) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other | ~7000 and ~3000 packets dropped by kernel? |
+| 05.06 15:21 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Both WiFi (Local AP \w Internet) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other | Less loss, File deleted before transfer |
+| 05.06 15:27 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Both WiFi (HHG) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other | No TCP start exchange seen? No ICMP Pings before transfer |
+| 05.06 15:58 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Both WiFi (HHG) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other | Slower than usual, interrupted in transfer shortly (without changes in test config) |
+| 05.06 16:28 | QuickShare \wo WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other | QuickShare asks for WiFi enabled on sender, allowed |
+| 05.06 16:58 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (Test: HHG & My: Adapter) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other in different WiFis | Switched WiFi off mid transfer, afterwards transfer is faster |
+| 05.06 17:11 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (Test: HHG & My: Adapter) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other in different WiFis | Confirm findings from before |
+| 05.06 17:21 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (Test: HHG & My: Adapter) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other in different WiFis | Confirm findings from before |
+| 05.06 17:34 | QuickShare \wo WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi off on both devices | Deny WiFi on sender |
+| 05.06 17:50 | QuickShare \wo WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi off on both devices, moving away from sender with receiver | Not far enough |
+| 05.06 17:58 | QuickShare \wo WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi off on both devices, moving away from sender with receiver | Again, not far enough (end of terrace) |
+| 05.06 18:07 | QuickShare \wo WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Bluetooth + Cellular | 35MB | Failure | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi off on both devices, moving away from sender with receiver | Moving too far interrupts transfer, Cellular doesn't seem to be used |
+| 05.06 18:22 | QuickShare \wo WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (HHG) + Bluetooth + Cellular | 35MB | Failure | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi off on both devices, moving away from sender with receiver | Moving too far interrupts transfer, Cellular doesn't seem to be used |
+| 05.06 18:33 | QuickShare \wo WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | Bluetooth + Cellular | 35MB | Failure | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi off on both devices, moving away from sender with receiver | Moving too far interrupts transfer, Cellular doesn't seem to be used |
+| 05.06 19:32 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (HHG) + Bluetooth + Cellular | 35MB | Failure | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi on both devices | Trying to reproduce transfer via AP, success, but receiver went offline? |
+| 05.06 19:40 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (HHG) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi on both devices | Reproduce results, if moving phones apart at the beginning of connection, switch to AP? Fin other AP |
+| 05.06 19:43 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (HHG) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi on both devices | Reproduce results, Not moving at beginning |
+| 05.06 19:46 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (HHG) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi on both devices | Reproduce results, Moving at beginning |
+| 05.06 19:49 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (HHG) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility contacts**, Start Transfer next to each other, WiFi on both devices | Reproduce results, Moving at beginning |
+| 05.06 19:57 | QuickShare \w WiFi | I11CM0093 & L11CM0095 | My Account -> Test Acc. | WiFi (HHG) + Bluetooth + Cellular | 35MB | Success | Bluetooth already enabled, **Visibility everyone** | Anything different from before? |
+| 06.06 10:47 | QuickShare \w WiFi | Motorola &  L11CM0095 | My Account (Moto) -> My Account | WiFi (HHG) + Bluetooth | 2MB | Success | Bluetooth already enabled, **Visibility own devices** | Behavior of sharing between own devices |
+| 06.06 11:04 | QuickShare \w WiFi | Motorola &  L11CM0095 | My Account (Moto) -> My Account | WiFi (HHG) + Bluetooth + (Moto) Cellular | 35MB | xx | Bluetooth already enabled, **Visibility own devices** | Sharing to Pixel larger file, moving apart after start and switch AP |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+## Analysis
+The Analysis of the tests before
+
+| Tests Considered | Status | Characteristics Analyzed | Findings | Notes |
+| --- | --- | --- | --- | --- |
+| 05.06 10:35 | Failed | Robustness | Fails even under perfect conditions, with TCP closing gracefully? | Using TCP, no migration is possible. Packet or data inspection which *could* fail? |
+| 05.06 10:35 | Failed | Default Behavior | When connected to 10.0.0.0/8 WiFi sometimes using TCP via AP to share data, no WiFi-Direct, Cellular Data not considered on default | Fails |
+| 05.06 10:46-12:10 | Success | Default Behavior | When in 192.168.0.0/16 network, using TCP via WiFi-Direct (Device AP) to share data | Transfer not encrypted, fast & successful |
+| 05.06 10:46-12:10 | Success | Transfer Speed | Via WiFi-Direct fast, via AP slower | --- |
+| 05.06 10:46-12:10 | Success | Path Building | Using mDNS in local network to find other peer, testing connection with ICMP ping, no STUN used | Only in local AP adapter mDNS etc. |
+| 05.06 15:27-15:58 | Success | Path Building | mDNS + TCP + ICMP is not always observed when in 10.0.0.0/24 HHG network | Transfer is encrypted via AES-256-CRC (exchanged parameter) |
+| 05.06 16:58-17:21 | Success | Path Building | Exchange with Google after failed mDNS (trying >10s), *must contain WiFi IP*, trying TCP directly to WiFi IP (different WiFi), **fails**, no STUN no path building, takes >35-50s to shut down WiFi and switch to WiFi-Direct with one phone being AP | Transfer is slow at first, then WiFi turned off in top bar, then faster |
+| 05.06 17:30-17:34 | Success | Path Building | Building WiFi-Direct, without DHCP, then mDNS and TCP again | Transfer is fast |
+| 05.06 17:50-18:33 | Failure | Migration | Building WiFi-Direct, increase distance between devices, transfer stops, no cellular data used, failed after 20-30s | WiFi not enabled but also no probing on cellular performed |
+| 05.06 18:22 | Failure | Migration | WiFi connectivity doesn't make a difference, no path being build, no migration | Both in WiFi, moving into different WiFi but no more connection |
+| 05.06 19:32-19:49 | Success/Failure | Path Building | If moving the devices before the data transfer apart, using WiFi AP route, otherwise using WiFi-Direct | This is not always 100% reliable but my best explanation, sometimes still enabling the WiFi-Direct communication |
+| 05.06 19:57 | Success | General Behavior of Everyone Mode | Can use mDNS and WiFi AP without WiFi-Direct, when closer? also WiFi-Direct |  |
+| 06.06 10:47 | Success | Sharing between own devices | Using same AP path as before, same mechanisms as before | Small file, directly shared via AP, different section in UI to select own devices, doesn't show up in devices nearby section |
+| 06.06 11:04 | Failure | Sharing between own devices | Using same AP path as before when moving apart fails and no path is found | No different behavior than sharing between contacts or other devices |
+| --- | --- | --- | --- | --- |
+
+### General Flow
+The default flow of QuickShare transfers. Depends on the connection status
+
+(If connected to WiFi)
+
+0. Exchange with google contains infos like local IP...
+1. Receiver starts mDNS discovery in local Network asking for \<unknown strings\>_tcp.local (IPv4 & IPv6); This is tried 
+2. Sender responds with only the second part of the string
+3. Sender sends 2 ICMP ping to receiver (ttl=64) resulting in ARP
+4. Receiver responds with 2 ICMP echo replies ttl=64
+5. Sender builds TCP connection to receiver
+6. Initial data like Phone Name, etc are exchanged **in plaintext**
+
+*Start of transfer*
+
+7. Then, the sender builds a WiFi-Direct network
+8. Sender offers DHCP IPv4 to receiver and therefore knows the IP of the other end
+9. Transfer is performed on this direct channel with new IPv4 (**not encrypted**, PDF can be restored with actual number of pages but currently blank due to some error I didn't look into)
+10. TCP connection is gracefully closed with Fin/Fin Ack
+
+
+# WhatsApp
 
 Test notes:
 - The local AP only supported IPv4, no IPv6 (DHCP Server)
@@ -26,6 +107,7 @@ Test notes:
 - Moving hand in front of camera to induce data transfer
 - Ring 3 times before accept
 
+## Tests
 Now the tests with findings
 
 | Test | Devices | Direction | Connectivity | Description | Duration | Notes | 
@@ -91,8 +173,8 @@ This section contains the conclusions and analysis of our testing for the differ
 | WhatsApp Video Call | 04.06 18:38-18:57 | WiFi off->on **Migration Test**, Path Migration | No **real** migration, rebuilding path when WiFi interface back up, reusing identifiers from beginning of connection (allocations?), rest similar | --- |
 | --- | --- | --- | --- | --- |
 | WhatsApp Video Call | 05.06 09:15-09:45 | Local WiFi off->on **Migration Test**, Path Building | First TURN, then local, no cellular until WiFi off | --- |
-| WhatsApp Video Call | 05.06 09:15-09:45 | Local WiFi off->on **Migration Test**, Path Migration | On WiFi down, switch to TURN relay via cellular interface, have to build path first (not established), building takes ~500ms, on WiFi up building TURN relay via WiFi and probing local Link but no answer and no switch to local path | --- |
-| WhatsApp Video Call | 05.06 09:15-09:45 | Local WiFi off->on **Migration Test**, Path Probing after Interface change | Only phone with iface change probes STUN, other phone no response (**even though STUN is received!**), local path is **NOT** found again, only relay after connection break | --- |
+| WhatsApp Video Call | 05.06 09:15-09:45 | Local WiFi off->on **Migration Test**, Path Migration | On WiFi down, switch to TURN relay via cellular interface, have to build path first (not established), building takes ~500ms, on WiFi up building TURN relay via WiFi and probing local Link but no answer from established device, no switch to local path | --- |
+| WhatsApp Video Call | 05.06 09:15-09:45 | Local WiFi off->on **Migration Test**, Path Probing after Interface change | Only phone with iface change probes STUN, other phone no response (**even though STUN is received!**), local path is **NOT** found again, only relay after connection break | Again, plain STUN |
 | --- | --- | --- | --- | --- |
 
 ### General Flow
@@ -145,11 +227,10 @@ During the analysis the following interesting information were found (for video 
 - All in value range where non-optional and assigned by IETF
 - 0x801 is path MTU probe (Changed the delay between Probe indication and Report request to be RTO/2 or 50 milliseconds) confirmed above
 - 0x802 is path MTU report
-
----
-Audio calls have different attributes
-- 0x4024 observed
----
 - Cellular one sided constantly switches between IPv4 and IPv6 (IPv4 mapped into IPv6), native IPv6 only for STUN
 - Once STUN on loopback?
 - Rapid and seamless switching between TURN endpoints in a **single** connection. Once Fra5, then the next chunk ams4, then back to fra, then muc...
+---
+Audio calls have different attributes
+- 0x4024 observed
+
