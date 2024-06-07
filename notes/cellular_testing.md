@@ -102,17 +102,17 @@ The Analysis of the tests before
 | Tests Considered | Status | Characteristics Analyzed | Findings | Notes |
 | --- | --- | --- | --- | --- |
 | 05.06 10:35 | Failed | Robustness | Fails even under perfect conditions, with TCP closing gracefully? | Using TCP, no migration is possible. Packet or data inspection which *could* fail? |
-| 05.06 10:35 | Failed | Default Behavior | When connected to 10.0.0.0/8 WiFi sometimes using TCP via AP to share data, no WiFi-Direct, Cellular Data not considered on default | Fails |
-| 05.06 10:46-12:10 | Success | Default Behavior | When in 192.168.0.0/16 network, using TCP via WiFi-Direct (Device AP) to share data | Transfer not encrypted, fast & successful |
-| 05.06 10:46-12:10 | Success | Transfer Speed | Via WiFi-Direct fast, via AP slower | --- |
+| 05.06 10:35 | Failed | Default Behavior | When connected to 10.0.0.0/8 WiFi sometimes using TCP via AP to share data, no WiFi Hotspot, Cellular Data not considered on default | Fails |
+| 05.06 10:46-12:10 | Success | Default Behavior | When in 192.168.0.0/16 network, using TCP via WiFi-Hotspot (Device AP) to share data | Transfer not encrypted, fast & successful |
+| 05.06 10:46-12:10 | Success | Transfer Speed | Via WiFi-Hotspot fast, via AP slower | --- |
 | 05.06 10:46-12:10 | Success | Path Building | Using mDNS in local network to find other peer, testing connection with ICMP ping, no STUN used | Only in local AP adapter mDNS etc. |
 | 05.06 15:27-15:58 | Success | Path Building | mDNS + TCP + ICMP is not always observed when in 10.0.0.0/24 HHG network | Transfer is encrypted via AES-256-CRC (exchanged parameter) |
-| 05.06 16:58-17:21 | Success | Path Building | Exchange with Google after failed mDNS (trying >10s), *must contain WiFi IP*, trying TCP directly to WiFi IP (different WiFi), **fails**, no STUN no path building, takes >35-50s to shut down WiFi and switch to WiFi-Direct with one phone being AP | Transfer is slow at first, then WiFi turned off in top bar, then faster |
-| 05.06 17:30-17:34 | Success | Path Building | Building WiFi-Direct, without DHCP, then mDNS and TCP again | Transfer is fast |
-| 05.06 17:50-18:33 | Failure | Migration | Building WiFi-Direct, increase distance between devices, transfer stops, no cellular data used, failed after 20-30s | WiFi not enabled but also no probing on cellular performed |
+| 05.06 16:58-17:21 | Success | Path Building | Exchange with Google after failed mDNS (trying >10s), *must contain WiFi IP*, trying TCP directly to WiFi IP (different WiFi), **fails**, no STUN no path building, takes >35-50s to shut down WiFi and switch to WiFi-Hotspot with one phone being AP | Transfer is slow at first, then WiFi turned off in top bar, then faster |
+| 05.06 17:30-17:34 | Success | Path Building | Building WiFi-Hotspot, without DHCP, then mDNS and TCP again | Transfer is fast |
+| 05.06 17:50-18:33 | Failure | Migration | Building WiFi-Hotspot, increase distance between devices, transfer stops, no cellular data used, failed after 20-30s | WiFi not enabled but also no probing on cellular performed |
 | 05.06 18:22 | Failure | Migration | WiFi connectivity doesn't make a difference, no path being build, no migration | Both in WiFi, moving into different WiFi but no more connection |
-| 05.06 19:32-19:49 | Success/Failure | Path Building | If moving the devices before the data transfer apart, using WiFi AP route, otherwise using WiFi-Direct | This is not always 100% reliable but my best explanation, sometimes still enabling the WiFi-Direct communication |
-| 05.06 19:57 | Success | General Behavior of Everyone Mode | Can use mDNS and WiFi AP without WiFi-Direct, when closer? also WiFi-Direct |  |
+| 05.06 19:32-19:49 | Success/Failure | Path Building | If moving the devices before the data transfer apart, using WiFi AP route, otherwise using WiFi-Hotspot | This is not always 100% reliable but my best explanation, sometimes still enabling the WiFi-Hotspot communication |
+| 05.06 19:57 | Success | General Behavior of Everyone Mode | Can use mDNS and WiFi AP without WiFi-Hotspot, when closer? also WiFi-Hotspot |  |
 | 06.06 10:47 | Success | Sharing between own devices | Using same AP path as before, same mechanisms as before | Small file, directly shared via AP, different section in UI to select own devices, doesn't show up in devices nearby section |
 | 06.06 11:04 | Failure | Sharing between own devices | Using same AP path as before when moving apart fails and no path is found | No different behavior than sharing between contacts or other devices |
 | --- | --- | --- | --- | --- |
