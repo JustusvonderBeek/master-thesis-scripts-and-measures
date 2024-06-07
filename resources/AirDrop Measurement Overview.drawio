@@ -1,0 +1,37 @@
+<mxfile host="app.diagrams.net" modified="2024-05-12T14:03:02.091Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" etag="RIjW_jvA_KnEsMlcXx2t" version="24.4.0" type="device">
+  <diagram name="Page-1" id="tMPGpnKy-ZowUA-VL0b9">
+    <mxGraphModel dx="839" dy="444" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-3" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;shape=mxgraph.azure.mobile;pointerEvents=1;" vertex="1" parent="1">
+          <mxGeometry x="90" y="50" width="60" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-4" value="&lt;b style=&quot;font-size: 16px;&quot;&gt;WiFi Direct&lt;br&gt;&lt;/b&gt;" style="endArrow=classic;startArrow=classic;html=1;rounded=0;dashed=1;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="170" y="100" as="sourcePoint" />
+            <mxPoint x="380" y="100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-5" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;shape=mxgraph.azure.tablet;pointerEvents=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="47.5" width="160" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-6" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;WiFi Access Point&lt;/b&gt;&lt;/font&gt;" style="points=[[0.03,0.36,0],[0.18,0,0],[0.5,0.34,0],[0.82,0,0],[0.97,0.36,0],[1,0.67,0],[0.975,0.975,0],[0.5,1,0],[0.025,0.975,0],[0,0.67,0]];verticalLabelPosition=bottom;sketch=0;html=1;verticalAlign=top;aspect=fixed;align=center;pointerEvents=1;shape=mxgraph.cisco19.wireless_access_point;fillColor=#7EA6E0;strokeColor=none;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="180" width="110" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-7" value="&lt;font size=&quot;1&quot;&gt;&lt;b style=&quot;font-size: 16px;&quot;&gt;WiFi&lt;/b&gt;&lt;/font&gt;" style="endArrow=classic;startArrow=classic;html=1;rounded=0;dashed=1;strokeWidth=2;strokeColor=#7EA6E0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="130" y="160" as="sourcePoint" />
+            <mxPoint x="240" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-8" value="&lt;font size=&quot;1&quot;&gt;&lt;b style=&quot;font-size: 16px;&quot;&gt;WiFi&lt;/b&gt;&lt;/font&gt;" style="endArrow=classic;startArrow=classic;html=1;rounded=0;dashed=1;strokeWidth=2;strokeColor=#7EA6E0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="380" y="250" as="sourcePoint" />
+            <mxPoint x="470" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

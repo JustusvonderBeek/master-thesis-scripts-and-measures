@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" modified="2024-05-21T12:30:44.344Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0" etag="y7NYhtbotO2YTu7gBkQv" version="24.4.4" type="device">
+  <diagram name="Page-1" id="tMPGpnKy-ZowUA-VL0b9">
+    <mxGraphModel dx="839" dy="459" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="180" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-3" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;shape=mxgraph.azure.mobile;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="70" y="60" width="60" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="GLRb8waI0ZLwu5YfJsHA-5" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;shape=mxgraph.azure.tablet;pointerEvents=1;" parent="1" vertex="1">
+          <mxGeometry x="400" y="57.5" width="160" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-2" value="RF Box" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="140" y="60" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-3" value="Subnet&lt;div style=&quot;font-size: 14px;&quot;&gt;fe80::/10&lt;br style=&quot;font-size: 14px;&quot;&gt;&lt;/div&gt;" style="endArrow=classic;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;startArrow=classic;startFill=1;endFill=1;fontStyle=1;fontSize=14;labelBorderColor=#FFFFFF;textShadow=1;spacingLeft=0;spacingRight=0;spacing=2;" edge="1" parent="1" source="GLRb8waI0ZLwu5YfJsHA-3" target="GLRb8waI0ZLwu5YfJsHA-5">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="250" as="sourcePoint" />
+            <mxPoint x="410" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-4" value="Smartphone" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="75" y="10" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-5" value="Apple Wireless Direct Link" style="text;whiteSpace=wrap;html=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="230" y="65" width="170" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-6" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=default;fillColor=#FFFFFF;shape=mxgraph.azure.laptop;pointerEvents=1;" vertex="1" parent="1">
+          <mxGeometry x="175" y="190" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-8" value="Capture PCAP" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.02;entryY=0.98;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=14;fontStyle=1" edge="1" parent="1" source="GLRb8waI0ZLwu5YfJsHA-3" target="voaq_ugr3uCPQvjhjeNq-6">
+          <mxGeometry x="-0.2857" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="220" as="sourcePoint" />
+            <mxPoint x="410" y="170" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="100" y="278" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-9" value="USB" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="130" y="250" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-10" value="Tablet" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="445" y="10" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-11" value="Capture PCAP" style="endArrow=none;html=1;rounded=0;exitX=0.98;exitY=0.98;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;fontStyle=1;fontSize=14;" edge="1" parent="1" source="voaq_ugr3uCPQvjhjeNq-6" target="GLRb8waI0ZLwu5YfJsHA-5">
+          <mxGeometry x="0.5064" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="220" as="sourcePoint" />
+            <mxPoint x="410" y="170" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="480" y="278" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-12" value="USB" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="320" y="250" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="voaq_ugr3uCPQvjhjeNq-13" value="&lt;div&gt;Measurement&lt;/div&gt;&lt;div&gt;Laptop&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="200" y="210" width="100" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
