@@ -135,9 +135,9 @@ Die Tests auf die Dateinamen gemapped.
 
 | Filename | Test | Richtung | Notizen | 
 | --- | --- | --- | --- |
-| 22_01_13_55 | Anruf per Whatsapp. Im WiFi | Extern -> Mich |
+| 22_01_13_55 | Anruf per Whatsapp. Im WiFi | Extern -> Mich | Kommunikation in einem 10.183.0.0/16 Netz? Ist schon P2P aber warum in einem unterschiedlichen Subnet? |
 | 22_01_13_56 | Anruf per Whatsapp. Im WiFi | Ich -> Extern |
-| 22_01_13_55 | Anruf per Whatsapp. Im Mobilfunk | Ich -> Extern |
+| 22_01_13_57 | Anruf per Whatsapp. Im Mobilfunk | Ich -> Extern |
 | 22_01_14_17 | Anruf per Whatsapp. Im Mobilfunk | Ich -> Extern |
 | out_pxl_25_02_10_57 | Anruf von Pixel per Whatsapp. Handy im Laptop Netz. Beide im Cellular. Wechsel auf selbes WiFi zuhause. Dann wechsel zurück ins Laptop WiFi. | Ich -> Extern | 192.168.12.101 ist im Laptop WiFi. 192.168.178.20 ist WiFi zuhause. Zusätzlich sind beide im Cellular. Pixel bei O2, Extern bei Vodafone |
 | out_pxl_25_02_11_10 | Anruf von Pixel per Whatsapp. Pixel im Laptop Netz. Beide haben KEIN Cellular. Wechsel auf selbes WiFi zuhause (nach ca. 30s). Dann wechsel zurück ins Laptop WiFi (nach ca. 30s). | Ich -> Extern | 192.168.12.101 ist im Laptop WiFi. 192.168.178.20 ist WiFi zuhause. |
