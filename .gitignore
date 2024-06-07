@@ -17,3 +17,6 @@ r2m2p2_go/
 # Ignore fcc unlock executable
 
 *fcc_unlock
+
+# Ignore drawio tmp data
+*.bkp
