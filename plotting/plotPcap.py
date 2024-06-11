@@ -1,8 +1,11 @@
 from cProfile import label
 import sys
 import os
+import numpy as np
+import matplotlib.ticker as plticker
 from argparse import ArgumentParser
 from parsePcap import parsePcap
+from matplotlib.ticker import ScalarFormatter
 
 try:
     import seaborn as sns
@@ -138,19 +141,28 @@ def plotThroughput(args):
     # print(data)
     fig, axes = plt.subplots()
 
-    filtered_data = data.filter(items=["Interval", "h1-wifi Frames", "h1-eth Frames", "h1-cellular Frames"])
+    filtered_data = data.filter(items=["Interval", "h1-wifi Frames", "h1-eth Frames", "h1-cellular Frames", "h2-wifi Frames", "h2-eth Frames", "h2-cellular Frames"])
     conv_data = filtered_data.melt(id_vars="Interval")
     # print(conv_data)
     sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable")
 
     axes.set_xlim(xmin=0)
-    axes.set_ylim(ymin=0)
-
+    axes.set_ylim(ymin=0.9)
+    loc = plticker.MultipleLocator(base=5.0)
+    # print(max_index)
+    axes.xaxis.set_major_locator(loc)
+    # axes.xaxis.set_ticks(np.arange(0, max_index, 5))
+    # Plot log to see the traffic for the two idle interfaces
+    axes.set_yscale('log',base=10)
+    axes.yaxis.set_major_formatter(ScalarFormatter())
     axes.set(xlabel="Time in seconds")
     axes.set(ylabel="Packets per second")
-    plt.legend(title="Interface")
+
+    axes.legend(loc="upper right", title="Interface")
     plt.title("Packets per second")
+
     plt.grid()
+    plt.xticks(rotation=90)
 
     exportToPdf(fig, args.output)
 
