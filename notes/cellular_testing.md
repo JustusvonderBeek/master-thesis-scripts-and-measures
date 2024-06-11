@@ -47,6 +47,16 @@ Test Notes:
 | 06.06 15:32 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + WiFi (HHG) & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Default STUN behavior, blocked |
 | 06.06 15:43 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + WiFi (HHG) & Desktop: Ethernet LAN + Cellular (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses, overwrite 2 bytes of magic cookie to confirm STUN blocked |
 | 06.06 15:52 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular (HHG) & Desktop: Ethernet LAN + WiFi (HHG) (tethered) | Duration max. 100s | Failure | Confirm ISPs blocking STUN | Setting 0x40 in first byte of STUN packets to known cellular addresses, overwrite 2 bytes of magic cookie to confirm STUN blocked |
+| 11.06 16:13 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular (o2) & Desktop: Ethernet LAN + Cellular (Tethered Telekom) | Duration max. 100s | Failure | Confirm ISP blocking all STUN | Sending only the plain STUN header without any attributes, checking if this one is allowed to pass |
+| 11.06 16:20 | ICE Prototype \w one cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular (o2) & Desktop: Ethernet LAN + WiFi (HHG) | Duration max. 100s | Failure | Confirm ISP blocking all STUN | Sending only the plain STUN header without any attributes, checking if this one is allowed to pass |
+| 11.06 16:24 | ICE Prototype \w one cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular (o2) & Desktop: Ethernet LAN + WiFi (HHG) | Duration max. 100s | Failure | Confirm ISP blocking all STUN | Sending only the plain STUN header without any attributes, checking if this one is allowed to pass |
+| 11.06 16:33 | ICE Prototype \w one cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + Cellular (o2) & Desktop: Ethernet LAN + WiFi (HHG) | Duration max. 100s | Failure | Confirm ISP blocking all UDP | Sending only plain UDP 0xaa 10 bytes, confirm even this blocked |
+| 11.06 16:41 | ICE Prototype \w one cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: Ethernet LAN + WiFi (HHG) & Desktop: Ethernet LAN + Cellular (tethered Telekom) | Duration max. 100s | Failure | Confirm ISP blocking all UDP | Sending only plain UDP 0xaa 10 bytes, confirm even this blocked, failed to send to eduroam modified packets |
+| 11.06 16:58 | ICE Prototype \w one cellular | Laptop & AWS | Laptop (Client) -> AWS (Server) | Laptop: Ethernet LAN + Cellular (o2) & AWS: Ethernet LAN | Duration max. 100s | Success | Confirm ISP blocking all STUN | Sending STUN to AWS to check if this one would arrive there |
+| 11.06 17:06 | ICE Prototype \w one cellular | Laptop & AWS | Laptop (Client) -> AWS (Server) | Laptop: Ethernet LAN + Cellular (o2) & AWS: Ethernet LAN | Duration max. 100s | Success | Confirm ISP blocking all STUN | Sending STUN to AWS to check if this one would arrive there |
+| 11.06 17:10 | ICE Prototype \w one cellular | Laptop & AWS | Laptop (Client) -> AWS (Server) | Laptop: Ethernet LAN + Cellular (o2) & AWS: Ethernet LAN | Duration max. 100s | Success | Confirm ISP blocking all STUN | Sending STUN to AWS to check if this one would arrive there |
+| 11.06 17:14 | ICE Prototype \w one cellular | Laptop & AWS | Desktop (Client) -> AWS (Server) | Desktop: Ethernet LAN + Cellular (telekom) & AWS: Ethernet LAN | Duration max. 100s | Success | Confirm ISP blocking all STUN | Sending STUN to AWS to check if this one would arrive there |
+| 11.06 17:19 | ICE Prototype \w one cellular | Laptop & AWS | Desktop (Client) -> AWS (Server) | Desktop: Ethernet LAN + Cellular (telekom) & AWS: Ethernet LAN | Duration max. 100s | Success | Confirm ISP blocking all STUN | Sending STUN to AWS to check if this one would arrive there |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Analysis
@@ -59,6 +69,10 @@ The analysis for the ICE prototype.
 | 06.06 14:15-14:21 | Failure | Path Probing | Confirmed o2 STUN not arriving | Carriers blocks STUN IPv4? |
 | 06.06 14:27-14:30 | Failure | Path Probing | Confirmed Telekom STUN not arriving | Carriers blocks STUN IPv4? |
 | 06.06 14:45-15:52 | Failure | Confirm STUN blocked | With STUN or random UDP still blocked, even if only a single side is behind carrier | Carrier blocks IPv4 P2P |
+| 11.06 16:01-16:13 | Failure | Confirm all STUN blocked | Even with all attributes removed, no packet is allowed to pass from ISP to ISP | Both behind ISP firewall |
+| 11.06 16:20-16:45 | Failure | Confirm plain STUN blocked | For o2 and telekom all incoming or outgoing UDP is blocked | For both nothing reaches the other side |
+| 11.06 16:58-17:10 | Success | Confirm plain STUN blocked | For o2 STUN arrives at AWS instance | AWS is set to let everything pass |
+| 11.06 17:14-17:19 | Success | Confirm plain STUN blocked | For telekom STUN arrives at AWS instance | AWS is set to let everything pass |
 | --- | --- | --- | --- | --- |
 
 
