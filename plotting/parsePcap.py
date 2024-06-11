@@ -67,13 +67,15 @@ def extractStatsFromPcap(inputFile, outputFile, interfaces=None):
     """Parsing the given input file in pcap format and exporting 
     the data in an easy to parse pandas format."""
     
-    interfaceList = ""
+    interfaceList = "\""
     if interfaces is not None:
         for interface in interfaces:
-            interfaceList += f",frame.interface_name=={interface}"
+            interfaceList += f",!stun&&udp&&frame.interface_name=={interface}"
+    interfaceList += "\""
     
     filter=f"FRAMES,BYTES{interfaceList}"
-    tsharkCmd = f"tshark -r {inputFile} -z io,stat,1,{filter} -Q > {outputFile}"
+    tsharkCmd = f"tshark -r {inputFile} -z io,stat,0,5,{filter} -Q > {outputFile}"
+    print(tsharkCmd)
     subprocess.run(tsharkCmd, shell=True)
         
 def parsePcap(inputFile, interfaces=None):
