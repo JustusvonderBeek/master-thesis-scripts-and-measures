@@ -33,9 +33,9 @@ class TestConfiguration:
     wifi_direct_path_delay: int = 6
     local_network_path_delay: int = 3
     local_network_path_ext_delay: int = 6
-    internet_path_local_delay: int = 2
+    internet_path_local_delay: int = 4
     # For the right path (h2 <-> nat2)
-    internet_path_local_2_delay: int = 2
+    internet_path_local_2_delay: int = 4
     internet_path_ext_delay: int = 12
     # For the right path (nat2 <-> s3) 
     internet_path_ext_2_delay: int = 12
@@ -52,7 +52,7 @@ class TestConfiguration:
 
     log_level: Logging = Logging.INFO
     build_target: str = "debug"
-    throughput: str = "10MB"
+    throughput: str = "1MB"
     duration: int = 100
 
     def __init__(self, args):
