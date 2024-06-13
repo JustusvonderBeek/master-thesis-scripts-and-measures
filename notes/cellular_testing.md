@@ -23,11 +23,97 @@ The following section contains information regarding the devices, interfaces & c
 | QuickShare | 06.06.2024 | Motorola G54 5G; 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom & I11CM0095: sim.de (carrier was o2) | QuickShare ?; Files: ; Play Store: 41.2.21-31 & 41.2.21-29 & 41.2.21-29; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & My Google Account & MT Google Account | Sharing small files, sharing between own devices (only single device captured) |
 | ICE Prototype | 06.06.2024 | Laptop & Desktop | Laptop: sim.de (carrier was o2) & Desktop: Telekom (via Tethering from Pixel 2 Test Account) | quicheperf commit 9084207d | Laptop: Client & Desktop: Server | Testing connection building, local path via LAN is initial one, cellular should be build |
 | ICE Prototype | 11.06.2024 | Laptop & Desktop & AWS | Laptop: sim.de (carrier was o2) & Desktop: Telekom (via Tethering from Pixel 2 Test Account) & AWS: Public IP | quicheperf commit 9084207d | Laptop: Client & Desktop, AWS: Server | Test ISP STUN behavior |
-| ICE Prototype | 12.06.2024 | Laptop | Laptop: sim.de (carrier was o2), Telekom | quicheperf commit xx | Laptop: Client, Server | Test ISP STUN behavior |
+| ICE Prototype | 12.06.2024 | Laptop | Laptop: sim.de (carrier was o2, APN: internet), Telekom | quicheperf commit xx | Laptop: Client, Server | Test ISP STUN behavior |
+| ICE Prototype | 12.06.2024 | Laptop & Desktop | Laptop: sim.de (carrier was o2, APN: internet), Telekom (internet.telekom, internet.t-d1.de) | quicheperf commit xx | Laptop: Client & Desktop: Server | Test ISP STUN behavior |
+| WhatsApp Audio Call | 13.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom (internet.telekom) & I11CM0095: sim.de (carrier was o2, APN: internet) | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Path Building; Path Migration; Path Finding in Audio Calls |
 | --- | --- | --- | --- | --- | --- |
+
+# SIM Karten APN Netzwerk
+Die folgende Sektion beinhaltet Infos zum NAT je nach APN Einstellung. Alle Tests wurden lokal auf dem Laptop durchgeführt. Test mit stun version 0.97.
+
+| Server |
+| --- |
+| stun.sipgate.net:3478 |
+| stun.1und1.de:3478 |
+| stun.t-online.de:3478 |
+| stun.actionvoip.com:3478 |
+
+| SIM | APN | STUN Mapping | STUN Port | STUN Hairpin |
+| --- | --- | --- | --- | --- |
+| Telekom | internet.t-d1.de | Open, aka. no NAT | --- | --- |
+| Telekom | internet.telekom | Dependent Mapping | Random Port | No Hairpin |
+| Telekom | internet.telekom (sipgate) | Independent Mapping / Independent Filter | Random Port | No Hairpin |
+| sim.de (o2) | internet | Dependent Mapping | Random Port | No Hairpin |
+| --- | --- | --- |
+
+# Signal
+The analysis of Signal Video and Audio Calls between two different accounts
+
+Test notes:
+- Using less data for calls was never enabled
+
+| Time | Test | Devices | Direction | Connectivity | Data Size | Status | Test Description | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 13.06 10:05 | Signal Video Call | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 93: Local AP \w Internet + Cellular (Telekom) | Duration 30s | Success | Calling very long (missing rights to use camera) | Showing default behavior, no connection break |
+| 13.06 10:34 | Signal Video Call | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 93: Local AP \w Internet + Cellular (Telekom) | Duration 30s | Success | One device stopped recording |
+| 13.06 10:36 | Signal Video Call | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 93: Local AP \w Internet + Cellular (Telekom) | Duration 30s | Success | One device stopped recording |
+| 13.06 11:00 | Signal Video Call | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 93: Local AP \w Internet + Cellular (Telekom) | Duration 30s | Success | Full Transfer on both sides |
+| 13.06 11:08 | Signal Video Call Migration | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 93: Local AP \w Internet + Cellular (Telekom) | Duration 30s | Failure | Disable WiFi after 15s, re-enable after 40s in call |
+| 13.06 11:16 | Signal Video Call Migration | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 93: Local AP \w Internet + Cellular (Telekom) | Duration 30s | Failure | Disable WiFi after 15s, re-enable after 40s in call | Call completely fails because network is "unreachable" |
+| 13.06 11:19 | Signal Video Call Migration | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 93: Local AP \w Internet + Cellular (Telekom) | Duration 30s | Failure | Disable WiFi after 15s, re-enable after 40s in call | Call completely fails because network is "unreachable" |
+| 13.06 11:26 | Signal Video Call Migration | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 95: WiFi (HHG) + Cellular (Telekom) | Duration 30s | Success | Disable Local AP after 15s, re-enable after 40s in call | One device should stay connected |
+| 13.06 14:11 | Signal Video Call Migration | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 95: WiFi (HHG) + Cellular (Telekom) | Duration 30s | Success | Disable Local AP after 15s, re-enable after 50s in call | One device should stay connected |
+| 13.06 14:38 | Signal Video Call Migration | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 95: WiFi (HHG) + Cellular (Telekom) | Duration 30s | Success | Disable Local AP after 15s, re-enable after 1:10s in call | One device should stay connected |
+| 13.06 14:41 | Signal Video Call Migration | I11CM0093 & L11CM0095 | 95 -> 93 | 95: Local AP \w Internet + Cellular (o2) & 95: WiFi (HHG) + Cellular (Telekom) | Duration 30s | Success | Disable Local AP after 15s, re-enable after 55s in call | One device should stay connected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+## Analysis
+The conclusion from the Signal tests.
+
+| Tests Considered | Status | Characteristics Analyzed | Findings | Notes |
+| --- | --- | --- | --- | --- |
+| 13.06 10:05-11:00 | Success | Default Signal Behavior | Using ICE to probe on all Interfaces, building TURN paths on all possible interfaces + IPs, building P2P path on WiFi, cellular -> eduroam probed but not responded, ICE includes IPv4 & IPv6, cellular paths are not P2P probed (neither IPv4 nor IPv6) | TURN includes full TURN attributes, lifetime, real etc; P2P includes ICE, prio, message integr., goog-net-info, username, fingerprint |
+| 13.06 10:05-11:00 | Success | Path Maintenance | Using STUN to keep path open, active every ~2.5s, inactive every ~4s | TURN includes full TURN attributes, lifetime, real etc; P2P includes ICE, prio, message integr., goog-net-info, username, fingerprint |
+| 13.06 11:08-11:19 | Failure | Migration | When both in same AP, migration completely fails | Turning the AP off at the same time, leads to STUN being send to TURN and locally but no connection is established |
+| 13.06 11:26-14:xx | Success | Migration when one device loses connectivity | Finding local WiFi path, Switching to TURN using STUN to relay data, using IPv6 eduroam and cellular to send data, efforts to build cellular path via IPv6 to other cellular and to eduroam but both fail, cellular fails because this path is not probed by the existing client back, both only probe towards eduroam not towards other ISP | Turning the AP off leads to noticeable interruption of  ~2-10s, takes a long time until call notices  |
+| 13.06 11:26-14:55 | Success | Migration when one device regains connectivity | Turning WiFi back on leads to re-probing from device that found WiFi again, probing local path with STUN, connected device answers, local path is found and used | Delay not noticeable when turning WiFi back on |
+| --- | --- | --- | --- | --- |
+
+
+### General Flow
+The general flow of the Signal Video Call. My Account starts the call, the other one accepts
+
+Caller:
+1. Connect to Signal SIP TURN Server with plain STUN (from all possible Interfaces, WiFi + Cellular IPv4, IPv6)
+2. Connect to Signal TURN Server via TCP on HTTP + HTTPS
+3. Allocate Transport UDP (fails until Credentials given) with lifetime 600s = 10m
+4. TURN Server Returns the Allocated Public IPv4
+5. Exchange Call Information with TURN Server via TCP
+6. CreatePermission request from all IPs to other peers IPs
+7. Server answers CreatePermission Success
+8. Building direct P2P with ICE using STUN many attributes (WiFi, Cellular, ...)
+9. Using direct P2P path to send RTP
+10. Keep alives on active path every ~2.5s FROM the sender, swapping every binding request, idle paths (TURN, cellular->eduroam) path every ~4s
+11. Close TCP STUN connection, close UDP TURN connection with lifetime refresh = 0
+
+On failure:
+1. Sending STUN allocation to server
+2. But never continue sending RTP data
+3. Call finally fails
+
+Callee:
+1. Notification from Google / AWS Service about incoming call?
+2. Connect to Signal TURN Server (again, with all interfaces + IPs)
+3. Create Permission request to connect from all IPs to all caller IPs (192.168.2.17)
+4. CreatePermission Success
+5. Building direct P2P path with ICE using STUN and many attributes (including PATH being WiFi / Cellular)
+6. Exchange data
+7. Keep alives every ~2.5s on active path, swapping each iteration the origin
+8. Closing call, set refresh lifetime of TURN bindings to 0
 
 # ICE Prototype
 Test Notes:
+- internet APN in o2 is dualstack IPv4/IPv6
 
 | Time | Test | Devices | Direction | Connectivity | Data Size | Status | Test Description | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
