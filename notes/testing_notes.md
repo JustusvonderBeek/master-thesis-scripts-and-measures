@@ -11,51 +11,51 @@ This file contains a mapping of file name to test
 
 ## Testing output file info
 
-| File | Test | Direction |
-| --- | --- | --- |
-| gerät_18_01_10_57 | Verbindungsabbruch, seamless switch, iPad eduroam(wohnheim), iPhone eduroam, Conn established davor (2s nach start) | IPhone > IPad |
-| gerät_18_01_11_07 | Verbindungsabbruch, kein zweiter Pfad, Was genau ist hier passiert? Iface down, WiFi down? | IPhone > IPad |
-| gerät_18_01_11_12 | Kein Verbindungsabbruch | IPhone > IPad |
-| gerät_18_01_11_14 | Verbindungsabbruch nach ~2s, kaum Daten via QUIC, warum? | IPhone > IPad |
-| gerät_18_01_11_17 | Verbindungsabbruch nach ~2s, Fehler und manueller abbruch nach 6+ Minuten | IPhone > IPad |
-| gerät_18_01_11_28 | Verbindungsabbruch nach ~2s, Fehler und manueller Abbruch | IPhone > IPad |
-| gerät_18_01_11_35 | Verbindungsabbruch nach ~2s, schneller Abbruch führt zu schnellem wechsel auf en0, beispiel für fast seamless (400ms) | IPhone > IPad |
-| gerät_18_01_11_38 | Verbindungsabbruch nach ~2s | IPhone > IPad |
-| gerät_18_01_11_40 | Verbindungsabbruch nach ~2s | IPhone > IPad |
-| gerät_18_01_11_44 | Verbindungsabbruch nach ~3s | IPhone > IPad |
-| gerät_18_01_11_46 | Verbindungsabbruch nach ~3s, Versuche über AWDL, 8s Migration, not seamless | IPhone > IPad |
-| gerät_18_01_11_48 | Verbindungsabbruch nach ~3s | IPhone > IPad |
-| gerät_18_01_11_52 | Verbindungsabbruch nach ~3s | IPhone > IPad |
-| gerät_18_01_11_54 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, Beispiel für keine Migration zurück, TCP fliegt auf AWDL nachdem die Türe aufgeht, es wird nach dem Start kein zweiter (neuer) Pfad gebaut solange die Verbindung stabil ist | IPhone > IPad |
-| gerät_18_01_11_57 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, QUIC auf AWDL überlebt die 20s sogar, aber wird trotzdem nicht mehr genutzt und abgebaut | IPhone > IPad |
-| gerät_18_01_12_00 | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, garkeine Verbindung auf AWDL gebaut wahrscheinlich die Tür also zu früh zu | IPhone > IPad |
-| gerät_18_01_12_02 | Verbindungsabbruch nach ~3s, Tür offen nach ~30s (weil davor kein traffic) | IPhone > IPad |
-| gerät_18_01_12_12 | Normal, Kein Internet | IPhone > IPad |
-| gerät_18_01_12_13 | Normal, Kein Internet | IPhone > IPad |
+| File | Connectivity | Test | Direction |
+| --- | --- | --- | --- |
+| gerät_18_01_10_57 | AWDL + WiFi | Verbindungsabbruch, seamless switch, iPad eduroam(wohnheim), iPhone eduroam, Conn established davor (2s nach start) | IPhone > IPad |
+| gerät_18_01_11_07 | AWDL + WiFi | Verbindungsabbruch, kein zweiter Pfad, Was genau ist hier passiert? Iface down, WiFi down? | IPhone > IPad |
+| gerät_18_01_11_12 | AWDL + WiFi | Kein Verbindungsabbruch | IPhone > IPad |
+| gerät_18_01_11_14 | AWDL + WiFi | Verbindungsabbruch nach ~2s, kaum Daten via QUIC, warum? | IPhone > IPad |
+| gerät_18_01_11_17 | AWDL + WiFi | Verbindungsabbruch nach ~2s, Fehler und manueller abbruch nach 6+ Minuten | IPhone > IPad |
+| gerät_18_01_11_28 | AWDL + WiFi | Verbindungsabbruch nach ~2s, Fehler und manueller Abbruch | IPhone > IPad |
+| gerät_18_01_11_35 | AWDL + WiFi | Verbindungsabbruch nach ~2s, schneller Abbruch führt zu schnellem wechsel auf en0, beispiel für fast seamless (600ms), benutzt ICMPv6 für Suche, findet per ICMPv6 ND beide fe80:: & 2001 Addressen, benutzt 2001:: warum ist unklar | IPhone > IPad |
+| gerät_18_01_11_38 | AWDL + WiFi | Verbindungsabbruch nach ~2s, baut direkt Verbindung via EN0 auf, kein AWDL link benutzt, wahrscheinlich Signalqualität zu früh zu schlecht? | IPhone > IPad |
+| gerät_18_01_11_40 | AWDL + WiFi | Verbindungsabbruch nach ~2s, braucht 400ms um abbruch zu bemerken, baut EN0 Verbindung neu auf | IPhone > IPad |
+| gerät_18_01_11_44 | AWDL + WiFi | Verbindungsabbruch nach ~3s, im Trace nach ~6s, braucht ~4s um Verbindung via Wi-Fi zu finden, wieder per ICMPv6 und evtl. Apple? | IPhone > IPad |
+| gerät_18_01_11_46 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Versuche über AWDL, 8s Migration, not seamless | IPhone > IPad |
+| gerät_18_01_11_48 | AWDL + WiFi | Verbindungsabbruch nach ~3s, ~3s Pause am Empfänger, diesmal direkter aufbau ohne ICMPv6  | IPhone > IPad |
+| gerät_18_01_11_52 | AWDL + WiFi | Verbindungsabbruch nach ~3s, davor schon QUIC aufgebaut, scheint als wäre die Verbindung instabil geworden und es gab 600ms Pause auf Receiver Seite auf AWDL davor, also eher Switch trigger, nicht präventiv, dann aber seamless switch | IPhone > IPad |
+| gerät_18_01_11_54 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, Beispiel für keine Migration zurück, TCP fliegt auf AWDL nachdem die Türe aufgeht, es wird nach dem Start kein zweiter (neuer) Pfad gebaut solange die Verbindung stabil ist | IPhone > IPad |
+| gerät_18_01_11_57 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, QUIC auf AWDL überlebt die 20s sogar, aber wird trotzdem nicht mehr genutzt und abgebaut | IPhone > IPad |
+| gerät_18_01_12_00 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, garkeine Verbindung auf AWDL gebaut wahrscheinlich die Tür also zu früh zu | IPhone > IPad |
+| gerät_18_01_12_02 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~30s (weil davor kein traffic) | IPhone > IPad |
+| gerät_18_01_12_12 | AWDL + WiFi | Normal, Kein Internet | IPhone > IPad |
+| gerät_18_01_12_13 | AWDL + WiFi | Normal, Kein Internet | IPhone > IPad |
 | Pause | --- | --- |
-| gerät_18_01_13_26 | Verbindungsabbruch nach ~3s | IPad > IPhone |
-| gerät_18_01_13_28 | Verbindungsabbruch nach ~3s (davor einmal declined), Fehler beim 2. mal (iPhone kann keine Verbindung zu Apple aufbauen) | IPad > IPhone |
-| gerät_18_01_13_35 | Verbindungsabbruch nach ~3s | IPad > IPhone |
-| gerät_18_01_13_39 | Verbindungsabbruch nach ~3s, Türe auf nach 30s | IPad > IPhone |
-| gerät_18_01_13_43 | Verbindungsabbruch nach ~3s | IPad > IPhone |
-| gerät_18_01_13_47 | Verbindungsabbruch nach ~3s | IPad > IPhone |
-| gerät_18_01_13_48 | Verbindungsabbruch nach ~4s, Türe auf nach ~10s | IPad > IPhone |
-| gerät_18_01_13_50 | Verbindungsabbruch nach ~4s, Türe auf nach ~12s | IPad > IPhone |
+| gerät_18_01_13_26 | AWDL + WiFi | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_28 | AWDL + WiFi | Verbindungsabbruch nach ~3s (davor einmal declined), Fehler beim 2. mal (iPhone kann keine Verbindung zu Apple aufbauen) | IPad > IPhone |
+| gerät_18_01_13_35 | AWDL + WiFi | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_39 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Türe auf nach 30s | IPad > IPhone |
+| gerät_18_01_13_43 | AWDL + WiFi | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_47 | AWDL + WiFi | Verbindungsabbruch nach ~3s | IPad > IPhone |
+| gerät_18_01_13_48 | AWDL + WiFi | Verbindungsabbruch nach ~4s, Türe auf nach ~10s | IPad > IPhone |
+| gerät_18_01_13_50 | AWDL + WiFi | Verbindungsabbruch nach ~4s, Türe auf nach ~12s | IPad > IPhone |
 | gerät_18_01_13_53| Verbindungsabbruch nach ~4s, Türe auf nach ~12s, keine Pakete zwischendrin | IPad > IPhone |
-| gerät_18_01_13_55 | Verbindungsabbruch nach ~4s, Türe auf nach ~30s | IPad > IPhone |
+| gerät_18_01_13_55 | AWDL + WiFi | Verbindungsabbruch nach ~4s, Türe auf nach ~30s | IPad > IPhone |
 | --- | --- | --- |
 | Setup geändert | NearbyShare | --- |
-| location_18_01_14_29 | Normaler Transfer, 250mb | Out > Box |
-| location_18_01_14_35 | Normaler Transfer, 33mb | Out > Box |
-| location_18_01_15_02 | Beide WLAN, Verbindungsabbruch nach ~5s, Abbruch, 33mb | Box > Out |
-| location_18_01_15_04 | Beide WLAN, Verbindungsabbruch noch vor dem eigentlichen Transfer, Abbruch, 33mb | Box > Out |
-| location_18_01_15_06 | Beide WLAN, Verbindungsabbruch nach ~10s, Abbruch, 33mb | Box > Out |
+| location_18_01_14_29 |  | Normaler Transfer, 250mb | Out > Box |
+| location_18_01_14_35 |  | Normaler Transfer, 33mb | Out > Box |
+| location_18_01_15_02 |  | Beide WLAN, Verbindungsabbruch nach ~5s, Abbruch, 33mb | Box > Out |
+| location_18_01_15_04 |  | Beide WLAN, Verbindungsabbruch noch vor dem eigentlichen Transfer, Abbruch, 33mb | Box > Out |
+| location_18_01_15_06 |  | Beide WLAN, Verbindungsabbruch nach ~10s, Abbruch, 33mb | Box > Out |
 | --- | --- | --- |
 | Nochmal iOS | IPad im Bayern WLAN | iPhone > iPad |
-| gerät_18_01_15_16 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN) | iPhone > iPad |
-| gerät_18_01_15_25 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. | iPad > iPhone |
-| gerät_18_01_15_28 | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. Wirklich abbruch? einziger test mit QUIC und unterschiedlichem WLAN | iPad > iPhone |
-| ipad_iphone_cellular_close_far_close | Verbindungsabbruch nach 20s (30s im capture), iPhone hat Cellular, Telefonica, iPad im WiFi; ABER: war das iPhone im Wifi? Müsste man testen... | iPad > iPhone |
+| gerät_18_01_15_16 |  | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN) | iPhone > iPad |
+| gerät_18_01_15_25 |  | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. | iPad > iPhone |
+| gerät_18_01_15_28 |  | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. Wirklich abbruch? einziger test mit QUIC und unterschiedlichem WLAN | iPad > iPhone |
+| ipad_iphone_cellular_close_far_close | | Verbindungsabbruch nach 20s (30s im capture), iPhone hat Cellular, Telefonica, iPad im WiFi; ABER: war das iPhone im Wifi? Müsste man testen... | iPad > iPhone |
 
 ## AirDrop Verhalten
 Die folgende Tabelle fasst die wichtigsten Verhaltensmuster von AirDrop zusammen.
