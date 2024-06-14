@@ -13,6 +13,10 @@ This file contains a mapping of file name to test
 
 | File | Connectivity | Test | Direction |
 | --- | --- | --- | --- |
+| chg_ap | WiFi | Sending data, switching from AWDL0 to WiFi, nothing special, migration takes a long time because of neighbor solicitation ? | IPad > iPhone |
+
+| --- | --- | --- | --- |
+| Setup with RF Box | --- | --- | --- |
 | gerät_18_01_10_57 | AWDL + WiFi | Verbindungsabbruch, seamless switch, iPad eduroam(wohnheim), iPhone eduroam, Conn established davor (2s nach start) | IPhone > IPad |
 | gerät_18_01_11_07 | AWDL + WiFi | Verbindungsabbruch, kein zweiter Pfad, Was genau ist hier passiert? Iface down, WiFi down? | IPhone > IPad |
 | gerät_18_01_11_12 | AWDL + WiFi | Kein Verbindungsabbruch | IPhone > IPad |
