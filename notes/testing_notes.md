@@ -13,9 +13,9 @@ This file contains a mapping of file name to test
 
 | File | Connectivity | Test | Direction |
 | --- | --- | --- | --- |
+| Test Setup Zuhause | WiFi on/off | Migration durch bewegung | --- |
 | chg_ap | WiFi | Sending data, switching from AWDL0 to WiFi, nothing special, migration takes a long time because of neighbor solicitation ? | IPad > iPhone |
-
-| --- | --- | --- | --- |
+| cellular_close_far_close | WiFi (HHG) + Cellular (iphone) | Migration towards iCloud and back? Start QUIC AWDL,  | ipad -> iphone |
 | Setup with RF Box | --- | --- | --- |
 | gerät_18_01_10_57 | AWDL + WiFi | Verbindungsabbruch, seamless switch, iPad eduroam(wohnheim), iPhone eduroam, Conn established davor (2s nach start) | IPhone > IPad |
 | gerät_18_01_11_07 | AWDL + WiFi | Verbindungsabbruch, kein zweiter Pfad, Was genau ist hier passiert? Iface down, WiFi down? | IPhone > IPad |
@@ -27,11 +27,11 @@ This file contains a mapping of file name to test
 | gerät_18_01_11_38 | AWDL + WiFi | Verbindungsabbruch nach ~2s, baut direkt Verbindung via EN0 auf, kein AWDL link benutzt, wahrscheinlich Signalqualität zu früh zu schlecht? | IPhone > IPad |
 | gerät_18_01_11_40 | AWDL + WiFi | Verbindungsabbruch nach ~2s, braucht 400ms um abbruch zu bemerken, baut EN0 Verbindung neu auf | IPhone > IPad |
 | gerät_18_01_11_44 | AWDL + WiFi | Verbindungsabbruch nach ~3s, im Trace nach ~6s, braucht ~4s um Verbindung via Wi-Fi zu finden, wieder per ICMPv6 und evtl. Apple? | IPhone > IPad |
-| gerät_18_01_11_46 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Versuche über AWDL, 8s Migration, not seamless | IPhone > IPad |
+| gerät_18_01_11_46 | AWDL + WiFi | Verbindungsabbrucsh nach ~3s, Versuche über AWDL, 8s Migration, not seamless | IPhone > IPad |
 | gerät_18_01_11_48 | AWDL + WiFi | Verbindungsabbruch nach ~3s, ~3s Pause am Empfänger, diesmal direkter aufbau ohne ICMPv6  | IPhone > IPad |
 | gerät_18_01_11_52 | AWDL + WiFi | Verbindungsabbruch nach ~3s, davor schon QUIC aufgebaut, scheint als wäre die Verbindung instabil geworden und es gab 600ms Pause auf Receiver Seite auf AWDL davor, also eher Switch trigger, nicht präventiv, dann aber seamless switch | IPhone > IPad |
 | gerät_18_01_11_54 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, Beispiel für keine Migration zurück, TCP fliegt auf AWDL nachdem die Türe aufgeht, es wird nach dem Start kein zweiter (neuer) Pfad gebaut solange die Verbindung stabil ist | IPhone > IPad |
-| gerät_18_01_11_57 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, QUIC auf AWDL überlebt die 20s sogar, aber wird trotzdem nicht mehr genutzt und abgebaut | IPhone > IPad |
+| gerät_18_01_11_57 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, QUIC auf AWDL überlebt die 20s sogar, aber wird kurz genutzt und dann abgebaut, Verbindung wieder schwach und neue aufgebaut bevor der eigentliche Wechsel stattfindet | IPhone > IPad |
 | gerät_18_01_12_00 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~20s, garkeine Verbindung auf AWDL gebaut wahrscheinlich die Tür also zu früh zu | IPhone > IPad |
 | gerät_18_01_12_02 | AWDL + WiFi | Verbindungsabbruch nach ~3s, Tür offen nach ~30s (weil davor kein traffic) | IPhone > IPad |
 | gerät_18_01_12_12 | AWDL + WiFi | Normal, Kein Internet | IPhone > IPad |
@@ -56,7 +56,7 @@ This file contains a mapping of file name to test
 | location_18_01_15_06 |  | Beide WLAN, Verbindungsabbruch nach ~10s, Abbruch, 33mb | Box > Out |
 | --- | --- | --- |
 | Nochmal iOS | IPad im Bayern WLAN | iPhone > iPad |
-| gerät_18_01_15_16 |  | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN) | iPhone > iPad |
+| gerät_18_01_15_16 |  | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN), sendet NUR TCP via AWDL, keine Migration | iPhone > iPad |
 | gerät_18_01_15_25 |  | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. | iPad > iPhone |
 | gerät_18_01_15_28 |  | Verbindungsabbruch nach ~2s, beide unters. Netzwerke (iPhone Laptop, iPad Bayern WLAN). Bricht einfach ab, Partner verschwindet aus dem AirDrop Menü, keine Fehlermeldung. Wirklich abbruch? einziger test mit QUIC und unterschiedlichem WLAN | iPad > iPhone |
 | ipad_iphone_cellular_close_far_close | | Verbindungsabbruch nach 20s (30s im capture), iPhone hat Cellular, Telefonica, iPad im WiFi; ABER: war das iPhone im Wifi? Müsste man testen... | iPad > iPhone |
@@ -70,7 +70,7 @@ Die folgende Tabelle fasst die wichtigsten Verhaltensmuster von AirDrop zusammen
 | Verwendet IPv6 | Unabhängig vom Test, es sei denn IPv6 funktioniert im Netzwerk nicht (Annahme) | Auf dem lokalen Link zwischen zwei Geräten funktioniert IPv6 natürlich immer, daher dort immer IPv6 | --- |
 | Verwendet TCP | Senden an ein anderes Gerät, nicht die Apple ID | Kann auch passieren wenn beide Geräte nicht im selben WiFi sind (warum?) | Sobald TCP verwendet wird bricht der Transfer bei Verbindungsproblemen ab |
 | Sucht Verbindungspartner mit MDNS | Auf Teilen per AirDrop klicken | Gilt sowohl per AWDL als auch WiFi (funktioniert nur wenn im selben Netzwerk) | Limitiert auf lokale Netzwerke |
-| Migriert von AWDL auf WiFi | Beide Geräte sind im selben WiFi Netzwerk. Funktioniert ohne neuen Handshake, echte Migration. | Migration zurück nie gesehen | Es scheint, sobald der Partner das AWDL verlassen hat, wird für den ganzen Transfer keine neue Verbindung mit dem WiFi-Direct/AWDL Netzwerk aufgebaut. Daher nicht Protokoll sondern darunter liegendes Problem |
+| Migriert von AWDL auf WiFi | Beide Geräte sind im selben WiFi Netzwerk. Funktioniert ohne neuen Handshake, echte Migration. | Migration zurück nie gesehen | Es scheint dass ausschließlich die vorhandene Verbindung genutzt wird. Erst sobald diese abbricht wird gewechselt. AWDL überlebt teilweise Abbruch aber wird dann sogar abgebaut |
 | Migriert **nicht** von AWDL auf WiFi in anderem Netzwerk | Beide Geräte in unterschiedlichen Netzwerken. Nimmt Hilfe von Apple Relay/Tunnel, 17.188... zur Hand, Sender baut Verbindung mit neuem Handshake auf. Wahrscheinlich sowas wie Out-Of-Band Information. | Transfer/Informationsquelle hat im Test nie funktioniert | Obwohl beide Geräte sich mit dem Relay verbinden scheint kein Transfer Zustande zu kommen. Außerdem senden die Geräte in diesem Test teilweise TCP |
 | Migriert von AWDL auf Cellular | Kein WiFi wurde verwendet (deaktiviert). Neuer Handshake, keine echte Migration. | Zeigt in UI an dass mobile Daten verwendet werden | Migriert nicht mehr zurück. Verbraucht Datenvolumen obwohl das nicht notwendig ist |
 | Migriert nicht mehr zurück | Nach Migration wird nicht mehr zurück gewechselt, auch wenn wieder Kontakt besteht | Betrifft AWDL -> WiFi & AWDL -> Cellular. Beides migriert nicht zurück. Austausch über AWDL per TCP kann beobachtet werden, aber kein Datentransfer. | Dadurch dass die Migration nur in eine Richtung funktioniert ist der Transfer langsamer als nötig |
