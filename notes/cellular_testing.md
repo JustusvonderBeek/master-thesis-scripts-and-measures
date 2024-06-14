@@ -256,13 +256,14 @@ The default flow of QuickShare transfers. Depends on the connection status
 
 (If connected to WiFi)
 
-0. Exchange with google contains infos like local IP...
-1. Receiver starts mDNS discovery in local Network asking for \<unknown strings\>_tcp.local (IPv4 & IPv6); This is tried 
-2. Sender responds with only the second part of the string
-3. Sender sends 2 ICMP ping to receiver (ttl=64) resulting in ARP
-4. Receiver responds with 2 ICMP echo replies ttl=64
-5. Sender builds TCP connection to receiver
-6. Initial data like Phone Name, etc are exchanged **in plaintext**
+1. Start Bluetooth exchange with infos like IP address and some google api service url
+2. Switch to wifi interface and perform mdns discovery in local Network asking for \<unknown strings\>_tcp.local (IPv4 & IPv6); This is tried multiple times
+3. Exchange with google api via TCP contains file infos, names, and other stuff?
+4. Sender responds with only the second part of the string
+5. Sender sends 2 ICMP ping to receiver (ttl=64) resulting in ARP
+6. Receiver responds with 2 ICMP echo replies ttl=64
+7. Sender builds TCP connection to receiver
+8. Initial data like Phone Name, etc are exchanged **in plaintext**
 
 *Start of transfer*
 
