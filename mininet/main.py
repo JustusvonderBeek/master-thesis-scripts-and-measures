@@ -198,7 +198,7 @@ def main():
     parser.add_argument('-n', '--snat', action='store_true', default=False)
     parser.add_argument('--logging', type=int, default=3)
     parser.add_argument('--build-target', type=str, default="debug")
-    parser.add_argument('--throughput', type=str, default="10MB")
+    parser.add_argument('--throughput', type=str, default="1MB")
     parser.add_argument('--scenario', type=str)
     args = parser.parse_args()
 

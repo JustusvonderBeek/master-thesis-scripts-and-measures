@@ -50,7 +50,7 @@ class TestConfiguration:
 
     change_file_permissions: bool = False
 
-    log_level: Logging = Logging.INFO
+    log_level: Logging = Logging.DEBUG
     build_target: str = "debug"
     throughput: str = "1MB"
     duration: int = 100
