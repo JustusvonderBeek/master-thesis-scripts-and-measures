@@ -26,6 +26,10 @@ The following section contains information regarding the devices, interfaces & c
 | ICE Prototype | 12.06.2024 | Laptop | Laptop: sim.de (carrier was o2, APN: internet), Telekom | quicheperf commit xx | Laptop: Client, Server | Test ISP STUN behavior |
 | ICE Prototype | 12.06.2024 | Laptop & Desktop | Laptop: sim.de (carrier was o2, APN: internet), Telekom (internet.telekom, internet.t-d1.de) | quicheperf commit xx | Laptop: Client & Desktop: Server | Test ISP STUN behavior |
 | WhatsApp Audio Call | 13.06.2024 | 2* Pixel 2 XL; I11CM0093 & I11CM0095 | I11CM0093: Telekom (internet.telekom) & I11CM0095: sim.de (carrier was o2, APN: internet) | WhatsApp: 2.24.10.85 & 2.24.10.85; Magisk 27.0 & 27.0; ADB_ROOT v1 & v1 | My Google Account & MT Google Account | Path Building; Path Migration; Path Finding in Audio Calls |
+| AirDrop Cellular | 18.06.2024 xx - 14:00 | iPad & iPhone | iPhone: Sender & iPad: Receiver | iPhone: 17.1.1 & iPad: 17.5.1 | iPhone: MT Test Account & iPad: My AppleID | Test AirDrop cellular migration iPhone | 
+| AirDrop Cellular | 18.06.2024 14:10-15:08 | iPad & iPhone | iPhone: Sender & iPad: Receiver | iPhone: 17.1.1 & iPad: 17.5.1 | iPhone: My Account & iPad: TUM Account | Test AirDrop cellular migration iPhone | 
+| AirDrop Cellular | 18.06.2024 15:19-xx | iPad & iPhone | iPhone: Sender & iPad: Receiver | iPhone: 17.1.1 & iPad: 17.5.1 | iPhone: MT Test Account & iPad: My AppleID | Test AirDrop cellular migration iPhone with QUIC | 
+| FaceTime | 18.06.2024 16:45 | iPad & iPhone | iPhone: Caller & iPad: Callee | iPhone: 17.1.1 & iPad: 17.5.1 | iPhone: MT Test Account & iPad: My AppleID | Test FaceTime cellular migration | 
 | --- | --- | --- | --- | --- | --- |
 
 # SIM Karten APN Netzwerk
@@ -45,6 +49,96 @@ Die folgende Sektion beinhaltet Infos zum NAT je nach APN Einstellung. Alle Test
 | Telekom | internet.telekom (sipgate) | Independent Mapping / Independent Filter | Random Port | No Hairpin |
 | sim.de (o2) | internet | Dependent Mapping | Random Port | No Hairpin |
 | --- | --- | --- |
+
+# FaceTime
+The FaceTime re-analysis.
+
+| Time | Test | Devices | Direction | Connectivity | Data Size | Status | Test Description | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 18.06 16:45-17:20 | FaceTime structure | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (AP) + Cellular, iPad: WiFi (AP) | 60s | Success | Calling, moving hand, enabling audio, then close |
+| 18.06 17:25 | FaceTime structure | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (AP) + Cellular, iPad: WiFi (HHG) | 60s | Success | Calling, moving hand, enabling audio, then close |
+| 18.06 17:38 | FaceTime structure | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (AP) + Cellular, iPad: WiFi (HHG) | 80s | Success | Calling, moving hand, enabling audio, then close | Now the IPv4 path and IPv6 paths via cellular are not found |
+| 18.06 17:43 | FaceTime structure | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (AP) + Cellular, iPad: WiFi (HHG) | 80s | Success | Calling, moving hand, enabling audio, then close | Now finding IPv6 WiFi and Cellular again |
+| 18.06 17:55 | FaceTime structure | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (AP) + Cellular, iPad: WiFi (HHG) | 90s | Success | Calling, moving hand, enabling audio, start in two different APs, disable one AP, migration, enable AP, migration back? | Testing cellular and AP migration |
+| 18.06 22:24 | FaceTime migration | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (HHG) + Cellular, iPad: WiFi (AP) | 90s | Success | Calling, moving hand, enabling audio, start in two different APs, disable WiFi on iPhone, migration, enable WiFi, migration back? | Testing cellular and AP migration |
+| 18.06 22:33 | FaceTime migration | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (HHG) + Cellular, iPad: WiFi (AP) | 90s | Success | Calling, moving hand, enabling audio, start in two different APs, disable WiFi on iPhone, migration, enable WiFi, migration back? | Testing cellular and AP migration |
+| 18.06 22:37 | FaceTime migration | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (HHG) + Cellular, iPad: WiFi (AP) | 90s | Success | Calling, moving hand, enabling audio, start in two different APs, disable one AP, migration, enable AP, migration back? | Testing cellular and AP migration |
+| 18.06 23:02 | FaceTime migration | iPhone & iPad | iPhone -> iPad | iPhone: WiFi (HHG) + Cellular, iPad: WiFi (AP) | 90s | Success | Calling, moving hand, enabling audio, start in two different APs, disable one AP, migration, enable AP, migration back, disconnect once again and migration once again | Testing cellular and AP migration |
+
+
+## Analysis
+The conclusion from the FaceTime tests.
+
+| Tests Considered | Status | Characteristics Analyzed | Findings | Notes |
+| --- | --- | --- | --- | --- |
+| 18.06 16:45-17:20 | Normal Behavior | Call Setup and Idle Behavior | First with QUIC (NAT, STUN) and TLS (Push Messages) to Apple, then first public ip STUN probes, followed by local ones. Cellular data is used for QUIC apple connection on 3491 + for STUN probing | |
+| 18.06 16:45-17:20 | Normal Behavior | STUN Probing, Path Building | Using STUN with comprehension optional 0x8007 attribute, otherwise normal, probing cellular path from both sides every 1s, call / second times (rather limited by end of call I think) | Probing cellular path continuously but never used for data. Plus path is not found |
+| 18.06 17:25-17:43 | Normal Behavior in different Wi-Fi | STUN Probing, Path Building | Probing all interfaces, IPv4 and IPv6, now finding both IPv6 public of WiFi and Cellular, as well as IPv4, when not finding, binding requests during whole call | NAT in mobile net IPv4 and IPv6 combined dependent? |
+| 18.06 17:25-17:45 | Normal Behavior in different Wi-Fi | Path Maintenance | STUN Binding requests on idle / unbuild IPv4 IPs every 1s, on active no STUN but STUN/TFTP every ~4-6s, ~40s Data Channel Indication on IPv6 but no (re-)binding requests, cellular seems to be kept open by these | STUN contains 0x8007 attribute |
+| 18.06 17:45 | Normal Behavior in different Wi-Fi | Migration | Seamless (~100ms) migration to cellular IPv6 P2P path | STUN contains 0x8007 attribute |
+| 18.06 22:24 | Normal Behavior in different Wi-Fi | Relay | Switching to Relay path via Apple using QUIC in case no second backup path is established | Relay is only used as long as no other more direct path can be found. Dualstack is observed. IPv4 to receive, IPv6 to send |
+| 18.06 22:24 | Normal Behavior in different Wi-Fi | Relay Migration | Switching to Relay takes only 100ms because path already established at the beginning | In fact, dualstack is used and both IPv6 and IPv4 path is established |
+| --- | --- | --- | --- | --- |
+
+### Structure
+
+1. The Caller connects / send push via TLS to Apple
+2. Callee is already connected and receives this push
+3. Both connect via QUIC port 3491 (NAT or STUN stuff) to Apple, on all available interfaces (WiFi + Cellular)
+4. STUN Binding requests from Wi-Fi to public IPv4 of other device. Includes unknown attribute 0x8007 (comprehension optional), from all interfaces (including cellular)
+5. Maybe some data via Apple?
+6. STUN to local IPv4 address
+7. STUN data indicator between local WiFi IPv4, still no direct data but QUIC and TLS
+8. ~250ms after data indication, ~600ms after first STUN UDP P2P in flight
+9. Transfer of data
+10. End of call
+
+# AirDrop
+The AirDrop analysis with one cellular interface and migration.
+
+For the tests until 11:13 only the email was given as contact info on the iPad. Thereafter include also my phone number of the iPhone.
+
+| Time | Test | Devices | Direction | Connectivity | Data Size | Status | Test Description | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 18.06 10:34 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Using TCP, not breaking connection |
+| 18.06 10:37 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Failure probably because the Cellular link failed and AWDL broke |
+| 18.06 10:41 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | TCP, failure again |
+| 18.06 10:43 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Breaking TCP connection to early |
+| 18.06 10:45 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Again TCP, iPad out of box, therefore successful |
+| 18.06 10:50 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Again TCP, iPad out of box, therefore successful |
+| 18.06 10:53 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Again TCP, iPad out of box, therefore successful |
+| 18.06 10:57 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + WiFi (HHG) + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection | Again TCP, very long break in transfer but then sending again via TCP |
+| 18.06 11:04 | AirDrop Cellular Migration | iPhone & iPad | iPhone -> iPad | iPhone: Cellular + WiFi (HHG) + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection | QUIC to get file to iPad for sender switch |
+| 18.06 11:07 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Fails after breaking connection, not switching to Cellular |
+| 18.06 11:13 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path (only cellular) on the iPhone, moving devices apart to break connection and migrate to iCloud | Fails after breaking connection, not switching to Cellular |
+| 18.06 11:21 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Not switching to cellular |
+| 18.06 11:27 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Not switching to cellular |
+| 18.06 11:33 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Not switching to cellular, moving outside and iPad on other end of room |
+| 18.06 11:40 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (HHG) + Bluetooth | 75 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud, then moving back together |  |
+| 18.06 11:45 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (HHG) + Bluetooth | 75 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Never switched to iCloud |
+| 18.06 11:53 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (HHG) + Bluetooth | 20 MB | Success | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Trying smaller file, success but via AWDL |
+| 18.06 12:03 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 20 MB | Failure | Starting the transfer without backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Not switching to cellular |
+| 18.06 12:10 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (HHG) + Cellular + Bluetooth, iPad: WiFi (HHG) + Bluetooth | 75 MB | Failure | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | iPhone switched from HHG AP, transfer broke |
+| 18.06 12:13 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (HHG) + Cellular + Bluetooth, iPad: WiFi (HHG) + Bluetooth | 75 MB | Failure | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | iPhone switched from HHG AP, transfer broke |
+| 18.06 13:52 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (HHG) + Cellular + Bluetooth, iPad: WiFi (HHG) + Bluetooth | 75 MB | Failure | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Not migrating, manual abort |
+| 18.06 13:55 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud | Not moving fast enough |
+| Switching Test Accounts | iPad: TUM Apple ID, iPhone: My Apple ID | | | | | | | --- |
+| 18.06 14:11 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud, moving outside of fence | Long interruption moving away, then reconnect, moving some data via Google Content Storage and TCP |
+| 18.06 14:28 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud, moving outside of fence, then moving back together seems to continue transfer | Long interruption moving away, then reconnect, reconnect |
+| 18.06 14:28 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud, moving outside of fence, then moving back together seems to continue transfer | Long interruption moving away, then reconnect, reconnect |
+| 18.06 14:28-15:08 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud, moving outside of fence | Long interruption moving away |
+| 18.06 15:28 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Success | Testing QUIC conditions | Switching Accounts on devices, then restarting, now using QUIC |
+| 18.06 15:34 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Testing iCloud relay | Both in same AP, starting transfer via AP instead of AWDL, breaks when losing AP connectivity |
+| 18.06 15:38 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Testing iCloud relay | Both in same AP, starting transfer via AWDL, migrates to WiFi but not further |
+| 18.06 15:48 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Testing iCloud relay | Both in same AP, starting transfer via AP instead of AWDL, breaks when losing AP connectivity |
+| 18.06 15:54 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (HHG) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Testing iCloud relay | Both in same AP, starting transfer via AWDL, losing AWDL after 75% done, only Cellular, does not switch, then continue |
+| Added Phone Number of contact to both sides | Both sharings appear with Person now | --- | --- | --- | --- | --- | --- | --- |
+| 18.06 16:17 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (HHG) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | Failure | Testing iCloud relay | Both in different AP, starting transfer via AWDL, losing connectivity and breaking connection |
+| 18.06 16:24 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (HHG) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | xx | Testing iCloud relay | Both in same WiFi, breaking connection,  |
+| 18.06 16:xx | AirDrop QUIC Timeout | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | xx | Testing QUIC timeout | Both close to each other, starting transfer then moving apart to break AWDL, checking when the iPad (sender) decides to give up |
+| 18.06 14:xx | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | xx | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud, moving outside of fence |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
 
 # Signal
 The analysis of Signal Video and Audio Calls between two different accounts
