@@ -199,15 +199,22 @@ def quicheperf_path_loss_test(net, directory, conf):
         output_processes.append(client_capture)
 
     # Waiting long enough so that at least one path has been found
-    wait(5)
+    wait(7)
     # Now lose all packets at the NAT
-    nat_to_lose_packets="nat1"
+    nat_to_lose_packets="nat3"
     path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-local", loss=100)
     path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-ext", loss=100)
     # Wait for all bindings to timeout
     # See: https://unix.stackexchange.com/questions/524295/how-long-does-conntrack-remember-a-connection
-    # Modified to 25s for this test with (TODO: Doesn't work at the moment, remove manual)
-    wait(35)
+    # Modified to 15s for this test
+    wait(4)
+    # Also lose all packets on the Wi-Fi direct link
+    nat2_to_lose_packets="s1"
+    path_loss(net, f"{nat2_to_lose_packets}", f"{nat2_to_lose_packets}-wifi1", loss=100)
+    path_loss(net, f"{nat2_to_lose_packets}", f"{nat2_to_lose_packets}-wifi2", loss=100)
+    
+    wait(20)
+    
     # Helping the timeout and remove the established path (in case any was established)
     remove_conntrack_entry(net, f"{nat_to_lose_packets}", "-u ASSURED")
     print_nat_table(net, f"{nat_to_lose_packets}", outpath=directory, outfile=f"{nat_to_lose_packets}_temp_nat.log")
@@ -215,6 +222,10 @@ def quicheperf_path_loss_test(net, directory, conf):
     path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-local", loss=0)
     path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-ext", loss=0)
     # Give enough time to restart and find the path
+    wait(23)
+    # Enable next path in next gathering iteration
+    path_loss(net, f"{nat2_to_lose_packets}", f"{nat2_to_lose_packets}-wifi1", loss=0)
+    path_loss(net, f"{nat2_to_lose_packets}", f"{nat2_to_lose_packets}-wifi2", loss=0)
     wait(20)
     set_conntrack_timeout(net, f"{nat_to_lose_packets}", timeout=120)
 
