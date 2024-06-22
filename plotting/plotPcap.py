@@ -45,96 +45,43 @@ def plotThroughput(args):
     Gets the parsed command line and outputs the final throughput graph.
     """
 
-    interfaces=["h1-wifi", "h1-eth", "h1-cellular"]
-    data = parsePcap(args.input[0], interfaces)
+    interfaces=[
+        "h1-cellular", 
+        "h1-cellular", 
+        "h2-cellular", 
+        "h1-cellular"
+    ]
+    filterRules=[
+        "stun&&!icmp&&ip.addr==1.20.50.100", 
+        "stun&&!icmp&&ip.dst==1.20.50.20", 
+        "stun&&!icmp&&ip.src==1.20.50.10&&ip.dst==2.40.60.3", 
+        "!stun&&udp&&!mdns&&ip.dst==1.20.50.20"
+    ]
+    columns=[
+        "H1 STUN Address Resolution", 
+        "H1 -> H2 STUN Probes (out)",
+        "H1 -> H2 STUN Probes (in)", 
+        "H1 -> H2 Cellular (QUIC)"
+    ]
+    resolution="0,005"
+    # interfaces=[
+    #     "h1-wifi", 
+    #     "h1-eth", 
+    #     "h1-cellular", 
+    # ]
+    # filterRules=[
+    #     "!stun&&!mdns&&udp", 
+    #     "!stun&&!mdns&&udp", 
+    #     "!stun&&!mdns&&udp", 
+    # ]
+    # columns=[
+    #     "H1 Wi-Fi", 
+    #     "H1 Ethernet",
+    #     "H1 Cellular", 
+    # ]
+    # resolution="0,05"
+    data = parsePcap(args.input[0], resolution, interfaces, filterRules, columns)
 
-    # yvalues = "Packets"
-    # if args.plotting is not None:
-    #     yvalues = args.plotting
-
-    # min_xlength = 20
-    # throughput = None
-    # for index, file in enumerate(args.input):
-    #     ingress = pd.read_csv(file, index_col=0)
-    #     egress = None
-    #     enclave = None
-    #     if result.input_outgoing is not None and len(result.input_outgoing) > index:
-    #         egress = pd.read_csv(result.input_outgoing[index])
-    #     if result.input_e is not None and len(result.input_e) > index:
-    #         enclave = pd.read_csv(result.input_e[index])
-
-    #     # print(ingress)
-    #     # if egress is not None:
-    #     #     print(egress)
-            
-    #     # Post processing
-
-    #     # Convert values to Mbps
-    #     ingress["Direction"] = "ingress"
-    #     ingress["Mode"] = "Baseline"
-    #     if egress is not None:
-    #         # Adding the second column
-    #         egress["Direction"] = "egress"
-    #         ingress = pd.concat([ingress, egress], ignore_index=True)
-    #     if enclave is not None:
-    #         enclave["Mode"] = "Enclave"
-    #         ingress = pd.concat([ingress, enclave], ignore_index=True)
-
-    #     ingress[yvalues] /= 1e6 / 8
-
-    #     size = re.findall("_b(\d+)", file)
-    #     if len(size) > 0:
-    #         size = size[0]
-    #         ingress["Size"] = size
-    #     print(ingress)
-
-    #     if throughput is None:
-    #         throughput = pd.DataFrame(ingress)
-    #     else:
-    #         throughput = pd.concat([throughput, ingress], ignore_index=True)
-
-    #     if min_xlength > len(ingress):
-    #         min_xlength = len(ingress)
-
-    # data = pd.DataFrame(throughput)
-    # data = throughput
-    # print(data)
-
-    # # Plotting
-    # fig, axes = plt.subplots()
-
-    # baseline = data[data["Mode"] == "Baseline"]
-    # enclave = data[data["Mode"] == "Enclave"]
-    # sns.lineplot(data=enclave, y=yvalues, x="Interval", hue="Size", marker="o")
-    # if len(enclave) > 0:
-    #     custom_pal = {"100":"blue", "200":"orange", "500":"green", "1000":"red", "1420":"purple"}
-    #     sizes = [100, 200, 500, 1000, 1420]
-    #     for i in range(5):
-    #         sns.lineplot(data=baseline[baseline["Size"] == f"{sizes[i]}"], y=yvalues, x="Interval", marker="s", linestyle="--", hue="Size", palette=custom_pal, label=f"{sizes[i]} Baseline", legend=None)
-
-    # if result.xaxis is not None:
-    #     axes.set(xlabel=result.xaxis)
-    # else:
-    #     axes.set(xlabel="Time in seconds")
-    # if result.yaxis is not None:
-    #     axes.set(ylabel=result.yaxis)
-    # else:
-    #     axes.set(ylabel="MBit/s")
-    # if result.title is not None:
-    #     plt.title(result.title)
-    # else:
-    #     plt.title("Throughput")
-
-    # plt.legend(title="PDU size")
-    # axes.set_xlim(xmin=0, xmax=6)
-    # axes.set_ylim(ymin=0)
-    # plt.grid()
-    # plt.tight_layout()
-
-    # Saving the plot
-    # exportToPdf(fig, result.output)
-    # return
-    
     # --------------------
     # Plotting the pps
     # --------------------
@@ -142,14 +89,16 @@ def plotThroughput(args):
     # print(data)
     fig, axes = plt.subplots()
 
-    filtered_data = data.filter(items=["Interval", "h1-wifi", "h1-eth", "h1-cellular", "h2-wifi", "h2-eth", "h2-cellular"])
+    # filtered_data = data.filter(items=["Interval", "h1-wifi", "h1-eth", "h1-cellular", "h2-wifi", "h2-eth", "h2-cellular"])
+    filtered_data = data.filter(items=["Interval"] + columns)
     conv_data = filtered_data.melt(id_vars="Interval")
     # print(conv_data)
-    plot = sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable", linewidth=1.2)
+    plot = sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable", linewidth=1.2, palette="tab10")
 
 
     xmax = data["Interval"][len(data["Interval"])-1]
-    axes.set_xlim(xmin=0, xmax=xmax)
+    axes.set_xlim(xmin=4.28, xmax=5.65)
+    # axes.set_xlim(xmin=0, xmax=xmax)
     
     # Scale the ticks in case we have too many (aka more than 20)
     # print(len(data["Interval"]))
@@ -165,35 +114,65 @@ def plotThroughput(args):
     #     axes.xaxis.set_major_locator(loc)
     #     plt.xticks(rotation=0)
 
-    loc = plticker.MultipleLocator(base=1)
+    loc = plticker.MultipleLocator(base=0.1)
+    minor_loc = plticker.MultipleLocator(base=0.02)
     axes.xaxis.set_major_locator(loc)
+    axes.xaxis.set_minor_locator(minor_loc)
+    # axes.yaxis.set_minor_locator(minor_loc)
+
+    plt.grid(True, axis="x")
+    axes.grid(which="minor", linestyle="dotted", linewidth='0.5', color="gray")
+    # plt.xticks(rotation=90)
 
     # print(max_index)
     # axes.xaxis.set_ticks(np.arange(0, max_index, 5))
     # Plot log to see the traffic for the two idle interfaces
-    if max(data["h1-eth"]) > 30 or max(data["h1-wifi"]) > 30 or max(data["h1-cellular"]) > 30:
+    logscale=False
+    for column in columns:
+        if max(data[column]) > 30:
+            logscale=True
+            break
+    
+    if logscale:
         axes.set_yscale('log',base=10)
         axes.set_ylim(ymin=10e-1)
     else:
-        axes.set_ylim(ymin=0)
-        
+        # axes.set_ylim(ymin=0)
+        axes.set_ylim(ymin=0, ymax=4)
+    
     axes.yaxis.set_major_formatter(ScalarFormatter())
     axes.set(xlabel="Time in seconds")
     axes.set(ylabel="Packets per second")
 
     # axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
-    axes.legend(loc="best", title="Interface", fancybox=True, framealpha=0.9)
-    plt.title("QUIC packets per interface")
+    axes.legend(loc="best", title="Packet Types", fancybox=True, framealpha=0.9)
+    plt.title("Cellular Path Building in Detail")
 
-    plt.grid()
-    # plt.xticks(rotation=90)
+    # # Adding some figure custom annotations
+    # plt.axvline(x=1.29, color=(1, 0, 0, 1), linestyle="--")
+    # # add arrow
+    # plt.annotate("1. Ethernet path\nadded to QUIC", xy=(1.29, 6.0), xytext=(2.1, 6.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # plt.axvline(x=5.54, color=(1, 0, 0, 1), linestyle="--")
+    # plt.annotate("3. Cellular path\nadded to QUIC", xy=(5.54, 4.0), xytext=(6.5, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # # Annotate the path probings (or keep aplives)
+    # plt.annotate("4. QUIC keep-alives\nevery ~1s on idle\n paths", xy=(9.7, 3), xytext=(10.2, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # # Annotate the decision to use the shorter path RTT
+    # plt.annotate("2. QUIC choosing\nEthernet path\nfor sending due\nto shorter RTT", xy=(1.29, 3), xytext=(2.1, 3.1), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    
+    
+    # Adding the cellular path finding annotation
+    plt.axvline(x=4.37, color=(1, 0, 0, 1), linestyle="--")
+    plt.axvline(x=4.87, color=(1, 0, 0, 1), linestyle="--")
+    
+    plt.annotate("1. Finished resolving peer-\nreflexive address via TURN\nserver", xy=(4.37, 3.12), xytext=(4.41, 3.45), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    
+    plt.annotate("2. Both peers\nstart probing,\nrepeating every\n~200ms", xy=(4.45, 2), xytext=(4.5, 2.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
-    # Adding some figure custom annotations
-    plt.axvline(x=1.29, color=(1, 0, 0, 1), linestyle="--")
-    # add arrow
-    plt.annotate("Ethernet path\nused by QUIC", xy=(1.29, 6.0), xytext=(2.1, 6.2), arrowprops=dict(arrowstyle="->", color="r"))
-    plt.axvline(x=5.54, color=(1, 0, 0, 1), linestyle="--")
-    plt.annotate("Cellular path\nused by QUIC", xy=(5.54, 6.0), xytext=(6.5, 6.2), arrowprops=dict(arrowstyle="->", color="r"))
+    plt.annotate("3. First probe\narrives at H2\n~36ms after\nsending (only\nreflexive probe\nreaches H2)", xy=(4.49, 1), xytext=(4.57, 0.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+
+    plt.annotate("4. Full STUN Handshake\ncompleted", xy=(4.86, 3), xytext=(5.12, 2.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+
+    plt.annotate("5. Path added to\nQUIC and used\n~690ms after\nHandshake\ncomplete", xy=(5.56, 1), xytext=(5.33, 1.31), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
     exportToPdf(fig, args.output)
 
