@@ -60,7 +60,7 @@ def convertTSharkStatsToDataFrame(inputFile, interfaces=None, removeTmpFile=Fals
         return data
     
     for iface in interfaces:
-        old_columns[column_index] = f"{iface} Frames"
+        old_columns[column_index] = f"{iface}"
         column_index += 1
         old_columns[column_index] = f"{iface} Bytes"
         column_index += 1
@@ -94,7 +94,7 @@ def extractStatsFromPcap(inputFile, outputFile, interfaces=None):
     interfaceList = "\""
     if interfaces is not None:
         for interface in interfaces:
-            interfaceList += f",!stun&&udp&&frame.interface_name=={interface}"
+            interfaceList += f",!stun&&!mdns&&udp&&frame.interface_name=={interface}"
     interfaceList += "\""
     
     filter=f"FRAMES,BYTES{interfaceList}"
