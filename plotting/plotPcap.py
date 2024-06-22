@@ -142,12 +142,14 @@ def plotThroughput(args):
     # print(data)
     fig, axes = plt.subplots()
 
-    filtered_data = data.filter(items=["Interval", "h1-wifi Frames", "h1-eth Frames", "h1-cellular Frames", "h2-wifi Frames", "h2-eth Frames", "h2-cellular Frames"])
+    filtered_data = data.filter(items=["Interval", "h1-wifi", "h1-eth", "h1-cellular", "h2-wifi", "h2-eth", "h2-cellular"])
     conv_data = filtered_data.melt(id_vars="Interval")
     # print(conv_data)
-    plot = sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable")
+    plot = sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable", linewidth=1.2)
 
-    axes.set_xlim(xmin=0)
+
+    xmax = data["Interval"][len(data["Interval"])-1]
+    axes.set_xlim(xmin=0, xmax=xmax)
     
     # Scale the ticks in case we have too many (aka more than 20)
     # print(len(data["Interval"]))
@@ -169,7 +171,7 @@ def plotThroughput(args):
     # print(max_index)
     # axes.xaxis.set_ticks(np.arange(0, max_index, 5))
     # Plot log to see the traffic for the two idle interfaces
-    if max(data["h1-eth Frames"]) > 30 or max(data["h1-wifi Frames"]) > 30 or max(data["h1-cellular Frames"]) > 30:
+    if max(data["h1-eth"]) > 30 or max(data["h1-wifi"]) > 30 or max(data["h1-cellular"]) > 30:
         axes.set_yscale('log',base=10)
         axes.set_ylim(ymin=10e-1)
     else:
@@ -179,12 +181,19 @@ def plotThroughput(args):
     axes.set(xlabel="Time in seconds")
     axes.set(ylabel="Packets per second")
 
-    axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
-    # axes.legend(loc="best", title="Interface")
-    plt.title("Packets per second")
+    # axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
+    axes.legend(loc="best", title="Interface", fancybox=True, framealpha=0.9)
+    plt.title("QUIC packets per interface")
 
     plt.grid()
     # plt.xticks(rotation=90)
+
+    # Adding some figure custom annotations
+    plt.axvline(x=1.29, color=(1, 0, 0, 1), linestyle="--")
+    # add arrow
+    plt.annotate("Ethernet path\nused by QUIC", xy=(1.29, 6.0), xytext=(2.1, 6.2), arrowprops=dict(arrowstyle="->", color="r"))
+    plt.axvline(x=5.54, color=(1, 0, 0, 1), linestyle="--")
+    plt.annotate("Cellular path\nused by QUIC", xy=(5.54, 6.0), xytext=(6.5, 6.2), arrowprops=dict(arrowstyle="->", color="r"))
 
     exportToPdf(fig, args.output)
 
