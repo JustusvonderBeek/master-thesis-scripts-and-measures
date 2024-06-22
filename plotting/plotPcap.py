@@ -1,6 +1,7 @@
 from cProfile import label
 import sys
 import os
+import math
 import numpy as np
 import matplotlib.ticker as plticker
 from argparse import ArgumentParser
@@ -144,25 +145,46 @@ def plotThroughput(args):
     filtered_data = data.filter(items=["Interval", "h1-wifi Frames", "h1-eth Frames", "h1-cellular Frames", "h2-wifi Frames", "h2-eth Frames", "h2-cellular Frames"])
     conv_data = filtered_data.melt(id_vars="Interval")
     # print(conv_data)
-    sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable")
+    plot = sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable")
 
     axes.set_xlim(xmin=0)
-    axes.set_ylim(ymin=0.9)
-    loc = plticker.MultipleLocator(base=5.0)
-    # print(max_index)
+    
+    # Scale the ticks in case we have too many (aka more than 20)
+    # print(len(data["Interval"]))
+    # if len(data["Interval"]) > 20:
+    #     tick_scale = len(data["Interval"]) / 20
+    #     print(tick_scale)
+    #     # tick_scale = math.floor(tick_scale)
+    #     loc = plticker.MultipleLocator(base=1)
+    #     axes.xaxis.set_major_locator(loc)
+    #     plt.xticks(rotation=90)
+    # else:
+    #     loc = plticker.MultipleLocator(base=1)
+    #     axes.xaxis.set_major_locator(loc)
+    #     plt.xticks(rotation=0)
+
+    loc = plticker.MultipleLocator(base=1)
     axes.xaxis.set_major_locator(loc)
+
+    # print(max_index)
     # axes.xaxis.set_ticks(np.arange(0, max_index, 5))
     # Plot log to see the traffic for the two idle interfaces
-    axes.set_yscale('log',base=10)
+    if max(data["h1-eth Frames"]) > 30 or max(data["h1-wifi Frames"]) > 30 or max(data["h1-cellular Frames"]) > 30:
+        axes.set_yscale('log',base=10)
+        axes.set_ylim(ymin=10e-1)
+    else:
+        axes.set_ylim(ymin=0)
+        
     axes.yaxis.set_major_formatter(ScalarFormatter())
     axes.set(xlabel="Time in seconds")
     axes.set(ylabel="Packets per second")
 
-    axes.legend(loc="upper right", title="Interface")
+    axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
+    # axes.legend(loc="best", title="Interface")
     plt.title("Packets per second")
 
     plt.grid()
-    plt.xticks(rotation=90)
+    # plt.xticks(rotation=90)
 
     exportToPdf(fig, args.output)
 
