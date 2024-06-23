@@ -248,6 +248,71 @@ def quicheperf_path_loss_test(net, directory, conf):
     # Finished testing
     return output_processes
 
+def quicheperf_loss_on_probing(net, directory, conf):
+    """
+    This test is meant to reproduce an scheduling error when packets are
+    lost at the beginning of the ICE probing. This leads to a loss in ICE
+    synchronization frames exchanged via QUIC and a freeze in path probing
+    """
+    
+    h1 = net.get("h1")
+    h2 = net.get("h2")
+
+    target = conf.build_target
+    tp = conf.throughput
+    output_processes = []
+
+    set_conntrack_timeout(net, "nat3", timeout=25)
+
+    if conf.log_level.value > Logging.INFO.value:
+        server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
+
+        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp} &> {testing_dir}/{directory}/h1.log", shell=True)
+
+        server_capture = (server, None)
+        client_capture = (client, None)
+        output_processes.append(server_capture)
+        output_processes.append(client_capture)
+    else:
+        server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+
+        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+        server_capture = (server, f"{directory}/h2.log")
+        client_capture = (client, f"{directory}/h1.log")
+        output_processes.append(server_capture)
+        output_processes.append(client_capture)
+
+    # Waiting long enough so that both paths are found
+    # Should be done 5 seconds after the start
+    wait(7)
+    
+    # Now lose all packets on the Ethernet path (NAT3) and enforce migration onto Wi-Fi
+    nat_to_lose_packets="nat3"
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-local", loss=100)
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-ext", loss=100)
+    
+    # Wait until the next gathering iteration starts and kill the sending Wi-Fi interface exactly at
+    # that time
+    wait(4)
+
+    # Also lose all packets on the Wi-Fi direct link (Switch 1)
+    nat2_to_lose_packets="s1"
+    path_loss(net, f"{nat2_to_lose_packets}", f"{nat2_to_lose_packets}-wifi1", loss=100)
+    path_loss(net, f"{nat2_to_lose_packets}", f"{nat2_to_lose_packets}-wifi2", loss=100)
+    
+    # Now, all gathering should fail because we are missing an ICE synchronization
+    wait(3)
+    
+    # Even after enabling the path, should not be found again
+    remove_conntrack_entry(net, f"{nat_to_lose_packets}", "-u ASSURED")
+    print_nat_table(net, f"{nat_to_lose_packets}", outpath=directory, outfile=f"{nat_to_lose_packets}_temp_nat.log")
+    # Then, restore the Ethernet path to be rebuild
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-local", loss=0)
+    path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-ext", loss=0)
+    
+    wait(15)
+
 def start_ping_pong(net, directory, conf):
     """
     Starting the WebRTC Ping Pong example which acts as a baseline
