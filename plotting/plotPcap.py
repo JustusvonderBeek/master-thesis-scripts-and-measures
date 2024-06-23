@@ -148,7 +148,8 @@ def plotThroughput(args):
     # plt.xticks(rotation=90)
 
     # axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
-    axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
+    # axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
+    axes.legend(loc=(0.77,0.6), title="Interfaces", fancybox=True, framealpha=0.9)
     plt.title("Prototype Path Migration and Rebuilding")
 
     # # Adding some figure custom annotations
@@ -179,24 +180,33 @@ def plotThroughput(args):
 
     # Annotations for migration
     plt.axvline(x=7, color=(1, 0, 0, 1), linestyle="--")
-    plt.axvline(x=11, color=(1, 0, 0, 1), linestyle="--")
+    plt.axvline(x=12, color=(1, 0, 0, 1), linestyle="--")
     
     plt.axvline(x=31, color=(1, 0, 0, 1), linestyle="--")
-    plt.axvline(x=44, color=(1, 0, 0, 1), linestyle="--")
+    plt.axvline(x=45, color=(1, 0, 0, 1), linestyle="--")
     
-    plt.annotate("1. Ethernet path\n100% loss and\nmigration to Wi-Fi", xy=(7, 80), xytext=(13.5, 29), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("1. Ethernet path\n100% loss and\nmigration to Wi-Fi", xy=(7, 80), xytext=(13.5, 80), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     
-    plt.annotate("2. Wi-Fi path\n100% loss and\nmigration to\nCellular", xy=(11, 20), xytext=(15.5, 9), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("2. Wi-Fi path\n100% loss and\nmigration to\nCellular", xy=(12, 20), xytext=(15.5, 20), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     
-    plt.annotate("3. STUN probes\nfail", xy=(15, 3), xytext=(15.5, 4), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("3. QUIC packets\nare still sent but\ndo not arrive", xy=(15, 3), xytext=(15, 6), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     
-    plt.annotate("4. Ethernet path\nre-enabled", xy=(31, 45), xytext=(47, 42), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("4. Ethernet path\nre-enabled", xy=(31, 45), xytext=(35.5, 25), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     
-    plt.annotate("5. Migration back\nto Ethernet path", xy=(32, 100), xytext=(47, 80), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("5. Migration back\nto Ethernet path", xy=(32, 100), xytext=(35.5, 63), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     
-    plt.annotate("6. Wi-Fi path\nre-enabled", xy=(44, 7), xytext=(49, 6), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("6. Wi-Fi path\nand interface\nre-enabled", xy=(45, 2), xytext=(48.5, 1.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
-    plt.annotate("7. It takes until\nthe next iteration\nto consider the\nWi-Fi path for\nprobing", xy=(63, 3), xytext=(46, 1.3), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("7. It takes until\nthe next iteration\nto consider the\nWi-Fi path for\nprobing again", xy=(63, 3), xytext=(49.5, 5.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+
+    # Color the ICE probings
+    plt.axvspan(0, 1, facecolor="gray", alpha=0.3)
+    plt.axvspan(4, 5, facecolor="gray", alpha=0.3)
+    plt.axvspan(11, 21, facecolor="gray", alpha=0.3)
+    plt.axvspan(30, 32, facecolor="gray", alpha=0.3)
+    plt.axvspan(42, 52, facecolor="gray", alpha=0.3)
+    plt.axvspan(62, 63, facecolor="gray", alpha=0.3)
+    plt.axvspan(73, 75, facecolor="gray", alpha=0.3)
 
     exportToPdf(fig, args.output)
 
