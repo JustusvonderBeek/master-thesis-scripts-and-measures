@@ -67,19 +67,25 @@ def plotThroughput(args):
     interfaces=[
         "h1-wifi", 
         "h1-eth", 
-        "h1-cellular", 
+        "h1-cellular",
+        "h2-eth",
+        "h2-cellular"
     ]
     filterRules=[
-        "!stun&&!mdns&&udp", 
-        "!stun&&!mdns&&udp", 
-        "!stun&&!mdns&&udp", 
+        "!stun&&!mdns&&udp&&ip.dst==192.168.1.3", 
+        "!stun&&!mdns&&udp&&ip.dst==172.16.2.20", 
+        "!mdns&&udp&&(ip.dst==1.20.50.100||ip.dst==1.20.50.20)", 
+        "!stun&&!mdns&&udp&&ip.dst==172.16.2.20",
+        "!stun&&!mdns&&udp&&ip.dst==2.40.60.3",
     ]
     columns=[
         "H1 Wi-Fi", 
         "H1 Ethernet",
-        "H1 Cellular", 
+        "H1 Cellular",
+        "H2 Ethernet (in)",
+        "H2 Cellular (in)" 
     ]
-    resolution="1"
+    resolution="0,05"
     data = parsePcap(args.input[0], resolution, interfaces, filterRules, columns)
 
     # --------------------
@@ -98,7 +104,8 @@ def plotThroughput(args):
 
     xmax = data["Interval"][len(data["Interval"])-1]
     # axes.set_xlim(xmin=4.28, xmax=5.65)
-    axes.set_xlim(xmin=0, xmax=xmax)
+    axes.set_xlim(xmin=0, xmax=17)
+    # axes.set_xlim(xmin=0, xmax=xmax)
     
     # Scale the ticks in case we have too many (aka more than 20)
     # print(len(data["Interval"]))
@@ -135,36 +142,43 @@ def plotThroughput(args):
     axes.set(xlabel="Time in seconds")
     axes.set(ylabel="Packets per second")
 
-    loc = plticker.MultipleLocator(base=5)
+    loc = plticker.MultipleLocator(base=1)
+    # loc = plticker.MultipleLocator(base=5)
     # loc = plticker.MultipleLocator(base=0.1)
-    # minor_loc = plticker.MultipleLocator(base=0.02)
-    minor_loc = plticker.MultipleLocator(base=1)
+    minor_loc = plticker.MultipleLocator(base=0.2)
+    # minor_loc = plticker.MultipleLocator(base=1)
     axes.xaxis.set_major_locator(loc)
     axes.xaxis.set_minor_locator(minor_loc)
     # axes.yaxis.set_minor_locator(minor_loc)
 
     axes.grid(which="minor", linestyle="dotted", linewidth='0.5', color="gray")
-    plt.grid(True)
+    plt.grid(True, axis="x")
     # plt.xticks(rotation=90)
 
     # axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
-    # axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
-    axes.legend(loc=(0.77,0.6), title="Interfaces", fancybox=True, framealpha=0.9)
-    plt.title("Prototype Path Migration and Rebuilding")
+    axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
+    # axes.legend(loc=(0.77,0.6), title="Interfaces", fancybox=True, framealpha=0.9)
+    plt.title("QUIC Path Probing")
 
-    # # Adding some figure custom annotations
+
+    # # Adding some figure custom annotations for Pathfinding Test 1
     # plt.axvline(x=1.29, color=(1, 0, 0, 1), linestyle="--")
+    # plt.axvline(x=5.54, color=(1, 0, 0, 1), linestyle="--")
+    
     # # add arrow
     # plt.annotate("1. Ethernet path\nadded to QUIC", xy=(1.29, 6.0), xytext=(2.1, 6.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    # plt.axvline(x=5.54, color=(1, 0, 0, 1), linestyle="--")
     # plt.annotate("3. Cellular path\nadded to QUIC", xy=(5.54, 4.0), xytext=(6.5, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     # # Annotate the path probings (or keep aplives)
     # plt.annotate("4. QUIC keep-alives\nevery ~1s on idle\n paths", xy=(9.7, 3), xytext=(10.2, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     # # Annotate the decision to use the shorter path RTT
     # plt.annotate("2. QUIC choosing\nEthernet path\nfor sending due\nto shorter RTT", xy=(1.29, 3), xytext=(2.1, 3.1), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     
+    # plt.axvspan(0, 1.29, facecolor="gray", alpha=0.3)
+    # plt.axvspan(4.15, 5.54, facecolor="gray", alpha=0.3)
+    # plt.axvspan(11.34, 16, facecolor="gray", alpha=0.3)
     
-    # Adding the cellular path finding annotation
+    
+    # Adding the cellular path finding annotation Test 1
     # plt.axvline(x=4.37, color=(1, 0, 0, 1), linestyle="--")
     # plt.axvline(x=4.87, color=(1, 0, 0, 1), linestyle="--")
     
@@ -178,35 +192,36 @@ def plotThroughput(args):
 
     # plt.annotate("5. Path added to\nQUIC and used\n~690ms after\nHandshake\ncomplete", xy=(5.56, 1), xytext=(5.33, 1.31), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
-    # Annotations for migration
-    plt.axvline(x=7, color=(1, 0, 0, 1), linestyle="--")
-    plt.axvline(x=12, color=(1, 0, 0, 1), linestyle="--")
-    
-    plt.axvline(x=31, color=(1, 0, 0, 1), linestyle="--")
-    plt.axvline(x=45, color=(1, 0, 0, 1), linestyle="--")
-    
-    plt.annotate("1. Ethernet path\n100% loss and\nmigration to Wi-Fi", xy=(7, 80), xytext=(13.5, 80), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    
-    plt.annotate("2. Wi-Fi path\n100% loss and\nmigration to\nCellular", xy=(12, 20), xytext=(15.5, 20), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    
-    plt.annotate("3. QUIC packets\nare still sent but\ndo not arrive", xy=(15, 3), xytext=(15, 6), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    
-    plt.annotate("4. Ethernet path\nre-enabled", xy=(31, 45), xytext=(35.5, 25), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    
-    plt.annotate("5. Migration back\nto Ethernet path", xy=(32, 100), xytext=(35.5, 63), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    
-    plt.annotate("6. Wi-Fi path\nand interface\nre-enabled", xy=(45, 2), xytext=(48.5, 1.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
-    plt.annotate("7. It takes until\nthe next iteration\nto consider the\nWi-Fi path for\nprobing again", xy=(63, 3), xytext=(49.5, 5.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # # Annotations for migration Test 2
+    # plt.axvline(x=7, color=(1, 0, 0, 1), linestyle="--")
+    # plt.axvline(x=12, color=(1, 0, 0, 1), linestyle="--")
+    
+    # plt.axvline(x=31, color=(1, 0, 0, 1), linestyle="--")
+    # plt.axvline(x=45, color=(1, 0, 0, 1), linestyle="--")
+    
+    # plt.annotate("1. Ethernet path\n100% loss and\nmigration to Wi-Fi", xy=(7, 80), xytext=(13.5, 80), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    
+    # plt.annotate("2. Wi-Fi path\n100% loss and\nmigration to\nCellular", xy=(12, 20), xytext=(15.5, 20), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    
+    # plt.annotate("3. QUIC packets\nare still sent but\ndo not arrive", xy=(15, 3), xytext=(15, 6), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    
+    # plt.annotate("4. Ethernet path\nre-enabled", xy=(31, 45), xytext=(35.5, 25), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    
+    # plt.annotate("5. Migration back\nto Ethernet path", xy=(32, 100), xytext=(35.5, 63), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    
+    # plt.annotate("6. Wi-Fi path\nand interface\nre-enabled", xy=(45, 2), xytext=(48.5, 1.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
-    # Color the ICE probings
-    plt.axvspan(0, 1, facecolor="gray", alpha=0.3)
-    plt.axvspan(4, 5, facecolor="gray", alpha=0.3)
-    plt.axvspan(11, 21, facecolor="gray", alpha=0.3)
-    plt.axvspan(30, 32, facecolor="gray", alpha=0.3)
-    plt.axvspan(42, 52, facecolor="gray", alpha=0.3)
-    plt.axvspan(62, 63, facecolor="gray", alpha=0.3)
-    plt.axvspan(73, 75, facecolor="gray", alpha=0.3)
+    # plt.annotate("7. It takes until\nthe next iteration\nto consider the\nWi-Fi path for\nprobing again", xy=(63, 3), xytext=(49.5, 5.5), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+
+    # # Color the ICE probings
+    # plt.axvspan(0, 1, facecolor="gray", alpha=0.3)
+    # plt.axvspan(4, 5, facecolor="gray", alpha=0.3)
+    # plt.axvspan(11, 21, facecolor="gray", alpha=0.3)
+    # plt.axvspan(30, 32, facecolor="gray", alpha=0.3)
+    # plt.axvspan(42, 52, facecolor="gray", alpha=0.3)
+    # plt.axvspan(62, 63, facecolor="gray", alpha=0.3)
+    # plt.axvspan(73, 75, facecolor="gray", alpha=0.3)
 
     exportToPdf(fig, args.output)
 
