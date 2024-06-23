@@ -61,7 +61,7 @@ def quicheperf(net, directory, conf):
         output_processes.append(client_capture)
 
     # path_loss(net, "h1", "h1-wifi")
-    wait(15)
+    wait(20)
     # path_loss(net, "h1", "h1-wifi", loss=0)
     # wait()
 
@@ -302,7 +302,8 @@ def quicheperf_loss_on_probing(net, directory, conf):
     path_loss(net, f"{nat2_to_lose_packets}", f"{nat2_to_lose_packets}-wifi2", loss=100)
     
     # Now, all gathering should fail because we are missing an ICE synchronization
-    wait(3)
+    # Wait until path becomes disabled
+    wait(15)
     
     # Even after enabling the path, should not be found again
     remove_conntrack_entry(net, f"{nat_to_lose_packets}", "-u ASSURED")
@@ -311,7 +312,7 @@ def quicheperf_loss_on_probing(net, directory, conf):
     path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-local", loss=0)
     path_loss(net, f"{nat_to_lose_packets}", f"{nat_to_lose_packets}-ext", loss=0)
     
-    wait(15)
+    wait(20)
 
 def start_ping_pong(net, directory, conf):
     """
