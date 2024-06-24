@@ -177,6 +177,13 @@ def _print_success(directory):
         if len(findings) > 2:
             print("Test was successful")
 
+def _enable_log_sslkey(directory):
+    """
+    Enabling the logging of SSL keys into the given
+    working directory
+    """
+
+    os.environ["SSLKEYLOGFILE"] = f"{directory}/sslkey.log"
 
 def _terminate_processes(captures):
     """
@@ -211,6 +218,8 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
     if conf.enable_pcap:
         pcap_captures = _start_pcap_capture(net, test_dir)
 
+    if conf.log_sslkeys:
+        _enable_log_sslkey(test_dir)
 
     # Allows to capture the earliest packets, otherwise some might miss
     time.sleep(1)

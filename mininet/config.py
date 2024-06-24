@@ -47,6 +47,7 @@ class TestConfiguration:
     block_stun_on_first_path: bool = False
     enable_cli_after_test: bool = False
     enable_snat : bool = False
+    log_sslkeys: bool = False
 
     change_file_permissions: bool = False
 
@@ -121,6 +122,7 @@ class TestConfiguration:
         self.duration = args.duration
         self.throughput = args.throughput
         self.enable_snat = args.snat
+        self.log_sslkeys = args.log_sslkeys
 
         if args.debug:
             # Irrelevant what scenario was given, debug the network
