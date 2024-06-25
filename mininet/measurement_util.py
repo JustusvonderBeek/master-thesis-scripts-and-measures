@@ -354,3 +354,30 @@ def delete_ext_conntrack_entry(net, host, ext, itn, repetition=0.1):
         # so we need a more clever method here
         h.cmd(f"conntrack --delete --orig-src {itn} --proto udp --status UNREPLIED")
         time.sleep(repetition)
+
+def combineHostPcaps(directory):
+    """
+    Expecting the test directory.
+    Combining both host files H1 and H2 into a single pcap file
+    stored in the same directory
+    """
+
+    outfile = f"{directory}/h1_h2_combined.pcapng"
+    subprocess.run(f"mergecap -w {outfile} {directory}/h1.pcap {directory}/h2.pcap", shell=True)
+    return outfile
+
+def injectSSLKeysPcap(filename, keyfile, outfile=None):
+    """
+    Injecting the ssl keylog into the pcap file for easier decryption afterwards
+    """
+
+    if outfile is None:
+        path = os.path.dirname(filename)
+        outfile = os.path.join(path, "tmp.pcap")
+        rename = True
+
+    subprocess.run(f"editcap --inject-secrets tls,{keyfile} {filename} {outfile}", shell=True)
+
+    if rename:
+        os.remove(filename)
+        os.rename(outfile, filename)

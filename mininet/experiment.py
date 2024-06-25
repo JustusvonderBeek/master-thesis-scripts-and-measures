@@ -2,7 +2,7 @@
 # tests to measure the performance of the current implementation
 
 from config import Tests, Scenarios, Logging, TestConfiguration
-from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate, path_loss
+from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate, path_loss, combineHostPcaps, injectSSLKeysPcap
 from testing import quicheperf, quicheperf_if_test, quicheperf_if_init_test, quicheperf_path_loss_test, start_ping_pong, start_debug
 from mininet.cli import CLI
 from pathlib import Path
@@ -243,3 +243,7 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
     print_routing_table(net, test_dir)
 
     change_rights_test_folder(test_dir)
+
+    combinedPcap = combineHostPcaps(test_dir)
+    if conf.log_sslkeys:
+        injectSSLKeysPcap(combinedPcap, f"{test_dir}/sslkey.log")
