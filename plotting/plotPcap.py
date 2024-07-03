@@ -65,32 +65,55 @@ def plotThroughput(args):
     # ]
     # resolution="0,005"
     interfaces=[
-        "h1-wifi", 
+        # "h1-wifi", 
         "h1-eth", 
         "h1-cellular",
-        "h2-eth",
-        "h2-cellular"
+        "h1-eth", 
+        # "h1-cellular", 
+        # "h2-eth",
+        # "h2-cellular"
     ]
     filterRules=[
-        "!stun&&!mdns&&udp&&ip.dst==192.168.1.3", 
-        "!stun&&!mdns&&udp&&ip.dst==172.16.2.20", 
-        "!mdns&&udp&&(ip.dst==1.20.50.100||ip.dst==1.20.50.20)", 
-        "!stun&&!mdns&&udp&&ip.dst==172.16.2.20",
-        "!stun&&!mdns&&udp&&ip.dst==2.40.60.3",
+        # "!stun&&!mdns&&udp&&ip.dst==192.168.1.3", 
+        "!stun&&!mdns&&udp&&(quic.path_challenge.data||quic.path_response.data)", 
+        "!mdns&&udp&&!icmp&&!stun&&(ip.dst==1.20.50.100||ip.dst==1.20.50.20)", 
+        "!stun&&!mdns&&udp&&!(quic.path_challenge.data||quic.path_response.data)", 
+        # "udp&&!icmp&&!stun&&ip.dst==1.20.50.20&&!(quic.path_challenge.data||quic.path_response.data)",
+        # "!stun&&!mdns&&udp&&ip.dst==172.16.2.20",
+        # "!stun&&!mdns&&udp&&ip.dst==2.40.60.3",
     ]
     columns=[
-        "H1 Wi-Fi", 
-        "H1 Ethernet",
-        "H1 Cellular",
-        "H2 Ethernet (in)",
-        "H2 Cellular (in)" 
+        # "H1 Wi-Fi", 
+        "H1 Ethernet (QUIC Probes)",
+        "H1 Cellular (QUIC Probes)",
+        "H1 Ethernet (Data)",
+        # "H1 Cellular (Data)",
+        # "H2 Cellular (in)"
     ]
-    resolution="0,05"
+    resolution="0,005"
     data = parsePcap(args.input[0], resolution, interfaces, filterRules, columns)
 
     # --------------------
     # Plotting the pps
     # --------------------
+
+    # Define custom colors
+    color_dict = {
+        "H1 Wi-Fi": "#61bf2a", 
+        "H1 Ethernet (QUIC Probes)" : "orange",
+        "H1 Cellular (QUIC Probes)" : "red",
+        "H1 Ethernet (Data)" : "#159bedA0",
+        "H2 Ethernet (in)" : "#fcbd03",
+        # "H2 Cellular (in)" : "purple"
+    }
+    # dash_dict = {
+    #     'H1 Wi-Fi': "--", 
+    #     'H1 Ethernet (QUIC Probes)' : "--",
+    #     'H1 Cellular (QUIC Probes)' : "-",
+    #     'H1 Ethernet (Data)' : "--",
+    #     'H2 Ethernet (in)' : "--",
+    #     # 'H2 Cellular (in)' : "-"
+    # }
 
     # print(data)
     fig, axes = plt.subplots()
@@ -99,12 +122,15 @@ def plotThroughput(args):
     filtered_data = data.filter(items=["Interval"] + columns)
     conv_data = filtered_data.melt(id_vars="Interval")
     # print(conv_data)
-    plot = sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable", linewidth=1.2, palette="tab10")
+    plot = sns.lineplot(data=conv_data, y="value", x="Interval", hue="variable", linewidth=1, palette="tab10")
 
+    # axes.lines[2].set_linestyle("dashed")
+    # axes.lines[2].set_linestyle("--")
 
     xmax = data["Interval"][len(data["Interval"])-1]
+    # print(xmax)
     # axes.set_xlim(xmin=4.28, xmax=5.65)
-    axes.set_xlim(xmin=0, xmax=17)
+    axes.set_xlim(xmin=0.65, xmax=1.2)
     # axes.set_xlim(xmin=0, xmax=xmax)
     
     # Scale the ticks in case we have too many (aka more than 20)
@@ -142,10 +168,10 @@ def plotThroughput(args):
     axes.set(xlabel="Time in seconds")
     axes.set(ylabel="Packets per second")
 
-    loc = plticker.MultipleLocator(base=1)
+    loc = plticker.MultipleLocator(base=0.1)
     # loc = plticker.MultipleLocator(base=5)
     # loc = plticker.MultipleLocator(base=0.1)
-    minor_loc = plticker.MultipleLocator(base=0.2)
+    minor_loc = plticker.MultipleLocator(base=0.01)
     # minor_loc = plticker.MultipleLocator(base=1)
     axes.xaxis.set_major_locator(loc)
     axes.xaxis.set_minor_locator(minor_loc)
@@ -156,8 +182,8 @@ def plotThroughput(args):
     # plt.xticks(rotation=90)
 
     # axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
-    axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
-    # axes.legend(loc=(0.77,0.6), title="Interfaces", fancybox=True, framealpha=0.9)
+    # axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
+    axes.legend(loc=(0.6,0.78), title="Interfaces", fancybox=True, framealpha=0.9)
     plt.title("QUIC Path Probing")
 
 
@@ -222,6 +248,16 @@ def plotThroughput(args):
     # plt.axvspan(42, 52, facecolor="gray", alpha=0.3)
     # plt.axvspan(62, 63, facecolor="gray", alpha=0.3)
     # plt.axvspan(73, 75, facecolor="gray", alpha=0.3)
+
+    # Annotations for QUIC Probing Test 3
+    plt.axvline(x=0.68, color=(1, 0, 0, 1), linestyle="--")
+    plt.axvline(x=1.17, color=(1, 0, 0, 1), linestyle="--")
+
+    plt.axvspan(0.68, 0.78, facecolor="gray", alpha=0.3)
+
+    plt.annotate("1. QUIC Path\nChallenge and\nResponses\n(ingress,egress)", xy=(0.74, 1), xytext=(0.7, 2.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+
+    plt.annotate("2. QUIC Probing\non Cellular every\n~1s", xy=(0.98, 1), xytext=(0.84, 3.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
     exportToPdf(fig, args.output)
 
