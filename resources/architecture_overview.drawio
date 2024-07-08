@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2024-07-02T17:03:36.608Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.5.3 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="k-AhK9vxH--gZL8Oydkk" version="24.5.3" type="device">
+<mxfile host="Electron" modified="2024-07-04T09:36:52.245Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.8 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="v6dOIF8souz7xaAvIbW5" version="24.4.8" type="device">
   <diagram name="Page-1" id="0gJbcg0XPNFQ-sTSEnto">
-    <mxGraphModel dx="864" dy="508" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="602" dy="644" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -31,7 +31,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XBSno57gMzDwM530Vn2o-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="5U8ytU4bZrLR5_oLVIPA-2" target="XBSno57gMzDwM530Vn2o-2">
+        <mxCell id="XBSno57gMzDwM530Vn2o-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" parent="1" source="5U8ytU4bZrLR5_oLVIPA-2" target="XBSno57gMzDwM530Vn2o-2" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="210" y="340" as="targetPoint" />
             <Array as="points">
@@ -71,7 +71,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XBSno57gMzDwM530Vn2o-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" edge="1" parent="1" source="62byTpiQ_xNvMLSuf41Z-9" target="XBSno57gMzDwM530Vn2o-2">
+        <mxCell id="XBSno57gMzDwM530Vn2o-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" parent="1" source="62byTpiQ_xNvMLSuf41Z-9" target="XBSno57gMzDwM530Vn2o-2" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="280" y="339.9999999999999" as="targetPoint" />
             <Array as="points">
@@ -100,11 +100,11 @@
         <mxCell id="62byTpiQ_xNvMLSuf41Z-15" value="2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
           <mxGeometry x="433" y="285" width="30" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="XBSno57gMzDwM530Vn2o-2" value="Probing&lt;div&gt;paths&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;spacing=0;" vertex="1" parent="1">
-          <mxGeometry x="213" y="320" width="60" height="40" as="geometry" />
+        <mxCell id="XBSno57gMzDwM530Vn2o-2" value="ICE Gathering,&lt;div&gt;Path Probing&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;spacing=0;" parent="1" vertex="1">
+          <mxGeometry x="193" y="320" width="100" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="XBSno57gMzDwM530Vn2o-4" value="5" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="278" y="304" width="30" height="30" as="geometry" />
+        <mxCell id="XBSno57gMzDwM530Vn2o-4" value="5" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=12;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="279" y="303" width="30" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
