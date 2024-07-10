@@ -344,3 +344,49 @@ def start_debug(net, directory, conf):
     CLI(net)
 
     return []
+
+def quicheperf_real_world(net, directory, conf):
+    """
+    Starting the actual application we want to test.
+    Responsible for starting the application and logging.
+    Must return a list of tuple holding (process, logfile)
+    which will be terminated by the wrapper. If the logfile
+    is 'None' then we expect the application to directly write
+    into the logfile and therefore no output is processed by
+    the wrapper.
+    """
+
+    h1 = net.get("h1")
+
+    target = conf.build_target
+    tp = conf.throughput
+    output_processes = []
+
+    # print("Executing: {}".format(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true"))
+
+    if conf.log_level.value > Logging.INFO.value:
+        # server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true &> {testing_dir}/{directory}/h2.log", shell=True)
+
+        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp} &> {testing_dir}/{directory}/h1.log", shell=True)
+
+        # server_capture = (server, None)
+        client_capture = (client, None)
+        # output_processes.append(server_capture)
+        output_processes.append(client_capture)
+    else:
+        # server = h2.popen(f"{quicheperf_dir}/target/{target}/quicheperf server --cert {quicheperf_dir}/src/cert.crt --key {quicheperf_dir}/src/cert.key -l 192.168.1.3:10000 --mp true", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+
+        client = h1.popen(f"{quicheperf_dir}/target/{target}/quicheperf client -l 192.168.1.2:20000 -c 192.168.1.3:10000 --mp true -d {conf.duration} -b {tp}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+        # server_capture = (server, f"{directory}/h2.log")
+        client_capture = (client, f"{directory}/h1.log")
+        # output_processes.append(server_capture)
+        output_processes.append(client_capture)
+
+    # path_loss(net, "h1", "h1-wifi")
+    # wait(20)
+    # path_loss(net, "h1", "h1-wifi", loss=0)
+    # wait()
+
+    # Finished testing
+    return output_processes
