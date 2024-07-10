@@ -76,6 +76,6 @@ class Ethernet:
         
         nat3.cmd("iptables -t nat -A POSTROUTING -o {} -j MASQUERADE".format("nat3-ext"))
         # nat3.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j LOG --log-prefix='[mininet-fw] '")
-        nat3.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
-        nat3.cmd("iptables -A FORWARD -i nat3-local -j ACCEPT")
-        nat3.cmd("iptables -A FORWARD -j REJECT")
+        # nat3.cmd("iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT")
+        # nat3.cmd("iptables -A FORWARD -i nat3-local -j ACCEPT")
+        # nat3.cmd("iptables -A FORWARD -j REJECT")
