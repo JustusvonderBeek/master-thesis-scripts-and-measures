@@ -3,7 +3,7 @@
 
 from config import Tests, Scenarios, Logging, TestConfiguration
 from measurement_util import create_new_test_folder, change_rights_test_folder, print_nat_table, print_routing_table, terminate, path_loss, combineHostPcaps, injectSSLKeysPcap
-from testing import quicheperf, quicheperf_if_test, quicheperf_if_init_test, quicheperf_path_loss_test, start_ping_pong, start_debug
+from testing import quicheperf, quicheperf_if_test, quicheperf_if_init_test, quicheperf_path_loss_test, start_ping_pong, start_debug, quicheperf_real_world
 from mininet.cli import CLI
 from pathlib import Path
 
@@ -38,6 +38,8 @@ def start_test(net, conf: TestConfiguration):
             test_function = quicheperf_if_test
         case Tests.QUICHEPERF_LOSS:
             test_function = quicheperf_path_loss_test
+        case Tests.REAL_WORLD:
+            test_function = quicheperf_real_world
         case _:
             print("No correct test given, exiting...")
             return
@@ -86,14 +88,16 @@ def _start_pcap_capture(net, directory, additional_ifs=None):
             # Those hosts which are not to filter
             capture_hosts.append(f"{host}")
     
-    if additional_ifs is not None:
-        for additional, ifs in additional_ifs:
-            capture_hosts.append(additional)
+    # if additional_ifs is not None:
+    #     for additional, ifs in additional_ifs:
+    #         capture_hosts.append(additional)
 
     capture_list = []
     for h in capture_hosts:
         host = net.get(h)
         ifs = host.intfNames()
+        if additional_ifs is not None and "h" in f"{host}":
+            ifs += additional_ifs
         ifs_str = " -i ".join(ifs)
         outfile = f"{directory}/{h}.pcap"
         # Capturing all given interfaces but into a single pcap file
@@ -216,7 +220,7 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
         turn_server = _start_turn_server(net, "turn")
 
     if conf.enable_pcap:
-        pcap_captures = _start_pcap_capture(net, test_dir)
+        pcap_captures = _start_pcap_capture(net, test_dir, ["lo"])
 
     if conf.log_sslkeys:
         _enable_log_sslkey(test_dir)
@@ -244,6 +248,7 @@ def _test_wrapper(net, test_function, conf: TestConfiguration):
 
     change_rights_test_folder(test_dir)
 
-    combinedPcap = combineHostPcaps(test_dir)
-    if conf.log_sslkeys:
+    if conf.combine_pcaps:
+        combinedPcap = combineHostPcaps(test_dir)
+    if conf.log_sslkeys and conf.combine_pcaps:
         injectSSLKeysPcap(combinedPcap, f"{test_dir}/sslkey.log")
