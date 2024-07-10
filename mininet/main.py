@@ -201,6 +201,7 @@ def main():
     parser.add_argument('--build-target', type=str, default="debug")
     parser.add_argument('--throughput', type=str, default="1MB")
     parser.add_argument('--scenario', type=str)
+    parser.add_argument('--real', action='store_true', default=False)
     args = parser.parse_args()
 
     if args.scenario is None:
@@ -216,7 +217,7 @@ def main():
             case _:
                 print(f"Incorrect scenario '{args.scenario}' given")
                 exit(1)
-                                
+                          
     net = create_test_scenario(test_conf)
     start_test(net, test_conf)
 
