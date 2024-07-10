@@ -30,6 +30,8 @@ The following section contains information regarding the devices, interfaces & c
 | AirDrop Cellular | 18.06.2024 14:10-15:08 | iPad & iPhone | iPhone: Sender & iPad: Receiver | iPhone: 17.1.1 & iPad: 17.5.1 | iPhone: My Account & iPad: TUM Account | Test AirDrop cellular migration iPhone | 
 | AirDrop Cellular | 18.06.2024 15:19-xx | iPad & iPhone | iPhone: Sender & iPad: Receiver | iPhone: 17.1.1 & iPad: 17.5.1 | iPhone: MT Test Account & iPad: My AppleID | Test AirDrop cellular migration iPhone with QUIC | 
 | FaceTime | 18.06.2024 16:45 | iPad & iPhone | iPhone: Caller & iPad: Callee | iPhone: 17.1.1 & iPad: 17.5.1 | iPhone: MT Test Account & iPad: My AppleID | Test FaceTime cellular migration | 
+| ICE Prototype | 09.07.2024 | Laptop & Desktop | Laptop: sim.de (carrier was o2, APN: internet) | quicheperf commit xx | Laptop: Client & Desktop: Server | Test Different AP Configurations |
+| AirDrop Relay | 09.07.2024 | iPad 3 & iPhone Xs | iPhone: sim.de (carrier was o2, APN: internet) + Desktop AP, iPad: Adapter AP | xx | iPad -> iPhone | Test AirDrop Relay |
 | --- | --- | --- | --- | --- | --- |
 
 # SIM Karten APN Netzwerk
@@ -42,12 +44,12 @@ Die folgende Sektion beinhaltet Infos zum NAT je nach APN Einstellung. Alle Test
 | stun.t-online.de:3478 |
 | stun.actionvoip.com:3478 |
 
-| SIM | APN | STUN Mapping | STUN Port | STUN Hairpin |
-| --- | --- | --- | --- | --- |
-| Telekom | internet.t-d1.de | Open, aka. no NAT | --- | --- |
-| Telekom | internet.telekom | Dependent Mapping | Random Port | No Hairpin |
-| Telekom | internet.telekom (sipgate) | Independent Mapping / Independent Filter | Random Port | No Hairpin |
-| sim.de (o2) | internet | Dependent Mapping | Random Port | No Hairpin |
+| SIM | APN | STUN Mapping | STUN Port | STUN Hairpin | Num. IPs |
+| --- | --- | --- | --- | --- | --- |
+| Telekom | internet.t-d1.de | Open, aka. no NAT | --- | --- | 1 |
+| Telekom | internet.telekom | Dependent Mapping | Random Port | No Hairpin | 2 |
+| Telekom | internet.telekom (sipgate) | Independent Mapping / Independent Filter | Random Port | No Hairpin | 2 |
+| sim.de (o2) | internet | Dependent Mapping | Random Port | No Hairpin | 2 |
 | --- | --- | --- |
 
 # FaceTime
@@ -138,7 +140,35 @@ For the tests until 11:13 only the email was given as contact info on the iPad. 
 | 18.06 16:xx | AirDrop QUIC Timeout | iPhone & iPad | iPad -> iPhone | iPhone: Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | xx | Testing QUIC timeout | Both close to each other, starting transfer then moving apart to break AWDL, checking when the iPad (sender) decides to give up |
 | 18.06 14:xx | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (AP) + Bluetooth | 75 MB | xx | Starting the transfer with backup path on the iPhone, moving devices apart to break connection and migrate to iCloud, moving outside of fence |  |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 09.07 16:14 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Success | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 16:35 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Success | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 16:38 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Success | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 16:41-44 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (AP) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Failure | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 16:46 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Failure | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 16:49-50 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Success | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 16:53-56 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Failure | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 16:57 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Success | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 17:00-17:02 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Failure | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular |  |
+| 09.07 17:03-17:06 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Success | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular, then moving back close before fully sent on iPad |  |
+| 09.07 17:08 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Failure | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular, then moving back close before fully sent on iPad |  |
+| 09.07 17:10 | AirDrop Cellular Migration | iPhone & iPad | iPad -> iPhone | iPhone: WiFi (not connected) + Cellular + Bluetooth, iPad: WiFi (Desktop AP) + Bluetooth | 75 MB | Success | Starting Transfer with both devices next to each other, moving behind heater and disable AP, then migration to cellular, then moving back close before fully sent on iPad |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
+## Analysis
+Structure of the relayed exchange:
+1. AWDL breaks
+2. Both devices build a new connection to Apple using QUIC, plus 0-RTT on port 3495 (nat-stun-port, originally meant for FaceTime, GameCenter)
+3. Data is sent from the Sender (iPad) to the receiver (iPhone) and slightly buffered at the Apple Server
+4. Receiver gets the data in same packet size but slightly lower
+
+- Relay seems to buffer some parts because iPad is faster earlier when iPhone is still receiving (a matter of 3-5s guess, not measured)
+- No real migration but new connection
+- Always using IPv4 even though both devices have native IPv6 addresses
+- Migration always combined with noticeable delay, in traces ~5s
+- Both connect independently to Apple after the delay
+- Both connect to same Apple IP during run but not in between runs
+- No connection back, even if not all data has been sent
+- Example: 9MB data received via Apple, 2kbps, 9MB sent 20kbps;38MB received at 21kbps with 40MB sent at 24kbps; 33MB at 17mbps received with 34MB at 16mbps
 
 # Signal
 The analysis of Signal Video and Audio Calls between two different accounts
@@ -266,6 +296,9 @@ Test Notes:
 | 12.06 19:37 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Desktop) | Laptop: Ethernet LAN + Cellular (Telekom, internet.telekom) & Desktop: Ethernet LAN + Cellular (o2 via tethered) | Duration max. 100s | Failure | Confirm APN problem | Fails now, seems to be blocked |
 | 12.06 19:39 | ICE Prototype \w both cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Desktop) | Laptop: Ethernet LAN + Cellular (Telekom, internet.t-d1.de) & Desktop: Ethernet LAN + Cellular (o2 via tethered) | Duration max. 100s | Success | Confirm APN settings | Works now, seems to be blocked by one of the two ISPs |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 09.07 10:28-10:34 | ICE Prototype HHG to Cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: HHG + Cellular (o2, sim.de) & Desktop: Ethernet LAN + HHG | Duration max. 40s | Failure | Test other starting conditions, start from HHG to Ethernet->Cellular | xx |
+| 09.07 10:xx | ICE Prototype HHG to Cellular | Laptop & Desktop | Laptop (Client) -> Desktop (Server) | Laptop: HHG + Cellular (o2, sim.de) & Desktop: Ethernet LAN + HHG | Duration max. 40s | xx | Test other starting conditions, start from Ethernet to HHG->Cellular | xx |
+
 
 ## Analysis
 The analysis for the ICE prototype.
