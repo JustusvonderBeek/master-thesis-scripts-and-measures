@@ -27,6 +27,7 @@ from mininet.link import TCLink
 from .wifi_direct import WiFiPath
 from .ethernet_network import Ethernet
 from .cellular_network import Cellular
+from .real_world_nat_topo import RealWorld
 
 @dataclass
 class NetworkConfiguration:
@@ -41,6 +42,7 @@ class NetworkConfiguration:
     enable_wifi_direct_path: bool = True
     enable_local_network_path: bool = True
     enable_internet_path: bool = True
+    enable_real_world_path: bool = False
     
     # Features
     enable_turn_host: bool = False
@@ -88,6 +90,14 @@ def create_test_scenario(test_conf: TestConfiguration):
             configuration = NetworkConfiguration(
                 enable_turn_host=True,
             )
+        case Scenarios.REAL_WORLD:
+            configuration = NetworkConfiguration(
+                enable_wifi_direct_path=False,
+                enable_turn_host=False,
+                enable_internet_path=False,
+                enable_local_network_path=False,
+                enable_real_world_path=True,
+            )
         case _:
             print(f"'{test_conf.scenario}' is no valid scenario name!")
             return ValueError
@@ -133,6 +143,7 @@ def create_network(configuration):
     WiFiPath.build(net, configuration)
     Ethernet.build(net, configuration)
     Cellular.build(net, configuration)
+    RealWorld.build(net, configuration)
     
     return net
 
