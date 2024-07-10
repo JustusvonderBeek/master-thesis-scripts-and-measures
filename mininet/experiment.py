@@ -91,6 +91,9 @@ def _start_pcap_capture(net, directory, additional_ifs=None):
     # if additional_ifs is not None:
     #     for additional, ifs in additional_ifs:
     #         capture_hosts.append(additional)
+    # if additional_ifs is not None:
+    #     for additional, ifs in additional_ifs:
+    #         capture_hosts.append(additional)
 
     capture_list = []
     for h in capture_hosts:
@@ -103,7 +106,7 @@ def _start_pcap_capture(net, directory, additional_ifs=None):
         # Capturing all given interfaces but into a single pcap file
         # Allows for differentiation in the analysis
         capture_cmd = f"tshark -i {ifs_str} -w {outfile} -n"
-        print(f"Capturing {capture_cmd}")
+        print(f"Capturing '{capture_cmd}'")
         host_pcap = host.popen(f"{capture_cmd}")
         capture = (host_pcap, outfile)
         capture_list.append(capture)

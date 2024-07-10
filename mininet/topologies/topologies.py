@@ -73,18 +73,22 @@ def create_test_scenario(test_conf: TestConfiguration):
             configuration = NetworkConfiguration(
                 enable_local_network_path=False,
                 enable_internet_path=False,
-                block_stun_on_first_path=False
+                block_stun_on_first_path=False,
+                enable_turn_host=False,
             )
+            test_conf.enable_turn_server = False
         case Scenarios.SINGLE_PATH_WITH_LOCAL:
             configuration = NetworkConfiguration(
                 enable_internet_path=False,
-                block_stun_on_first_path=False
+                block_stun_on_first_path=False,
+                enable_turn_host=False,
             )
+            test_conf.enable_turn_server = False
         case Scenarios.SINGLE_PATH_WITH_INTERNET:
             configuration = NetworkConfiguration(
                 enable_local_network_path=False,
                 enable_turn_host=True,
-                block_stun_on_first_path=False
+                block_stun_on_first_path=False,
             )
         case Scenarios.FULL_NETWORK:
             configuration = NetworkConfiguration(

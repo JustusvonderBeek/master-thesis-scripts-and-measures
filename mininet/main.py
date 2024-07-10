@@ -27,55 +27,55 @@ import os
 import subprocess
 import argparse
 
-def start_quicheperf_server(net):
-    """Starting the quicheperf server"""
+# def start_quicheperf_server(net):
+#     """Starting the quicheperf server"""
 
-    h2 = net.get("h2")
-    Path("h2").mkdir(parents=True, exist_ok=True)
-    os.environ["RUST_LOG"] = "debug"
-    scheduler = "round-robin"
-    server = h2.popen(f"../quicheperf/target/release/quicheperf server -l 10.0.1.10:443 -l 172.16.2.20:443 --mp true --scheduler {scheduler} --cert ../quicheperf/src/cert.crt --key ../quicheperf/src/cert.key", stdout=subprocess.PIPE)
+#     h2 = net.get("h2")
+#     Path("h2").mkdir(parents=True, exist_ok=True)
+#     os.environ["RUST_LOG"] = "debug"
+#     scheduler = "round-robin"
+#     server = h2.popen(f"../quicheperf/target/release/quicheperf server -l 10.0.1.10:443 -l 172.16.2.20:443 --mp true --scheduler {scheduler} --cert ../quicheperf/src/cert.crt --key ../quicheperf/src/cert.key", stdout=subprocess.PIPE)
 
-    return server
+#     return server
 
-def start_quicheperf_client(net):
-    """Starting the quicheperf client"""
+# def start_quicheperf_client(net):
+#     """Starting the quicheperf client"""
 
-    h1 = net.get("h1")
-    # Path is .../Code/..supplementary-material
-    Path("h1").mkdir(parents=True, exist_ok=True)
-    os.environ["RUST_LOG"] = "debug"
-    duration = "10"
-    bitrate = "1MB"
-    scheduler = "round-robin"
-    print(f"Duration: {duration}s , Bitrate {bitrate}")
-    client = h1.popen(f"../quicheperf/target/release/quicheperf client -c 10.0.1.10:443 -c 172.168.2.20:443 -l 192.168.1.10:0 -l 172.16.1.10:0 --mp true --scheduler {scheduler} --duration {duration} --bitrate {bitrate}", stdout=subprocess.PIPE)
+#     h1 = net.get("h1")
+#     # Path is .../Code/..supplementary-material
+#     Path("h1").mkdir(parents=True, exist_ok=True)
+#     os.environ["RUST_LOG"] = "debug"
+#     duration = "10"
+#     bitrate = "1MB"
+#     scheduler = "round-robin"
+#     print(f"Duration: {duration}s , Bitrate {bitrate}")
+#     client = h1.popen(f"../quicheperf/target/release/quicheperf client -c 10.0.1.10:443 -c 172.168.2.20:443 -l 192.168.1.10:0 -l 172.16.1.10:0 --mp true --scheduler {scheduler} --duration {duration} --bitrate {bitrate}", stdout=subprocess.PIPE)
 
-    return client
+#     return client
 
-def start_webrtc_server(net):
-    """
-    Starting the WebRTC answerer
-    """
+# def start_webrtc_server(net):
+#     """
+#     Starting the WebRTC answerer
+#     """
 
-    h2 = net.get("h2") # Should be the one without firewall
-    Path("h2").mkdir(parents=True, exist_ok=True)
-    os.environ["RUST_LOG"] = "debug"
-    # server = h2.popen(f"../webrtc/target/debug/examples/answer --offer-address 1.20.30.10:50000", stdout=subprocess.PIPE)
-    server = h2.popen(f"../webrtc/target/debug/examples/answer --offer-address 192.168.1.2:50000", stdout=subprocess.PIPE)
-    return server
+#     h2 = net.get("h2") # Should be the one without firewall
+#     Path("h2").mkdir(parents=True, exist_ok=True)
+#     os.environ["RUST_LOG"] = "debug"
+#     # server = h2.popen(f"../webrtc/target/debug/examples/answer --offer-address 1.20.30.10:50000", stdout=subprocess.PIPE)
+#     server = h2.popen(f"../webrtc/target/debug/examples/answer --offer-address 192.168.1.2:50000", stdout=subprocess.PIPE)
+#     return server
 
-def start_webrtc_client(net):
-    """
-    Starting the WebRTC questioner
-    """
+# def start_webrtc_client(net):
+#     """
+#     Starting the WebRTC questioner
+#     """
 
-    h1 = net.get("h1") # Should be the one behind the firewall
-    Path("h1").mkdir(parents=True, exist_ok=True)
-    os.environ["RUST_LOG"] = "debug"
-    # client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 2.40.60.20:60000", stdout=subprocess.PIPE)
-    client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 192.168.1.3:60000", stdout=subprocess.PIPE)
-    return client
+#     h1 = net.get("h1") # Should be the one behind the firewall
+#     Path("h1").mkdir(parents=True, exist_ok=True)
+#     os.environ["RUST_LOG"] = "debug"
+#     # client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 2.40.60.20:60000", stdout=subprocess.PIPE)
+#     client = h1.popen(f"../webrtc/target/debug/examples/offer --debug --answer-address 192.168.1.3:60000", stdout=subprocess.PIPE)
+#     return client
 
 def start_turn_server(net, host):
     """Starting the 'coturn' turn server on the given host in the network.
@@ -102,6 +102,7 @@ def test_failure_nat_webrtc_example(args):
     args.setup = "single+internet"
     # Use the default ping to show that it's not our implementation but rather the NAT itself
     args.test = "ice_ping"
+    # args.test = "quicheperf"
     args.logging = 3
     args.debug = False
     args.disable_turn = False
@@ -115,7 +116,7 @@ def test_failure_nat_webrtc_example(args):
     config.internet_path_ext_2_delay = 10
     # If the one path is >= than the entire other path towards the host it breaks
     # Here 1:1 in comparison should be enough (here > 20)
-    config.internet_path_local_delay = 25
+    config.internet_path_local_delay = 35
     config.internet_path_local_2_delay = 10
     config.internet_path_turn_delay = 10
     config.wifi_direct_path_delay = 3
