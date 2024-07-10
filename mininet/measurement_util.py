@@ -23,7 +23,8 @@ def create_new_test_folder(path=None):
     day_name = path + datetime.today().strftime("%d_%m")
     time_name = datetime.today().strftime("%H_%M")
 
-    username = "justus"
+    username = "ubuntu"
+    # username = "justus"
     uid = pwd.getpwnam(username).pw_uid
     gid = grp.getgrnam(username).gr_gid
 
