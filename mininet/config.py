@@ -6,6 +6,7 @@ class Scenarios(Enum):
     SINGLE_PATH_WITH_LOCAL = 2
     SINGLE_PATH_WITH_INTERNET = 3
     FULL_NETWORK = 4
+    REAL_WORLD = 5
 
 class Tests(Enum):
     QUICHEPERF = 1
@@ -14,6 +15,7 @@ class Tests(Enum):
     QUICHEPERF_IF = 4
     QUICHEPERF_LOSS = 5
     QUICHEPERF_IF_INIT = 6
+    REAL_WORLD = 7
 
 class Logging(Enum):
     NONE = 0
@@ -48,7 +50,7 @@ class TestConfiguration:
     enable_cli_after_test: bool = False
     enable_snat : bool = False
     log_sslkeys: bool = False
-
+    combine_pcaps: bool = True
     change_file_permissions: bool = False
 
     log_level: Logging = Logging.DEBUG
@@ -143,3 +145,12 @@ class TestConfiguration:
 
         if args.disable_pcap:
             self.enable_pcap = False
+            
+        if args.real:
+            self.test = Tests.REAL_WORLD
+            self.scenario = Scenarios.REAL_WORLD
+            self.enable_turn_server = False
+            self.combine_pcaps = False
+            
+            if args.debug:
+                self.enable_cli_after_test = True
