@@ -1,0 +1,2 @@
+First Quic,Received,Response,Path Validated
+0.791201569,0.797226606,0.803468298,0.806475435
