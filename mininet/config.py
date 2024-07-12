@@ -32,7 +32,7 @@ class TestConfiguration:
     test: Tests
 
     # Path delays
-    wifi_direct_path_delay: int = 6
+    wifi_direct_path_delay: int = 10
     local_network_path_delay: int = 3
     local_network_path_ext_delay: int = 6
     internet_path_local_delay: int = 4
