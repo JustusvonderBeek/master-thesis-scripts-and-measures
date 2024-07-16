@@ -7,8 +7,9 @@ quicheperf_dir="/home/justus/Documents/Code/quicheperf-stun/target/debug/"
 output_dir="./measurements/RealLifeQuicheperf"
 # Read in configuration
 config_dir="./"
-# config_file="real_intf_measure_conf.json"
-config_file="raspi_measure_conf.json"
+config_file="real_intf_measure_conf.json"
+# config_file="raspi_measure_conf.json"
+# config_file="aws_measure_conf.json"
 
 mkdir -p "$output_dir"
 

@@ -32,7 +32,7 @@ filename="ipad"
 # Hardcoded for this test
 # (trap 'kill 0' SIGINT; $HOME/Documents/Code/rvi_capture/rvi_capture.py --udid $iPhone "${localPcapFilePath}iphone_$filename" & $HOME/Documents/Code/rvi_capture/rvi_capture.py --udid $iPad "${localPcapFilePath}ipad_$filename")
 
-$HOME/Documents/Code/rvi_capture/rvi_capture.py --udid $iPad "${localPcapFilePath}/{filename}.pcap"
+$HOME/Documents/Code/rvi_capture/rvi_capture.py --udid $iPad "${localPcapFilePath}/${filename}.pcap"
 
 
 echo "iOS device test finished"

@@ -28,8 +28,8 @@ test_kill() {
     adb -s $insideBox shell ip a > "$localPcapFilePath/${insideBoxHumanRead}_ips.txt"
     adb -s $outsideBox shell ip a > "$localPcapFilePath/${outsideBoxHumanRead}_ips.txt"
 
-    ./filter_pcap.sh "${localPcapFilePath}/$in_filename"
-    ./filter_pcap.sh "${localPcapFilePath}/$out_filename"
+    # ./filter_pcap.sh "${localPcapFilePath}/$in_filename"
+    # ./filter_pcap.sh "${localPcapFilePath}/$out_filename"
 
     echo "Android nearby share test ended"
 }
@@ -37,16 +37,16 @@ test_kill() {
 echo "Starting android nearby share test..."
 
 insideBox="801KPRW1393526"
-insideBoxHumanRead="mt_account"
+insideBoxHumanRead="signal_mt_account"
 outsideBox="801KPGS1389743"
-outsideBoxHumanRead="my_account"
+outsideBoxHumanRead="signal_my_account"
 
 pcapFilePath="/sdcard/Download/"
 
 dateNow="$(date +'%d_%m')"
 timeNow="$(date +'%H_%M')"
 if [[ $# -lt 2 ]]; then
-    localPcapFilePath="measurements/whatsappPcap/${dateNow}/${timeNow}"
+    localPcapFilePath="measurements/signalPcap/${dateNow}/${timeNow}"
 else
     localPcapFilePath="$2"
 fi

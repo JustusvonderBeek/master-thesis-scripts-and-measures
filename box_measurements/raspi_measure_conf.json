@@ -1,6 +1,6 @@
 {
     "server": {
-        "listen_addr" : "178.1.207.7:10000",
+        "listen_addr" : "178.1.207.0:10000",
         "certificate" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.crt",
         "key" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.key",
         "flags" : "--mp true",

@@ -1,25 +1,25 @@
 {
     "server": {
-        "listen_addr" : "192.168.12.47:10000",
+        "listen_addr" : "192.168.2.10:10000",
         "certificate" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.crt",
         "key" : "/home/justus/Documents/Code/quicheperf-stun/src/cert.key",
         "flags" : "--mp true",
         "stun_url": "stun:stun.l.google.com:19302",
         "interfaces": [
-            "enx00e04c19aee4",
-            "wlp5s0"
+            "wlp5s0",
+            "enx806d9706eb3b"
         ],
         "log_level": "info"
     },
     "client": {
-        "listen_addr" : "192.168.12.73:20000",
+        "listen_addr" : "192.168.2.10:20000",
         "duration" : 100,
         "bandwidth": "1MB",
         "flags" : "--mp true",
         "stun_url": "stun:stun.l.google.com:19302",
         "interfaces": [
-            "wlp0s20f3",
-            "enxaa8594406531"
+            "wlp5s0",
+            "enx806d9706eb3b"
         ],
         "log_level": "info"
     }
