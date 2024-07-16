@@ -45,6 +45,26 @@ def plotThroughput(args):
     Gets the parsed command line and outputs the final throughput graph.
     """
 
+    interfaces=[
+        "h1-wifi", 
+        "h1-eth", 
+        "h1-cellular",
+    ]
+    filterRules=[
+        "udp&&!stun&&!mdns&&!icmp",
+        "udp&&!stun&&!mdns&&!icmp",
+        "udp&&!stun&&!mdns&&!icmp",
+        # "stun&&!icmp&&ip.addr==1.20.50.100", 
+        # "stun&&!icmp&&ip.dst==1.20.50.20", 
+        # "stun&&!icmp&&ip.src==1.20.50.10&&ip.dst==2.40.60.3", 
+        # "!stun&&udp&&!mdns&&ip.dst==1.20.50.20"
+    ]
+    columns=[
+        "H1 Wi-Fi", 
+        "H1 Ethernet",
+        "H1 Cellular",
+    ]
+    resolution="0,05"
     # interfaces=[
     #     "h1-cellular", 
     #     "h1-cellular", 
@@ -64,33 +84,33 @@ def plotThroughput(args):
     #     "H1 -> H2 Cellular (QUIC)"
     # ]
     # resolution="0,005"
-    interfaces=[
-        # "h1-wifi", 
-        "h1-eth", 
-        "h1-cellular",
-        "h1-eth", 
-        # "h1-cellular", 
-        # "h2-eth",
-        # "h2-cellular"
-    ]
-    filterRules=[
-        # "!stun&&!mdns&&udp&&ip.dst==192.168.1.3", 
-        "!stun&&!mdns&&udp&&(quic.path_challenge.data||quic.path_response.data)", 
-        "!mdns&&udp&&!icmp&&!stun&&(ip.dst==1.20.50.100||ip.dst==1.20.50.20)", 
-        "!stun&&!mdns&&udp&&!(quic.path_challenge.data||quic.path_response.data)", 
-        # "udp&&!icmp&&!stun&&ip.dst==1.20.50.20&&!(quic.path_challenge.data||quic.path_response.data)",
-        # "!stun&&!mdns&&udp&&ip.dst==172.16.2.20",
-        # "!stun&&!mdns&&udp&&ip.dst==2.40.60.3",
-    ]
-    columns=[
-        # "H1 Wi-Fi", 
-        "H1 Ethernet (QUIC Probes)",
-        "H1 Cellular (QUIC Probes)",
-        "H1 Ethernet (Data)",
-        # "H1 Cellular (Data)",
-        # "H2 Cellular (in)"
-    ]
-    resolution="0,005"
+    # interfaces=[
+    #     # "h1-wifi", 
+    #     "h1-eth", 
+    #     "h1-cellular",
+    #     "h1-eth", 
+    #     # "h1-cellular", 
+    #     # "h2-eth",
+    #     # "h2-cellular"
+    # ]
+    # filterRules=[
+    #     # "!stun&&!mdns&&udp&&ip.dst==192.168.1.3", 
+    #     "!stun&&!mdns&&udp&&(quic.path_challenge.data||quic.path_response.data)", 
+    #     "!mdns&&udp&&!icmp&&!stun&&(ip.dst==1.20.50.100||ip.dst==1.20.50.20)", 
+    #     "!stun&&!mdns&&udp&&!(quic.path_challenge.data||quic.path_response.data)", 
+    #     # "udp&&!icmp&&!stun&&ip.dst==1.20.50.20&&!(quic.path_challenge.data||quic.path_response.data)",
+    #     # "!stun&&!mdns&&udp&&ip.dst==172.16.2.20",
+    #     # "!stun&&!mdns&&udp&&ip.dst==2.40.60.3",
+    # ]
+    # columns=[
+    #     # "H1 Wi-Fi", 
+    #     "H1 Ethernet (QUIC Probes)",
+    #     "H1 Cellular (QUIC Probes)",
+    #     "H1 Ethernet (Data)",
+    #     # "H1 Cellular (Data)",
+    #     # "H2 Cellular (in)"
+    # ]
+    # resolution="0,005"
     data = parsePcap(args.input[0], resolution, interfaces, filterRules, columns)
 
     # --------------------
@@ -130,8 +150,9 @@ def plotThroughput(args):
     xmax = data["Interval"][len(data["Interval"])-1]
     # print(xmax)
     # axes.set_xlim(xmin=4.153, xmax=5.65)
-    axes.set_xlim(xmin=0.7, xmax=1.3)
-    # axes.set_xlim(xmin=0, xmax=xmax)
+    axes.set_xlim(xmin=0, xmax=15.4)
+    # axes.set_xlim(xmin=0.7, xmax=1.3)
+    # # axes.set_xlim(xmin=0, xmax=xmax)
     
     # Scale the ticks in case we have too many (aka more than 20)
     # print(len(data["Interval"]))
@@ -161,18 +182,19 @@ def plotThroughput(args):
         axes.set_yscale('log',base=10)
         axes.set_ylim(ymin=10e-1)
     else:
-        # axes.set_ylim(ymin=0)
-        axes.set_ylim(ymin=0, ymax=4)
+        axes.set_ylim(ymin=0)
+        # axes.set_ylim(ymin=0, ymax=4)
     
     axes.yaxis.set_major_formatter(ScalarFormatter())
     axes.set(xlabel="Time in seconds")
     axes.set(ylabel="Packets per second")
 
-    loc = plticker.MultipleLocator(base=0.1)
-    # loc = plticker.MultipleLocator(base=5)
+    loc = plticker.MultipleLocator(base=1)
     # loc = plticker.MultipleLocator(base=0.1)
+    # loc = plticker.MultipleLocator(base=0.1)
+    minor_loc = plticker.MultipleLocator(base=0.2)
     # minor_loc = plticker.MultipleLocator(base=0.02)
-    minor_loc = plticker.MultipleLocator(base=0.01)
+    # minor_loc = plticker.MultipleLocator(base=0.01)
     # minor_loc = plticker.MultipleLocator(base=1)
     axes.xaxis.set_major_locator(loc)
     axes.xaxis.set_minor_locator(minor_loc)
@@ -183,27 +205,28 @@ def plotThroughput(args):
     # plt.xticks(rotation=90)
 
     # axes.legend(loc="upper right", title="Interface", fancybox=True, framealpha=0.9)
-    # axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
-    axes.legend(loc=(0.6,0.78), title="Interfaces", fancybox=True, framealpha=0.9)
+    axes.legend(loc="best", title="Interfaces", fancybox=True, framealpha=0.9)
+    # axes.legend(loc=(0.6,0.78), title="Interfaces", fancybox=True, framealpha=0.9)
+    plt.title("Prototype Path Discovery")
     # plt.title("Cellular Path Building in Detail")
-    plt.title("QUIC Path Probing")
+    # plt.title("QUIC Path Probing")
 
 
     # # Adding some figure custom annotations for Pathfinding Test 1
-    # plt.axvline(x=1.29, color=(1, 0, 0, 1), linestyle="--")
-    # plt.axvline(x=5.54, color=(1, 0, 0, 1), linestyle="--")
+    plt.axvline(x=1.29, color=(1, 0, 0, 1), linestyle="--")
+    plt.axvline(x=5.54, color=(1, 0, 0, 1), linestyle="--")
     
-    # # add arrow
-    # plt.annotate("1. Ethernet path\nadded to QUIC", xy=(1.29, 6.0), xytext=(2.1, 6.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    # plt.annotate("3. Cellular path\nadded to QUIC", xy=(5.54, 4.0), xytext=(6.5, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    # # Annotate the path probings (or keep aplives)
-    # plt.annotate("4. QUIC keep-alives\nevery ~1s on idle\n paths", xy=(9.7, 3), xytext=(10.2, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
-    # # Annotate the decision to use the shorter path RTT
-    # plt.annotate("2. QUIC choosing\nEthernet path\nfor sending due\nto shorter RTT", xy=(1.29, 3), xytext=(2.1, 3.1), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # add arrow
+    plt.annotate("1. Ethernet path\nadded to QUIC", xy=(1.29, 6.0), xytext=(2.1, 6.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    plt.annotate("3. Cellular path\nadded to QUIC", xy=(5.54, 4.0), xytext=(6.5, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # Annotate the path probings (or keep aplives)
+    plt.annotate("4. QUIC keep-alives\nevery ~1s on idle\n paths", xy=(9.7, 3), xytext=(10.2, 4.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # Annotate the decision to use the shorter path RTT
+    plt.annotate("2. QUIC choosing\nEthernet path\nfor sending due\nto shorter RTT", xy=(1.29, 3), xytext=(2.1, 3.1), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
     
-    # plt.axvspan(0, 1.29, facecolor="gray", alpha=0.3)
-    # plt.axvspan(4.15, 5.54, facecolor="gray", alpha=0.3)
-    # plt.axvspan(11.34, 16, facecolor="gray", alpha=0.3)
+    plt.axvspan(0, 1.29, facecolor="gray", alpha=0.3)
+    plt.axvspan(4.15, 5.54, facecolor="gray", alpha=0.3)
+    plt.axvspan(11.34, 16, facecolor="gray", alpha=0.3)
     
     
     # Adding the cellular path finding annotation Test 1
@@ -256,14 +279,14 @@ def plotThroughput(args):
     # plt.axvspan(73, 75, facecolor="gray", alpha=0.3)
 
     # Annotations for QUIC Probing Test 3
-    plt.axvline(x=0.71, color=(1, 0, 0, 1), linestyle="--")
-    plt.axvline(x=1.243, color=(1, 0, 0, 1), linestyle="--")
+    # plt.axvline(x=0.71, color=(1, 0, 0, 1), linestyle="--")
+    # plt.axvline(x=1.243, color=(1, 0, 0, 1), linestyle="--")
 
-    plt.axvspan(0.71, 0.81, facecolor="gray", alpha=0.3)
+    # plt.axvspan(0.71, 0.81, facecolor="gray", alpha=0.3)
 
-    plt.annotate("1. QUIC Path\nChallenge and\nResponses\n(ingress,egress)", xy=(0.791, 1), xytext=(0.73, 2.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # plt.annotate("1. QUIC Path\nChallenge and\nResponses\n(ingress,egress)", xy=(0.791, 1), xytext=(0.73, 2.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
-    plt.annotate("2. QUIC Probing\non Cellular every\n~1s", xy=(1.02, 1), xytext=(0.9, 3.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
+    # plt.annotate("2. QUIC Probing\non Cellular every\n~1s", xy=(1.02, 1), xytext=(0.9, 3.2), arrowprops=dict(arrowstyle="->", color="black"), bbox=dict(facecolor="white", boxstyle="round,pad=0.5"))
 
     exportToPdf(fig, args.output)
 
